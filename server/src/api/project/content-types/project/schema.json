@@ -42,6 +42,10 @@
         "one time"
       ],
       "required": true
+    },
+    "isFeatured": {
+      "type": "boolean",
+      "default": false
     }
   }
 }
