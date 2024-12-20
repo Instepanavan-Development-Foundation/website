@@ -4,7 +4,8 @@
   "info": {
     "singularName": "project",
     "pluralName": "projects",
-    "displayName": "Project"
+    "displayName": "Project",
+    "description": ""
   },
   "options": {
     "draftAndPublish": true
@@ -21,17 +22,26 @@
       "required": true
     },
     "image": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
       "allowedTypes": [
         "images"
-      ],
-      "type": "media",
-      "multiple": false
+      ]
     },
     "blogs": {
       "type": "relation",
       "relation": "oneToMany",
       "target": "api::blog.blog",
       "mappedBy": "project"
+    },
+    "donationType": {
+      "type": "enumeration",
+      "enum": [
+        "recurring",
+        "one time"
+      ],
+      "required": true
     }
   }
 }
