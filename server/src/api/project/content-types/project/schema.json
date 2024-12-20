@@ -26,6 +26,12 @@
       ],
       "type": "media",
       "multiple": false
+    },
+    "blogs": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::blog.blog",
+      "mappedBy": "project"
     }
   }
 }

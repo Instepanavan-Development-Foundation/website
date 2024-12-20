@@ -4,7 +4,8 @@
   "info": {
     "singularName": "blog",
     "pluralName": "blogs",
-    "displayName": "Blog"
+    "displayName": "Blog",
+    "description": ""
   },
   "options": {
     "draftAndPublish": true
@@ -16,11 +17,30 @@
       "required": true
     },
     "images": {
+      "type": "media",
+      "multiple": true,
+      "required": false,
       "allowedTypes": [
         "images"
-      ],
-      "type": "media",
-      "multiple": true
+      ]
+    },
+    "tag": {
+      "type": "customField",
+      "customField": "plugin::tagsinput.tags",
+      "options": {
+        "apiUrl": "/api/tags?fields[0]=name"
+      }
+    },
+    "contribution": {
+      "type": "component",
+      "repeatable": true,
+      "component": "contribution.contribution"
+    },
+    "project": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::project.project",
+      "inversedBy": "blogs"
     }
   }
 }
