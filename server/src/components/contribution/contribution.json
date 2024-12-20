@@ -14,7 +14,7 @@
       "relation": "oneToOne",
       "target": "api::member.member"
     },
-    "isFavourite": {
+    "isFavorite": {
       "type": "boolean",
       "default": false
     }
