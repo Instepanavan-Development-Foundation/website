@@ -41,6 +41,10 @@
       "relation": "manyToOne",
       "target": "api::project.project",
       "inversedBy": "blogs"
+    },
+    "isArchive": {
+      "type": "boolean",
+      "default": false
     }
   }
 }
