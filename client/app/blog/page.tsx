@@ -6,11 +6,12 @@ import { useState } from "react";
 import { Button } from "@nextui-org/button";
 import { DateRangePicker } from "@nextui-org/date-picker";
 import {parseDate} from "@internationalized/date";
-
+import { BlogPost } from "../../components/BlogPost";
+import { Chip } from "@nextui-org/chip";
+import { XIcon } from "lucide-react";
 
 // Import the blogPosts data from a shared location
 import { blogPosts } from "../data/blog-posts";
-import { BlogPost } from "@/components/BlogPost";
 
 export default function BlogPage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -47,6 +48,16 @@ export default function BlogPage() {
     setSelectedProject("");
     setSelectedTags([]);
     setDateRange({ start: "", end: "" });
+  };
+
+  // Function to remove a project filter
+  const removeProject = (projectToRemove: string) => {
+    setSelectedProject(selectedProject.filter(p => p !== projectToRemove));
+  };
+
+  // Function to remove a tag filter
+  const removeTag = (tagToRemove: string) => {
+    setSelectedTags(selectedTags.filter(t => t !== tagToRemove));
   };
 
   return (
@@ -117,6 +128,63 @@ export default function BlogPage() {
           </Button>
         </div>
       </div>
+
+      {/* Active Filters Display */}
+      {(selectedProject.length > 0 || selectedTags.length > 0 || searchQuery) && (
+        <div className="flex flex-wrap gap-2 mb-4">
+          {/* Search query chip */}
+          {searchQuery && (
+            <Chip
+              onClose={() => setSearchQuery("")}
+              variant="flat"
+              color="primary"
+            >
+              Որոնում: {searchQuery}
+            </Chip>
+          )}
+
+          {/* Project filters */}
+          {selectedProject && (
+            <Chip
+              key={`project-${selectedProject}`}
+              onClose={() => removeProject(selectedProject)}
+              variant="flat"
+              color="secondary"
+              className="capitalize"
+            >
+              Նախագիծ: {selectedProject}
+            </Chip>
+          )}
+
+          {/* Tag filters */}
+          {selectedTags.map((tag) => (
+            <Chip
+              key={`tag-${tag}`}
+              onClose={() => removeTag(tag)}
+              variant="flat"
+              color="warning"
+              className="capitalize"
+            >
+              Թեգ: {tag}
+            </Chip>
+          ))}
+
+          {/* Clear all filters button */}
+          {(selectedProject.length > 0 || selectedTags.length > 0 || searchQuery) && (
+            <Button
+              size="sm"
+              variant="light"
+              onClick={() => {
+                setSelectedProject("");
+                setSelectedTags([]);
+                setSearchQuery("");
+              }}
+            >
+              Մաքրել բոլորը
+            </Button>
+          )}
+        </div>
+      )}
 
       {/* Blog Posts Grid - Modified for Masonry layout */}
       <div className="columns-1 md:columns-3 gap-6 space-y-6">
