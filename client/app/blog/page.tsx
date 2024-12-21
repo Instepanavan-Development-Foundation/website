@@ -1,18 +1,16 @@
 "use client";
-import { title } from "@/components/primitives";
-import { Card, CardBody } from "@nextui-org/card";
-import { Image } from "@nextui-org/image";
 import { Input } from "@nextui-org/input";
 import { Select, SelectItem } from "@nextui-org/select";
-import { Chip } from "@nextui-org/chip";
-import { Paperclip } from "lucide-react";
+
 import { useState } from "react";
 import { Button } from "@nextui-org/button";
 import { DateRangePicker } from "@nextui-org/date-picker";
 import {parseDate} from "@internationalized/date";
 
+
 // Import the blogPosts data from a shared location
 import { blogPosts } from "../data/blog-posts";
+import { BlogPost } from "@/components/BlogPost";
 
 export default function BlogPage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -120,71 +118,20 @@ export default function BlogPage() {
         </div>
       </div>
 
-      {/* Blog Posts Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* Blog Posts Grid - Modified for Masonry layout */}
+      <div className="columns-1 md:columns-3 gap-6 space-y-6">
         {filteredPosts.map((post, index) => (
-          <Card key={index} isPressable className="group">
-            <CardBody className="p-0">
-              {post.img ? (
-                <Image
-                  alt={post.title}
-                  className="w-full object-cover h-[200px]"
-                  src={post.img}
-                  width="100%"
-                  radius="none"
-                />
-              ) : (
-                <div className="w-full h-[200px] bg-gradient-to-br from-primary to-secondary" />
-              )}
-              <div className="p-5">
-                <p className="text-default-500 mb-4">
-                  {post.description.length > 150
-                    ? `${post.description.slice(0, 150)}...`
-                    : post.description}
-                </p>
-
-                {/* Tags */}
-                <div className="flex gap-2 flex-wrap mb-4">
-                  {post.tags.map((tag, tagIndex) => (
-                    <Chip key={tagIndex} size="sm" variant="flat">
-                      {tag}
-                    </Chip>
-                  ))}
-                </div>
-
-                {/* Contributors */}
-                <div className="flex -space-x-2 mb-4">
-                  {post.contributors.map((contributor, idx) => (
-                    <Image
-                      key={idx}
-                      src={contributor.avatar}
-                      alt={contributor.name}
-                      width={32}
-                      height={32}
-                      className="rounded-full border-2 border-background"
-                    />
-                  ))}
-                </div>
-
-                {/* Attachments */}
-                {post.attachments?.length > 0 && (
-                  <div className="mt-4">
-                    {post.attachments.map((attachment, idx) => (
-                      <a
-                        key={idx}
-                        href={attachment.url}
-                        className="flex items-center text-blue-500 hover:underline"
-                        download
-                      >
-                        <Paperclip className="w-4 h-4 mr-2" />
-                        {attachment.name}
-                      </a>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </CardBody>
-          </Card>
+          <div key={index} className="break-inside-avoid">
+            <BlogPost
+              date={post.date}
+              title={post.title}
+              description={post.description}
+              img={post.img}
+              tags={post.tags}
+              contributors={post.contributors}
+              attachments={post.attachments}
+            />
+          </div>
         ))}
       </div>
     </div>

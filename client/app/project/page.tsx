@@ -1,8 +1,10 @@
 import { Link } from "@nextui-org/link";
-import { Card, CardBody } from "@nextui-org/card";
 import { Image } from "@nextui-org/image";
 import { button as buttonStyles } from "@nextui-org/theme";
-import { Download, Paperclip, MoveRight } from "lucide-react";
+import {  MoveRight } from "lucide-react";
+import { blogPosts } from "../../app/data/blog-posts";
+import { BlogPost } from "@/components/BlogPost";
+import { ContributorsList } from "../../components/ContributorsList";
 
 // Mock data for the project (in real app, this would come from an API/database)
 const projectData = {
@@ -18,7 +20,7 @@ const projectData = {
     currency: "USD",
   },
   details: [
-    "Մեր նախագիծը նպատակ ունի հեղափոխել առողջապահական ծառայությունների մատուցումը Հայաստանի հեռավոր շրջաններում՝ օգտագործելով արհեստական բանականության և հեռաբ��շկության նորարարական լուծումներ:",
+    "Մեր նախագիծը նպատակ ունի հեղափոխել առողջապահական ծառայությունների մատուցումը Հայաստանի հեռավոր շրջաններում՝ օգտագործելով արհեստական բանականության և հեռաբժշկության նոր��րարական լուծումներ:",
     "Մենք համատեղում ենք տեխնոլոգիական նորարարությունը տեղական համայնքների կարիքների հետ՝ ստեղծելով կայուն և մատչելի լուծումներ:",
     "Մեր թիմը սերտորեն համագործակցում է բժիշկների, տեխնոլոգների և համայնքի առաջնորդների հետ՝ ապահովելով լավագույն արդյունքները:",
   ],
@@ -49,76 +51,7 @@ const projectData = {
     },
   ],
 };
-const blogPosts = [
-  {
-    title: "Կայուն ապագայի կառուցում",
-    description:
-      "Տեխնոլոգիաների միջոցով շրջակա միջավայրի պահպանման նորարարական մոտեցումների ուսումնասիրություն: Մենք խորանում ենք, թե ինչպես են ժամանակակից ծրագրային լուծումներն օգնում համայնքներին նվազեցնել իրենց ածխածնային հետքը՝ պահպանելով տնտեսական աճը...",
-    img: "https://images.unsplash.com/photo-1551632436-cbf8dd35adfa?w=300&h=140&fit=crop",
-    date: "Մարտի 15, 2024",
-    tags: ["Կայունություն", "Տեխնոլոգիա", "Շրջակա միջավայր"],
-    project: "Ծրագիր 1",
-    contributors: [
-      { name: "Անի Սարգսյան", avatar: "https://i.pravatar.cc/150?img=1" },
-      { name: "Դավիթ Հակոբյան", avatar: "https://i.pravatar.cc/150?img=2" },
-    ],
-    featured: true,
-    attachments: [
-      { name: "Attachment 1", url: "https://example.com/attachment1.pdf" },
-      { name: "Attachment 2", url: "https://example.com/attachment2.pdf" },
-    ],
-  },
-  {
-    title: "Համայնքային զարգացում",
-    description:
-      "Ինչպես ենք մենք հզորացրել տեղական համայնքները բաց կոդով տեխնոլոգիաների միջոցով: Այս դեպքի ուսումնասիրությունը քննում է մեր վերջին ծրագիրը, որն օգնեց կապել գյուղական ֆերմերներին քաղաքային ուկաների հետ՝ օգտագործելով պարզ բջջային հավելվածները...",
-    img: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=300&h=140&fit=crop",
-    date: "Մարտի 10, 2024",
-    tags: ["Համայնք", "Բաց կոդ", "Բջջային"],
-    project: "Ծրագիր 2",
-    contributors: [
-      { name: "Անի Սարգսյան", avatar: "https://i.pravatar.cc/150?img=1" },
-      { name: "Դավիթ Հակոբյան", avatar: "https://i.pravatar.cc/150?img=2" },
-    ],
-    featured: false,
-    attachments: [
-      {
-        name: "Community Development Report",
-        url: "https://example.com/community-development-report.pdf",
-      },
-    ],
-  },
-  {
-    title: "Արհեստական բանականության ապագան առողջապահության մեջ",
-    description:
-      "Ուսումնասիրում ենք արհեստական բանականության հեղափոխական ազդեցությունը ժամանակակից առողջապահական համակարգերի վրա: Ախտորոշիչ գործիքներից մինչև հիվանդների խնամքի կառավարում, մենք բացահայտում ենք, թե ինչպես է ԱԲ-ն փոխակերպում բժշկական ոլորտը...",
-    img: "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=300&h=140&fit=crop",
-    date: "Մարտի 5, 2024",
-    tags: ["ԱԲ", "Առողջապահություն", "Նորարարություն"],
-    project: "Ծրագիր 3",
-    contributors: [
-      { name: "Անի Սարգսյան", avatar: "https://i.pravatar.cc/150?img=1" },
-      { name: "Դավիթ Հակոբյան", avatar: "https://i.pravatar.cc/150?img=2" },
-    ],
-    featured: false,
-    attachments: [],
-  },
-  {
-    title: "Մատչելի կրթության հարթակ",
-    description:
-      "Տեխնոլոգիաների միջոցով ներառական ուսումնական միջավայրի ստեղծում: Իմացեք մեր վերջին կրթական հարթակի մասին, որը հաղթահարում է խոչընդոտները և որակյալ կրթություն է տրամադրում աշխարհի ուսանողներին...",
-    img: "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=300&h=140&fit=crop",
-    date: "Փետրվարի 28, 2024",
-    tags: ["Կրթություն", "Մատչելիություն", "Վեբ"],
-    project: "Ծրագիր 1",
-    contributors: [
-      { name: "Անի Սարգսյան", avatar: "https://i.pravatar.cc/150?img=1" },
-      { name: "Դավիթ Հակոբյան", avatar: "https://i.pravatar.cc/150?img=2" },
-    ],
-    featured: false,
-    attachments: [],
-  },
-];
+
 
 export default function ProjectPage() {
   const formatCurrency = (amount: number, currency: string) => {
@@ -191,11 +124,13 @@ export default function ProjectPage() {
               }}
             />
           </div>
-          <div className="mt-2 text-right text-default-500">
-            {Math.round(
-              (projectData.funding.raised / projectData.funding.goal) * 100
-            )}
-            % funded
+          
+          {/* Contributors Preview */}
+          <div className="mt-6 flex items-center gap-2 justify-between">
+            <div className="text-default-500">
+              {Math.round((projectData.funding.raised / projectData.funding.goal) * 100)}% funded by
+            </div>
+            <ContributorsList contributors={projectData.contributors} />
           </div>
         </div>
       </div>
@@ -205,79 +140,14 @@ export default function ProjectPage() {
         <h2 className="text-3xl font-bold mb-6">Մեր աշխատանքը</h2>
         <div className="gap-6 grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4">
           {blogPosts.map((post, index) => (
-            <Card key={index} isPressable className="group relative">
-              {post.featured && (
-                <div className="absolute top-2 right-2 z-20 bg-warning-400 text-white rounded-full p-2">
-                  <Download className="w-5 h-5" />
-                </div>
-              )}
-              <CardBody className="overflow-visible p-0">
-                <Image
-                  alt={post.title}
-                  className="w-full object-cover h-[200px]"
-                  src={post.img}
-                  width="100%"
-                  radius="none"
-                />
-                <div className="p-5">
-                  <div className="flex justify-between items-center mb-3">
-                    <span className="text-default-400 text-sm">
-                      {post.date}
-                    </span>
-                  </div>
-                  <p className="text-default-500 mb-4">
-                    {post.description.length > 150
-                      ? `${post.description.slice(0, 150)}...`
-                      : post.description}
-                  </p>
-                  <div className="flex gap-2 flex-wrap mb-4">
-                    {post.tags.map((tag, tagIndex) => (
-                      <span
-                        key={tagIndex}
-                        className="px-2 py-1 bg-default-100 rounded-full text-xs text-default-600"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                  <div className="flex -space-x-2">
-                    {post.contributors.map((contributor, idx) => (
-                      <div
-                        key={idx}
-                        className="relative"
-                        title={contributor.name}
-                      >
-                        <Image
-                          src={contributor.avatar}
-                          alt={contributor.name}
-                          width={32}
-                          height={32}
-                          className="rounded-full border-2 border-background"
-                        />
-                      </div>
-                    ))}
-                  </div>
-                  {post.attachments.length > 0 && (
-                    <div className="mt-4">
-                      <ul className="list-disc list-inside">
-                        {post.attachments.map((attachment, attIndex) => (
-                          <li key={attIndex} className="flex items-center">
-                            <Paperclip className="mr-2 w-4 h-4 text-gray-500" />
-                            <a
-                              href={attachment.url}
-                              className="text-blue-500 hover:underline"
-                              download
-                            >
-                              {attachment.name}
-                            </a>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </div>
-              </CardBody>
-            </Card>
+            <BlogPost key={index}
+            title={post.title}
+            img={post.img}
+            description={post.description}
+            tags={post.tags}
+            contributors={post.contributors}
+            featured={post.featured}
+            />
           ))}
         </div>
         <div className="col-span-full flex justify-center mt-8">
@@ -331,7 +201,7 @@ export default function ProjectPage() {
       </div>
 
       {/* Contributors Section */}
-      <div className="container mb-16">
+      <div className="container mb-16" id="contributors">
         <h2 className="text-3xl font-bold mb-8">Աջակիցներ</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
           {projectData.contributors.map((contributor, index) => (

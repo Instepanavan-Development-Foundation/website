@@ -73,5 +73,51 @@ export const blogPosts = [
         ],
         featured: false,
         attachments: []
+    },
+    {
+        title: "Տվյալների անվտանգություն",
+        description: "Ժամանակակից կիբեռանվտանգության մարտահրավերները և լուծումները: Խորը վերլուծություն այն մասին, թե ինչպես կարող են կազմակերպությունները պաշտպանել իրենց թվային ակտիվները...",
+        img: "https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=300&h=140&fit=crop",
+        date: "Փետրվարի 20, 2024",
+        tags: ["Անվտանգություն", "Կիբեռ", "Տվյալներ"],
+        project: "Ծրագիր 4",
+        contributors: [
+            { name: "Լիլիթ Պետրոսյան", avatar: "https://i.pravatar.cc/150?img=3" }
+        ],
+        featured: false,
+        attachments: []
+    },
+    {
+        title: "Բլոկչեյն տեխնոլոգիաներ",
+        description: "Բլոկչեյն տեխնոլոգիաների կիրառումը ֆինանսական ոլորտում: Ուսումնասիրում ենք, թե ինչպես է այս տեխնոլոգիան փոխում ֆինանսական գործարքների ապագան...",
+        img: "",
+        date: "Փետրվարի 15, 2024",
+        tags: ["Բլոկչեյն", "Ֆինտեխ"],
+        project: "Ծրագիր 2",
+        contributors: [
+            { name: "Արամ Վարդանյան", avatar: "https://i.pravatar.cc/150?img=4" },
+            { name: "Մարիամ Գրիգորյան", avatar: "https://i.pravatar.cc/150?img=5" },
+            { name: "Սուրեն Հովհաննիսյան", avatar: "https://i.pravatar.cc/150?img=6" }
+        ],
+        featured: false,
+        attachments: []
+    },
+    {
+        title: "Քաղաքային պլանավորում",
+        description: "Խելացի քաղաքների ստեղծում՝ օգտագործելով IoT տեխնոլոգիաներ: Ինչպես են սենսորները և տվյալների վերլուծությունը օգնում բարելավել քաղաքային կյանքը...",
+        img: "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=300&h=140&fit=crop",
+        date: "Փետրվարի 10, 2024",
+        tags: ["IoT", "Խելացի քաղաք"],
+        project: "Ծրագիր 5",
+        contributors: [
+            { name: "Գոհար Սահակյան", avatar: "https://i.pravatar.cc/150?img=7" },
+            { name: "Վահե Մկրտչյան", avatar: "https://i.pravatar.cc/150?img=8" },
+            { name: "Նարե Ավագյան", avatar: "https://i.pravatar.cc/150?img=9" },
+            { name: "Արսեն Մանուկյան", avatar: "https://i.pravatar.cc/150?img=10" }
+        ],
+        featured: true,
+        attachments: [
+            { name: "Smart City Blueprint", url: "https://example.com/smart-city-blueprint.pdf" }
+        ]
     }
 ];
