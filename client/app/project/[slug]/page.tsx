@@ -2,59 +2,11 @@ import { Link } from "@nextui-org/link";
 import { Image } from "@nextui-org/image";
 import { button as buttonStyles } from "@nextui-org/theme";
 import { MoveRight } from "lucide-react";
-import { blogPosts } from "../../../app/data/blog-posts";
 import { BlogPost } from "@/components/BlogPost";
 import { ContributorsList } from "../../../components/ContributorsList";
 import getData from "@/src/helpers/getData";
-import { IImage } from "@/src/models/image";
 import getImageSrc from "@/src/helpers/getImageSrc";
 import { IProject } from "@/src/models/project";
-
-// Mock data for the project (in real app, this would come from an API/database)
-const projectData = {
-  title: "Խռողջապահական տեխնոլոգիաներ",
-  description:
-    "Արհեստական բանականությամբ աշխատող առողջապահական կառավարման համակարգ, որը նպատակ ունի բարելավել բուժօգնության որակը և հասանելիությունը Հայաստանի հեռավոր շրջաններում: Մեր լուծումը միավորում է բջջային հավելվածները, տվյալների վերլուծությունը և հեռաբժշկության գործիքները:",
-  coverImage:
-    "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=1920&h=600&fit=crop",
-  tech: ["React Native", "Node.js", "MongoDB", "TensorFlow"],
-  funding: {
-    raised: 30000,
-    goal: 50000,
-    currency: "USD",
-  },
-  details: [
-    "Մեր նախագիծը նպատակ ունի հեղափոխել առողջապահական ծառայությունների մատուցումը Հայաստանի հեռավոր շրջաններում՝ օգտագործելով արհեստական բանականության և հեռաբժշկության նոր��րարական լուծումներ:",
-    "Մենք համատեղում ենք տեխնոլոգիական նորարարությունը տեղական համայնքների կարիքների հետ՝ ստեղծելով կայուն և մատչելի լուծումներ:",
-    "Մեր թիմը սերտորեն համագործակցում է բժիշկների, տեխնոլոգների և համայնքի առաջնորդների հետ՝ ապահովելով լավագույն արդյունքները:",
-  ],
-  contributors: [
-    {
-      name: "Անի Սարգսյան",
-      role: "Ծրագրի ղեկավար",
-      contribution: "Առաջնորդել է ծրագրի զարգացումը",
-      avatar: "https://i.pravatar.cc/150?img=1",
-    },
-    {
-      name: "Դավիթ Հակոբյան",
-      role: "Ավագ ծրագրավորող",
-      contribution: "Իրականացրել է հիմնական ծրագրավորումը",
-      avatar: "https://i.pravatar.cc/150?img=2",
-    },
-    {
-      name: "Մարիամ Պետրոսյան",
-      role: "UI/UX դիզայներ",
-      contribution: "Ստեղծել է օգտագործողի ինտերֆեյսը",
-      avatar: "https://i.pravatar.cc/150?img=3",
-    },
-    {
-      name: "Արամ Մկրտչյան",
-      role: "Տվյալների վերլուծաբան",
-      contribution: "Իրականացրել է տվյալների վերլուծությունը",
-      avatar: "https://i.pravatar.cc/150?img=4",
-    },
-  ],
-};
 
 interface IProjectPageParams {
   params: { slug: string };
