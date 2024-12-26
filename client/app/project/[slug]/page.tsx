@@ -1,10 +1,14 @@
 import { Link } from "@nextui-org/link";
 import { Image } from "@nextui-org/image";
 import { button as buttonStyles } from "@nextui-org/theme";
-import {  MoveRight } from "lucide-react";
-import { blogPosts } from "../../app/data/blog-posts";
+import { MoveRight } from "lucide-react";
+import { blogPosts } from "../../../app/data/blog-posts";
 import { BlogPost } from "@/components/BlogPost";
-import { ContributorsList } from "../../components/ContributorsList";
+import { ContributorsList } from "../../../components/ContributorsList";
+import getData from "@/src/helpers/getData";
+import { IImage } from "@/src/models/image";
+import getImageSrc from "@/src/helpers/getImageSrc";
+import { IProject } from "@/src/models/project";
 
 // Mock data for the project (in real app, this would come from an API/database)
 const projectData = {
@@ -52,8 +56,23 @@ const projectData = {
   ],
 };
 
+interface IProjectPageParams {
+  params: { slug: string };
+}
 
-export default function ProjectPage() {
+export default async function ProjectPage({ params }: IProjectPageParams) {
+  const { slug } = await params;
+  const { data }: { data: IProject[] } = await getData({
+    type: "projects",
+    populate: {
+      blogs: ["images", "contribution.member"],
+      image: [],
+    },
+    slug: slug,
+  });
+
+  const project = data[0];
+
   const formatCurrency = (amount: number, currency: string) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
@@ -69,17 +88,16 @@ export default function ProjectPage() {
         <Image
           alt="Project Cover"
           className="w-full h-full object-cover brightness-50"
-          src={projectData.coverImage}
+          src={getImageSrc(project.image)}
           width={1920}
           height={600}
-          priority={true}
         />
         <div className="absolute inset-0 flex flex-col items-center justify-center text-white p-4 z-10">
           <h1 className="text-5xl md:text-6xl font-bold text-center mb-6">
-            {projectData.title}
+            {project.name}
           </h1>
           <p className="text-xl md:text-2xl text-center max-w-3xl mb-8">
-            {projectData.description}
+            {project.description}
           </p>
           <Link
             href="#"
@@ -102,35 +120,28 @@ export default function ProjectPage() {
           <h2 className="text-2xl font-bold mb-4">Ֆինանսավորում</h2>
           <div className="flex justify-between items-center mb-2">
             <span className="text-xl text-default-600">
-              {formatCurrency(
-                projectData.funding.raised,
-                projectData.funding.currency
-              )}{" "}
-              raised
+              {formatCurrency(30000, "USD")} raised
             </span>
             <span className="text-lg text-default-500">
-              Goal:{" "}
-              {formatCurrency(
-                projectData.funding.goal,
-                projectData.funding.currency
-              )}
+              Goal: {formatCurrency(50000, "USD")}
             </span>
           </div>
           <div className="w-full h-3 bg-default-100 rounded-full overflow-hidden">
             <div
               className="h-full bg-primary transition-all duration-500 rounded-full"
               style={{
-                width: `${Math.min(100, (projectData.funding.raised / projectData.funding.goal) * 100)}%`,
+                width: `${Math.min(100, (30000 / 50000) * 100)}%`,
               }}
             />
           </div>
-          
+
           {/* Contributors Preview */}
           <div className="mt-6 flex items-center gap-2 justify-between">
             <div className="text-default-500">
-              {Math.round((projectData.funding.raised / projectData.funding.goal) * 100)}% funded by
+              {Math.round((30000 / 50000) * 100)}% funded by
             </div>
-            <ContributorsList contributors={projectData.contributors} />
+            <ContributorsList contributors={project.blogs[0].contribution} />
+            {/* TODO fetch all contributions */}
           </div>
         </div>
       </div>
@@ -139,15 +150,8 @@ export default function ProjectPage() {
       <div className="container mb-16">
         <h2 className="text-3xl font-bold mb-6">Մեր աշխատանքը</h2>
         <div className="gap-6 grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4">
-          {blogPosts.map((post, index) => (
-            <BlogPost key={index}
-            title={post.title}
-            img={post.img}
-            description={post.description}
-            tags={post.tags}
-            contributors={post.contributors}
-            featured={post.featured}
-            />
+          {project.blogs.map((blog, index) => (
+            <BlogPost key={index} {...blog} />
           ))}
         </div>
         <div className="col-span-full flex justify-center mt-8">
@@ -179,11 +183,7 @@ export default function ProjectPage() {
       <div className="container mb-16">
         <h2 className="text-3xl font-bold mb-8">Ծրագրի մանրամասներ</h2>
         <div className="prose prose-lg max-w-none">
-          {projectData.details.map((paragraph, index) => (
-            <p key={index} className="text-default-600 mb-6">
-              {paragraph}
-            </p>
-          ))}
+          <p className="text-default-600 mb-6">{project.about}</p>
         </div>
         <div className="flex justify-center mt-8">
           <Link
@@ -204,12 +204,12 @@ export default function ProjectPage() {
       <div className="container mb-16" id="contributors">
         <h2 className="text-3xl font-bold mb-8">Աջակիցներ</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-          {projectData.contributors.map((contributor, index) => (
+          {project.blogs[0].contribution.map((contributor, index) => (
             <div
               key={index}
               className="flex items-center p-3 bg-default-50 rounded-xl hover:bg-default-100 transition-colors relative"
             >
-              {contributor.featured && (
+              {contributor.isFeatured && (
                 <div className="absolute -top-2 -right-2 bg-warning-400 text-white rounded-full p-1">
                   <svg
                     className="w-4 h-4"
@@ -222,8 +222,8 @@ export default function ProjectPage() {
               )}
               <div className="relative min-w-[50px]">
                 <Image
-                  src={contributor.avatar}
-                  alt={contributor.name}
+                  src={"https://dummyimage.com/600x400/000000/ffffff"}
+                  alt={contributor.member.fullName}
                   width={50}
                   height={50}
                   className="rounded-full object-cover"
@@ -232,7 +232,7 @@ export default function ProjectPage() {
               </div>
               <div className="">
                 <p className="p-3">
-                  {contributor.name}՝ {contributor.contribution}
+                  {contributor.member.fullName}՝ {contributor.text}
                 </p>
               </div>
             </div>
