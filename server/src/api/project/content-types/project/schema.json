@@ -50,6 +50,9 @@
     "slug": {
       "type": "string",
       "unique": true
+    },
+    "about": {
+      "type": "text"
     }
   }
 }
