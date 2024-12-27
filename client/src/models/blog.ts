@@ -1,4 +1,4 @@
-import { IImage } from "./image";
+import { IImage, IMediaFormat } from "./image";
 import { IProject } from "./project";
 
 export interface IContribution {
@@ -22,4 +22,5 @@ export interface IBlog {
   isArchive: boolean;
   isFeatured: boolean;
   createdAt: string;
+  attachments: IMediaFormat[] | null;
 }
