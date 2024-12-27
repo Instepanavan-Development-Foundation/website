@@ -159,6 +159,7 @@ export default async function ProjectPage({ params }: IProjectPageParams) {
       <div className="container mb-16" id="contributors">
         <h2 className="text-3xl font-bold mb-8">Աջակիցներ</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+          {/* TODO add contributors from all blogs. Make request or join from coming data. Add slice for configuring from envs  */}
           {project.blogs[0].contribution.map((contributor, index) => (
             <div
               key={index}
