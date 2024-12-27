@@ -49,6 +49,13 @@
     "isFeatured": {
       "type": "boolean",
       "default": false
+    },
+    "attachments": {
+      "allowedTypes": [
+        "files"
+      ],
+      "type": "media",
+      "multiple": true
     }
   }
 }
