@@ -5,7 +5,7 @@ import { MoveRight } from "lucide-react";
 import { BlogPost } from "@/components/BlogPost";
 import { ContributorsList } from "../../../components/ContributorsList";
 import getData from "@/src/helpers/getData";
-import getImageSrc from "@/src/helpers/getImageSrc";
+import getMediaUrl from "@/src/helpers/getMediaUrl";
 import { IProject } from "@/src/models/project";
 
 interface IProjectPageParams {
@@ -17,13 +17,16 @@ export default async function ProjectPage({ params }: IProjectPageParams) {
   const { data }: { data: IProject[] } = await getData({
     type: "projects",
     populate: {
-      blogs: ["images", "contribution.member"],
+      blogs: ["images", "contribution.member", "attachments"],
       image: [],
     },
     slug: slug,
   });
 
   const project = data[0];
+  if (!project) {
+    return null; // TODO not found component
+  }
 
   const formatCurrency = (amount: number, currency: string) => {
     return new Intl.NumberFormat("en-US", {
@@ -40,7 +43,7 @@ export default async function ProjectPage({ params }: IProjectPageParams) {
         <Image
           alt="Project Cover"
           className="w-full h-full object-cover brightness-50"
-          src={getImageSrc(project.image)}
+          src={getMediaUrl(project.image)}
           width={1920}
           height={600}
         />
