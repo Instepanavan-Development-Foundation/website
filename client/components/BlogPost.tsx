@@ -5,24 +5,14 @@ import { Paperclip, Bookmark } from "lucide-react";
 
 import { ContributorsList } from "./ContributorsList";
 import { IBlog } from "@/src/models/blog";
-import getImageSrc from "@/src/helpers/getImageSrc";
-
-interface Contributor {
-  name: string;
-  avatar: string;
-}
-
-interface Attachment {
-  name: string;
-  url: string;
-}
+import getMediaUrl from "@/src/helpers/getMediaUrl";
 
 export function BlogPost({
   content,
   images,
   tags,
   contribution,
-  // attachments,
+  attachments,
   isFeatured,
   createdAt,
 }: IBlog) {
@@ -39,7 +29,7 @@ export function BlogPost({
             <Image
               alt={content}
               className="w-full object-cover h-[200px] z-10"
-              src={getImageSrc(images[0])}
+              src={getMediaUrl(images[0])}
               width="100%"
               radius="none"
             />
@@ -67,12 +57,12 @@ export function BlogPost({
             </div>
 
             {/* Attachments */}
-            {/* {attachments?.length > 0 && (
+            {attachments && (
               <div className="mt-4">
                 {attachments.map((attachment, idx) => (
                   <a
                     key={idx}
-                    href={attachment.url}
+                    href={getMediaUrl(attachment)}
                     className="flex items-center text-blue-500 hover:underline"
                     download
                   >
@@ -81,7 +71,7 @@ export function BlogPost({
                   </a>
                 ))}
               </div>
-            )} */}
+            )}
           </div>
         </CardBody>
       </Card>
