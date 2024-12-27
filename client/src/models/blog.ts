@@ -1,4 +1,4 @@
-import { IImage, IMediaFormat } from "./image";
+import { IImage, IMediaFormat } from "./media";
 import { IProject } from "./project";
 
 export interface IContribution {

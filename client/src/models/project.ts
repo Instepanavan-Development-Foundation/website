@@ -1,5 +1,5 @@
 import { IBlog } from "./blog";
-import { IImage } from "./image";
+import { IImage } from "./media";
 
 export interface IProject {
   name: string;

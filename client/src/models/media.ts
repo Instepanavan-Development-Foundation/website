@@ -1,4 +1,5 @@
-interface IImageFormat {
+export interface IMediaFormat {
+  id: number;
   name: string;
   hash: string;
   ext: string;
@@ -7,19 +8,18 @@ interface IImageFormat {
   width: number;
   height: number;
   size: number;
-  url: string;
-}
-
-export interface IImage extends IImageFormat {
-  id: number;
   alternativeText: string | null;
+  url: string;
   caption: string | null;
-  formats: {
-    thumbnail: IImageFormat;
-  };
-  previewUrl: string | null;
   provider: string;
+  previewUrl: string | null;
   provider_metadata: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface IImage extends IMediaFormat {
+  formats: {
+    thumbnail: IMediaFormat;
+  };
 }
