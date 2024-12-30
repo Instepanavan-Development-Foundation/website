@@ -46,6 +46,13 @@
     "isFeatured": {
       "type": "boolean",
       "default": false
+    },
+    "slug": {
+      "type": "string",
+      "unique": true
+    },
+    "about": {
+      "type": "text"
     }
   }
 }

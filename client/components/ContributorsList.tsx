@@ -1,5 +1,6 @@
 import { Link } from "@nextui-org/link";
 import { Image } from "@nextui-org/image";
+import { IContribution } from "@/src/models/blog";
 
 interface Contributor {
   name: string;
@@ -9,7 +10,7 @@ interface Contributor {
 }
 
 interface ContributorsListProps {
-  contributors: Contributor[];
+  contributors: IContribution[];
   maxDisplay?: number;
 }
 
@@ -29,8 +30,8 @@ export function ContributorsList({
             className="relative"
           >
             <Image
-              src={contributor.avatar}
-              alt={contributor.name}
+              src={"https://dummyimage.com/600x400/000000/ffffff"}
+              alt={"contributor.name"}
               width={32}
               height={32}
               className="rounded-full border-2 border-background"
