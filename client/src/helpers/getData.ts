@@ -1,4 +1,4 @@
-type IUrlTypes = "projects";
+type IUrlTypes = "projects" | "blogs";
 
 interface IDataParams {
   type: IUrlTypes;
