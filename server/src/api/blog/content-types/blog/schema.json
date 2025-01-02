@@ -51,11 +51,16 @@
       "default": false
     },
     "attachments": {
+      "type": "media",
+      "multiple": true,
+      "required": false,
       "allowedTypes": [
         "files"
-      ],
-      "type": "media",
-      "multiple": true
+      ]
+    },
+    "slug": {
+      "type": "string",
+      "unique": true
     }
   }
 }
