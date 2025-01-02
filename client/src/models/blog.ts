@@ -16,7 +16,7 @@ export interface IContribution {
 export interface IBlog {
   content: string;
   images: IImage[];
-  tags: { name: string }[];
+  tag: { name: string }[];
   contribution: IContribution[];
   project: IProject;
   isArchive: boolean;
