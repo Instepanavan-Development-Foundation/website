@@ -4,69 +4,53 @@ import { Image } from "@nextui-org/image";
 
 import { ProjectCard } from "../components/home/ProjectCard";
 import { BlogPost } from "../components/BlogPost";
-import { blogPosts } from "./data/blog-posts";
 import { HeroSection } from "../components/home/HeroSection";
+import getData from "@/src/helpers/getData";
+import { IProject } from "@/src/models/project";
+import { IBlog } from "@/src/models/blog";
 
+// TODO move to backend
 const aboutContent = {
   title: "Մեր մասին",
-  description: "Մենք նվիրված ենք տեխնոլոգիական լուծումների միջոցով հայկական համայնքների զարգացմանը: Մեր թիմը միավորում է փորձառու մասնագետների, ովքեր աշխատում են ստեղծել նորարարական գործիքներ՝ հասանելի դարձնելով թվային տեխնոլոգիաները բոլորի համար:",
-  image: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&h=400&fit=crop",
+  description:
+    "Մենք նվիրված ենք տեխնոլոգիական լուծումների միջոցով հայկական համայնքների զարգացմանը: Մեր թիմը միավորում է փորձառու մասնագետների, ովքեր աշխատում են ստեղծել նորարարական գործիքներ՝ հասանելի դարձնելով թվային տեխնոլոգիաները բոլորի համար:",
+  image:
+    "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&h=400&fit=crop",
   stats: [
     { label: "Իրականացված ծրագրեր", value: "25+" },
     { label: "Համայնքներ", value: "40+" },
     { label: "Շահառուներ", value: "10,000+" },
-    { label: "Կամավորներ", value: "150+" }
-  ]
+    { label: "Կամավորներ", value: "150+" },
+  ],
 };
 
-export default function Home() {
-  const projects = [
-    {
-      title: "Խռողջապահական տեխնոլոգիաներ",
-      description: "Արհեստական բանականությամբ աշխատող առողջապահական կառավարման լուծում",
-      tech: "React Native • Node.js • MongoDB",
-      link: "/project",
-      img: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=500&h=250&fit=crop",
-      funding: {
-        raised: 30000,
-        goal: 50000,
-        currency: "USD"
-      },
-      contributors: [
-        { name: "John Doe", avatar: "https://i.pravatar.cc/150?u=1" },
-        { name: "Jane Smith", avatar: "https://i.pravatar.cc/150?u=2" }
-      ]
+export default async function Home() {
+  const { data: projects }: { data: IProject[] } = await getData({
+    type: "projects",
+    populate: {
+      image: [],
+      blogs: ["contribution.contributor"],
     },
-    {
-      title: "ԿրթաԿապ հաբ",
-      description: "Թվային ուսուցման և համագործակցության հարթակ",
-      tech: "Vue.js • Django • PostgreSQL",
-      link: "/project",
-      img: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=500&h=250&fit=crop",
-      funding: {
-        raised: 12000,
-        goal: 15000,
-        currency: "USD"
-      },
-      contributors: [
-        { name: "John Doe", avatar: "https://i.pravatar.cc/150?u=1" },
-        { name: "Jane Smith", avatar: "https://i.pravatar.cc/150?u=2" }
-      ]
-    }
-  ];
-
+  });
+  const { data: blogs }: { data: IBlog[] } = await getData({
+    type: "blogs",
+    populate: {
+      images: [],
+      contribution: ["contributor"],
+      attachments: [],
+    },
+  });
 
   const formatCurrency = (amount: number, currency: string) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
       currency: currency,
-      maximumFractionDigits: 0
+      maximumFractionDigits: 0,
     }).format(amount);
   };
 
   return (
     <section className="flex flex-col px-4">
-
       {/* New Hero Section */}
       <HeroSection
         title="Մենք նվիրված ենք տեխնոլոգիական լուծումների միջոցով հայկական համայնքների զարգացմանը:"
@@ -75,7 +59,6 @@ export default function Home() {
         ctaLink="/blog"
         imageUrl="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&h=400&fit=crop"
       />
-
 
       {/* Projects Section */}
       <div className="w-full container my-8">
@@ -112,11 +95,10 @@ export default function Home() {
         </div>
       </div>
 
-
       <div className="w-full max-w-7xl my-12">
         <h2 className="text-3xl font-bold mb-6">Մեր աշխատանքը</h2>
         <div className="gap-6 grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4">
-          {blogPosts.map((post, index) => (
+          {blogs.map((post, index) => (
             <BlogPost key={index} {...post} />
           ))}
         </div>
@@ -174,9 +156,7 @@ export default function Home() {
                   <div className="text-3xl font-bold text-primary mb-2">
                     {stat.value}
                   </div>
-                  <div className="text-default-600">
-                    {stat.label}
-                  </div>
+                  <div className="text-default-600">{stat.label}</div>
                 </div>
               ))}
             </div>
@@ -188,7 +168,9 @@ export default function Home() {
       <div className="w-full container my-16 text-center">
         <h2 className="text-4xl font-bold mb-4">Աջակցեք մեր առաքելությանը</h2>
         <p className="text-default-500 text-xl mb-8 max-w-2xl mx-auto">
-          Ձեր ներդրումն օգնում է մեզ շարունակել նորարարական լուծումների կառուցումը և աջակցել մեր համայնքին: Յուրաքանչյուր նվիրատվություն տարբերություն է ստեղծում:
+          Ձեր ներդրումն օգնում է մեզ շարունակել նորարարական լուծումների
+          կառուցումը և աջակցել մեր համայնքին: Յուրաքանչյուր նվիրատվություն
+          տարբերություն է ստեղծում:
         </p>
         <Link
           href="#"
@@ -202,7 +184,6 @@ export default function Home() {
           <span className="text-xl px-8 py-2">Նվիրաբերել հիմա</span>
         </Link>
       </div>
-
     </section>
   );
 }

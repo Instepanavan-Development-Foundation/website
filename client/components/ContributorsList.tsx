@@ -1,6 +1,7 @@
 import { Link } from "@nextui-org/link";
 import { Image } from "@nextui-org/image";
 import { IContribution } from "@/src/models/blog";
+import { IContributor } from "@/src/models/contributor";
 
 interface Contributor {
   name: string;
@@ -10,7 +11,7 @@ interface Contributor {
 }
 
 interface ContributorsListProps {
-  contributors: IContribution[];
+  contributors: IContributor[];
   maxDisplay?: number;
 }
 
