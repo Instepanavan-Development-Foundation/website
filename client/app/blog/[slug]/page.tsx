@@ -12,7 +12,7 @@ export default async function BlogPage({ params }: IProjectPageParams) {
     type: "blogs",
     populate: {
       images: [],
-      contribution: ["member"],
+      contribution: ["contributor"],
       attachments: [],
     },
     slug: slug,

@@ -5,7 +5,7 @@ export interface IContribution {
   id: number;
   text: string;
   isFeatured: boolean;
-  member: {
+  contributor: {
     id: number;
     email: string;
     fullName: string;
