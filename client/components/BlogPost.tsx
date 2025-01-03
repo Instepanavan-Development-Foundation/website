@@ -10,14 +10,15 @@ import getMediaUrl from "@/src/helpers/getMediaUrl";
 export function BlogPost({
   content,
   images,
-  tags,
+  tag,
   contribution,
   attachments,
   isFeatured,
   createdAt,
 }: IBlog) {
   return (
-    <div className="relative">
+    // TODO fix styles for isFeatured and mobile version
+    <div className="relative"> 
       {isFeatured && (
         <div className="absolute -top-3 -right-3 z-30 bg-primary rounded-full w-12 h-12 flex items-center justify-center">
           <Bookmark className="w-6 h-6 text-white" />
@@ -25,6 +26,7 @@ export function BlogPost({
       )}
       <Card isPressable className="group">
         <CardBody className="p-0">
+          {/* TODO images like in fb, 3 images on front */}
           {images?.length ? (
             <Image
               alt={content}
@@ -44,11 +46,12 @@ export function BlogPost({
 
             {/* Tags */}
             <div className="flex gap-2 flex-wrap mb-4">
-              {/* {tags.map(({ name }, tagIndex) => (
-                <Chip key={tagIndex} size="sm" variant="flat">
-                  {name}
-                </Chip>
-              ))} */}
+              {tag &&
+                tag.map(({ name }, tagIndex) => (
+                  <Chip key={tagIndex} size="sm" variant="flat">
+                    {name}
+                  </Chip>
+                ))}
             </div>
 
             {/* Contributors */}

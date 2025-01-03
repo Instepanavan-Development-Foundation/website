@@ -17,7 +17,7 @@ export default async function ProjectPage({ params }: IProjectPageParams) {
   const { data }: { data: IProject[] } = await getData({
     type: "projects",
     populate: {
-      blogs: ["images", "contribution.member", "attachments"],
+      blogs: ["images", "contribution.contributor", "attachments"],
       image: [],
     },
     slug: slug,
@@ -179,7 +179,7 @@ export default async function ProjectPage({ params }: IProjectPageParams) {
               <div className="relative min-w-[50px]">
                 <Image
                   src={"https://dummyimage.com/600x400/000000/ffffff"}
-                  alt={contributor.member.fullName}
+                  alt={contributor.contributor.fullName}
                   width={50}
                   height={50}
                   className="rounded-full object-cover"
@@ -188,7 +188,7 @@ export default async function ProjectPage({ params }: IProjectPageParams) {
               </div>
               <div className="">
                 <p className="p-3">
-                  {contributor.member.fullName}՝ {contributor.text}
+                  {contributor.contributor.fullName}՝ {contributor.text}
                 </p>
               </div>
             </div>
