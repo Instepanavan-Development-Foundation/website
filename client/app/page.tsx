@@ -51,7 +51,7 @@ export default async function Home() {
 
   return (
     <section className="flex flex-col px-4">
-      {/* New Hero Section */}
+      {/* TODO move to backend */}
       <HeroSection
         title="Մենք նվիրված ենք տեխնոլոգիական լուծումների միջոցով հայկական համայնքների զարգացմանը:"
         description="Մենք նվիրված ենք տեխնոլոգիական լուծումների միջոցով հայկական համայնքների զարգացմանը:"

@@ -11,7 +11,7 @@ interface Contributor {
 }
 
 interface ContributorsListProps {
-  contributors: IContributor[];
+  contributors: IContribution[];
   maxDisplay?: number;
 }
 
