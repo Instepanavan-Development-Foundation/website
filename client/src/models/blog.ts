@@ -1,3 +1,4 @@
+import { IContributor } from "./contributor";
 import { IImage, IMediaFormat } from "./media";
 import { IProject } from "./project";
 
@@ -5,12 +6,7 @@ export interface IContribution {
   id: number;
   text: string;
   isFeatured: boolean;
-  contributor: {
-    id: number;
-    email: string;
-    fullName: string;
-    about: string;
-  };
+  contributor: IContributor;
 }
 
 export interface IBlog {

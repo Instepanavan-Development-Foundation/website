@@ -1,4 +1,4 @@
-type IUrlTypes = "projects" | "blogs";
+type IUrlTypes = "projects" | "blogs" | "contributors";
 
 interface IDataParams {
   type: IUrlTypes;
@@ -14,8 +14,8 @@ export default async function getData({
   type,
   slug,
   params = {},
-  populate = "*",
-}: IDataParams) {
+  populate = {},
+}: IDataParams): Promise<{ data: any[] }> {
   try {
     const url = getUrl({ type, slug, params, populate });
     const res = await fetch(
@@ -31,7 +31,9 @@ export default async function getData({
 
     return res.json();
   } catch (e) {
-    return { error: e instanceof Error ? e.message : "Unknown error" };
+    console.log(e);
+
+    return { data: [] };
   }
 }
 
