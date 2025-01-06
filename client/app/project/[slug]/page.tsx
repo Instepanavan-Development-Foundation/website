@@ -17,8 +17,10 @@ export default async function ProjectPage({ params }: IProjectPageParams) {
   const { data }: { data: IProject[] } = await getData({
     type: "projects",
     populate: {
-      blogs: ["images", "contribution.contributor", "attachments"],
-      image: [],
+      blogs: {
+        nested: ["images", "contribution.contributor", "attachments"],
+      },
+      image: { fields: ["url"] },
     },
     slug: slug,
   });
@@ -27,6 +29,7 @@ export default async function ProjectPage({ params }: IProjectPageParams) {
   if (!project) {
     return null; // TODO not found component
   }
+  console.log(project);
 
   const formatCurrency = (amount: number, currency: string) => {
     return new Intl.NumberFormat("en-US", {

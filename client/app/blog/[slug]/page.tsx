@@ -11,9 +11,9 @@ export default async function BlogPage({ params }: IProjectPageParams) {
   const { data }: { data: IBlog[] } = await getData({
     type: "blogs",
     populate: {
-      images: [],
-      contribution: ["contributor"],
-      attachments: [],
+      images: { fields: ["url"] },
+      contribution: { nested: ["contributor"] },
+      attachments: { fields: ["url"] },
     },
     slug: slug,
   });

@@ -28,16 +28,16 @@ export default async function Home() {
   const { data: projects }: { data: IProject[] } = await getData({
     type: "projects",
     populate: {
-      image: [],
-      blogs: ["contribution.contributor"],
+      image: { fields: ["url"] },
+      blogs: { nested: ["contribution.contributor"] },
     },
   });
   const { data: blogs }: { data: IBlog[] } = await getData({
     type: "blogs",
     populate: {
-      images: [],
-      contribution: ["contributor"],
-      attachments: [],
+      images: { fields: ["url"] },
+      contribution: { nested: ["contributor"] },
+      attachments: { fields: ["url"] },
     },
   });
 

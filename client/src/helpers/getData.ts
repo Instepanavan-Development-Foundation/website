@@ -2,7 +2,13 @@ type IUrlTypes = "projects" | "blogs" | "contributors";
 
 interface IDataParams {
   type: IUrlTypes;
-  populate?: string | string[] | Record<string, string[]>;
+  populate?: Record<
+    string,
+    {
+      fields?: string[];
+      nested?: string[] | Record<string, { fields?: string[] }>;
+    }
+  >;
   slug?: string;
   params?: Record<string, string | number | boolean>;
   fields?: string[];
@@ -60,40 +66,45 @@ function getUrl({ type, slug, params, populate, fields }: IDataParams): string {
 }
 
 function buildPopulateParams(
-  populate: string | string[] | Record<string, string[]>
+  populate: Record<string, { fields?: string[]; nested?: string[] }>
 ): Record<string, string> {
-  const flatPopulate: string[] = [];
+  const query: Record<string, string> = {};
 
-  if (typeof populate === "string") {
-    flatPopulate.push(populate);
-  } else if (Array.isArray(populate)) {
-    flatPopulate.push(...populate);
-  } else {
-    Object.entries(populate).forEach(([component, nested]) => {
-      flatPopulate.push(component);
-      if (Array.isArray(nested)) {
-        nested.forEach((nestedComponent) => {
-          flatPopulate.push(`${component}.${nestedComponent}`);
+  Object.entries(populate).forEach(([component, options]) => {
+    if (typeof options === "object") {
+      // Handle nested relations
+      if (options.nested) {
+        options.nested.forEach((nestedComponent, index) => {
+          query[`populate[${component}][populate][${index}]`] = nestedComponent;
         });
       }
-    });
-  }
 
-  return flatPopulate.reduce(
-    (acc, relation, index) => {
-      acc[`populate[${index}]`] = relation;
-      return acc;
-    },
-    {} as Record<string, string>
-  );
+      // Handle fields for the component
+      if (options.fields) {
+        options.fields.forEach((field, index) => {
+          query[`populate[${component}][fields][${index}]`] = field;
+        });
+      }
+    } else {
+      // Handle empty objects or string components
+      query[`populate[${component}]`] = component;
+    }
+  });
+
+  return query;
 }
+
 
 function buildFieldsParams(fields: string[]): Record<string, string> {
   if (!fields.length) {
     return {};
   }
 
-  return {
-    fields: fields.join(","),
-  };
+  return fields.reduce(
+    (acc, field, index) => {
+      acc[`fields[${index}]`] = field;
+      return acc;
+    },
+    {} as Record<string, string>
+  );
 }
