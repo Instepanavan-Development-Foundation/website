@@ -17,13 +17,18 @@ export default async function getData({
   populate = {},
   fields = [],
 }: IDataParams): Promise<{ data: any[] }> {
-  const query = qs.stringify({
-    populate,
-    fields,
-    params,
-    filters,
-  });
-  
+  const query = qs.stringify(
+    {
+      populate,
+      fields,
+      params,
+      filters,
+    },
+    {
+      encodeValuesOnly: true,
+    }
+  );
+
   const url = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/${type}?${query}&${params}`;
   try {
     const res = await fetch(url, {
