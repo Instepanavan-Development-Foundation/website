@@ -12,10 +12,10 @@ export default async function BlogPage({ params }: IProjectPageParams) {
     type: "blogs",
     populate: {
       images: { fields: ["url"] },
-      contribution: { nested: ["contributor"] },
-      attachments: { fields: ["url"] },
+      contribution: { populate: ["contributor"] },
+      attachments: { fields: ["url", "name"] },
     },
-    slug: slug,
+    filters: { slug },
   });
 
   const blog = data[0];

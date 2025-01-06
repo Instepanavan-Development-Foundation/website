@@ -29,15 +29,17 @@ export default async function Home() {
     type: "projects",
     populate: {
       image: { fields: ["url"] },
-      blogs: { nested: ["contribution.contributor"] },
+      blogs: {
+        populate: ["contribution.contributor"],
+      },
     },
   });
   const { data: blogs }: { data: IBlog[] } = await getData({
     type: "blogs",
     populate: {
       images: { fields: ["url"] },
-      contribution: { nested: ["contributor"] },
-      attachments: { fields: ["url"] },
+      contribution: { populate: ["contributor"] },
+      attachments: { fields: ["url", "name"] },
     },
   });
 

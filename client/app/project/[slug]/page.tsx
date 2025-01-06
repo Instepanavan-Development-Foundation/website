@@ -18,18 +18,21 @@ export default async function ProjectPage({ params }: IProjectPageParams) {
     type: "projects",
     populate: {
       blogs: {
-        nested: ["images", "contribution.contributor", "attachments"],
+        populate: ["images", "contribution.contributor", "attachments"],
       },
-      image: { fields: ["url"] },
+      image: {
+        fields: ["url", "alternativeText", "name"],
+      },
     },
-    slug: slug,
+    filters: {
+      slug,
+    },
   });
 
   const project = data[0];
   if (!project) {
     return null; // TODO not found component
   }
-  console.log(project);
 
   const formatCurrency = (amount: number, currency: string) => {
     return new Intl.NumberFormat("en-US", {

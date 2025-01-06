@@ -25,8 +25,8 @@ export default function BlogPage() {
         type: "blogs",
         populate: {
           images: { fields: ["url"] },
-          contribution: { nested: ["contributor"] },
-          attachments: { fields: ["url"] },
+          contribution: { populate: ["contributor"] },
+          attachments: { fields: ["url", "name"] },
         },
       });
 
