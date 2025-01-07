@@ -17,10 +17,16 @@ export default async function ProjectPage({ params }: IProjectPageParams) {
   const { data }: { data: IProject[] } = await getData({
     type: "projects",
     populate: {
-      blogs: ["images", "contribution.contributor", "attachments"],
-      image: [],
+      blogs: {
+        populate: ["images", "contribution.contributor", "attachments"],
+      },
+      image: {
+        fields: ["url", "alternativeText", "name"],
+      },
     },
-    slug: slug,
+    filters: {
+      slug,
+    },
   });
 
   const project = data[0];

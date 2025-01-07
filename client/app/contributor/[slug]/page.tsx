@@ -53,7 +53,9 @@ export default async function ContributorPage({ params }: IContributorParams) {
   const { slug } = await params;
   const { data }: { data: IContributor[] } = await getData({
     type: "contributors",
-    slug: slug,
+    filters: {
+      slug,
+    },
   });
 
   const contributor = data[0];
