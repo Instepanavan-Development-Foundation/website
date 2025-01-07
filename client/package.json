@@ -40,7 +40,8 @@
 		"react-dom": "18.3.1",
 		"react-markdown": "^9.0.3",
 		"rehype-raw": "^7.0.0",
-		"remark-gfm": "^4.0.0"
+		"remark-gfm": "^4.0.0",
+		"yet-another-react-lightbox": "^3.21.7"
 	},
 	"devDependencies": {
 		"@next/eslint-plugin-next": "15.0.4",

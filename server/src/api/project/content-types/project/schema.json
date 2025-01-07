@@ -53,6 +53,13 @@
     },
     "about": {
       "type": "text"
+    },
+    "isArchived": {
+      "type": "boolean",
+      "default": false
+    },
+    "events": {
+      "type": "text"
     }
   }
 }

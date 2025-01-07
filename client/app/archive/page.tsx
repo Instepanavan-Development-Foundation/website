@@ -18,7 +18,6 @@ export default async function Home() {
     }
   });
 
-  console.log(projects);
 
   return (
     <section className="flex flex-col px-4">

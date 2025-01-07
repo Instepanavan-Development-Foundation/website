@@ -48,7 +48,6 @@ export default async function Home() {
     },
   });
 
-  console.log(blogs);
 
 
   const formatCurrency = (amount: number, currency: string) => {
@@ -113,9 +112,7 @@ export default async function Home() {
         <div className="gap-6 grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4">
           {blogs.length > 0 ?
             blogs.map((post, index) => (
-              <Link href={`/blog/${post.slug}`} key={index}>
-                <BlogPost key={index} {...post} />
-              </Link>
+              <BlogPost key={index} {...post} link={true} key={index} />
             ))
             :
             (<p>Աշխատանքներ չկան</p>)}

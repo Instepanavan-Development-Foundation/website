@@ -20,4 +20,5 @@ export interface IBlog {
   isFeatured: boolean;
   createdAt: string;
   attachments: IMediaFormat[] | null;
+  link? : boolean;
 }
