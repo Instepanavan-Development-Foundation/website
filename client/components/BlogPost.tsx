@@ -69,8 +69,6 @@ export function BlogPost({
                 width="100%"
                 radius="none"
               />
-              {/* move this to the image right bottom corner */}
-              {/* no it's on the bottom of the card, fix it */}
               <div className="relative -top-7 z-30 bg-black bg-opacity-50 text-white p-2 text-xs text-right h-7">
                 ևս {images.length} նկար
               </div>
