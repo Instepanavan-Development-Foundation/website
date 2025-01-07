@@ -44,7 +44,7 @@ export default function BlogPage() {
   };
 
   const removeProject = (projectToRemove: string) => {
-    // setSelectedProject(selectedProject.filter((p) => p !== projectToRemove));
+    // TODO implement
   };
 
   // Function to remove a tag filter
@@ -99,7 +99,7 @@ export default function BlogPage() {
           <DateRangePicker
             aria-label="date-range"
             defaultValue={{
-              start: parseDate("2024-04-01"), // TODO We don't have startDate and endDate?
+              start: parseDate("2024-04-01"), // TODO filter by createdAr
               end: parseDate("2024-04-08"),
             }}
             // label="Stay duration"
