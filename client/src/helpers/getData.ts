@@ -1,5 +1,5 @@
 import qs from "qs";
-type IUrlTypes = "projects" | "blogs" | "contributors";
+type IUrlTypes = "projects" | "blogs" | "contributors" | "menus" | "static-pages";
 
 interface IDataParams {
   type: IUrlTypes;

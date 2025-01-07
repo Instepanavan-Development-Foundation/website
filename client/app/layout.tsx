@@ -5,20 +5,9 @@ import clsx from "clsx";
 
 import { Providers } from "./providers";
 
-import { siteConfig } from "@/config/site";
+import { getSiteConfig } from "@/config/site";
 import { fontSans } from "@/config/fonts";
 import { Navbar } from "@/components/navbar";
-
-export const metadata: Metadata = {
-  title: {
-    default: siteConfig.name,
-    template: `%s - ${siteConfig.name}`,
-  },
-  description: siteConfig.description,
-  icons: {
-    icon: "/favicon.ico",
-  },
-};
 
 export const viewport: Viewport = {
   themeColor: [
@@ -27,26 +16,27 @@ export const viewport: Viewport = {
   ],
 };
 
-export const socialLinks = [
-  {
-    name: "GitHub",
-    href: "https://github.com",
-  },
-  {
-    name: "Twitter",
-    href: "https://twitter.com",
-  },
-  {
-    name: "LinkedIn",
-    href: "https://linkedin.com",
-  },
-] 
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const siteConfig = await getSiteConfig();
+
+  const metadata: Metadata = {
+    title: {
+      default: siteConfig.name,
+      template: `%s - ${siteConfig.name}`,
+    },
+    description: siteConfig.description,
+    icons: {
+      icon: "/favicon.ico",
+    },
+  };
+
+  const footerMenu = siteConfig.footer;
+
   return (
     <html suppressHydrationWarning lang="en">
       <head />
@@ -64,14 +54,14 @@ export default function RootLayout({
             </main>
             <footer className="w-full flex flex-col items-center justify-center py-3 gap-2">
               <div className="flex gap-4">
-                {socialLinks.map((link) => (
+                {footerMenu.map((link) => (
                   <Link
-                    key={link.name}
+                    key={link.title}
                     isExternal
                     href={link.href}
                     className="text-default-600 hover:text-primary"
                   >
-                    {link.name}
+                    {link.title}
                   </Link>
                 ))}
               </div>

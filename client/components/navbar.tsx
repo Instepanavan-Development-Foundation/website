@@ -8,14 +8,12 @@ import {
   NavbarMenuItem,
 } from "@nextui-org/navbar";
 import { Button } from "@nextui-org/button";
-import { Kbd } from "@nextui-org/kbd";
 import { Link } from "@nextui-org/link";
-import { Input } from "@nextui-org/input";
 import { link as linkStyles } from "@nextui-org/theme";
 import NextLink from "next/link";
 import clsx from "clsx";
 
-import { siteConfig } from "@/config/site";
+import { getSiteConfig } from "@/config/site";
 import { ThemeSwitch } from "@/components/theme-switch";
 import {
   // TwitterIcon,
@@ -25,29 +23,10 @@ import {
   SearchIcon,
   Logo,
 } from "@/components/icons";
+import { IMenu } from "@/src/models/menu";
 
-export const Navbar = () => {
-  const searchInput = (
-    <Input
-      aria-label="Search"
-      classNames={{
-        inputWrapper: "bg-default-100",
-        input: "text-sm",
-      }}
-      endContent={
-        <Kbd className="hidden lg:inline-block" keys={["command"]}>
-          K
-        </Kbd>
-      }
-      labelPlacement="outside"
-      placeholder="Search..."
-      startContent={
-        <SearchIcon className="text-base text-default-400 pointer-events-none flex-shrink-0" />
-      }
-      type="search"
-    />
-  );
-
+export const Navbar = async () => {
+  const siteConfig = await getSiteConfig();
   return (
     <NextUINavbar maxWidth="xl" position="sticky">
       <NavbarContent className="basis-1/5 sm:basis-full" justify="start">
@@ -63,7 +42,7 @@ export const Navbar = () => {
         justify="end"
       >
         <ul className="hidden lg:flex gap-4 justify-start ml-2">
-          {siteConfig.navItems.map((item) => (
+          {siteConfig.navItems.map((item: IMenu) => (
             <NavbarItem key={item.href}>
               <NextLink
                 className={clsx(
@@ -73,7 +52,7 @@ export const Navbar = () => {
                 color="foreground"
                 href={item.href}
               >
-                {item.label}
+                {item.title}
               </NextLink>
             </NavbarItem>
           ))}
@@ -83,7 +62,7 @@ export const Navbar = () => {
             isExternal
             as={Link}
             className="text-sm font-normal text-default-600 bg-default-100"
-            href={siteConfig.links.sponsor}
+            // href={siteConfig.links.sponsor}
             startContent={<HeartFilledIcon className="text-danger" />}
             variant="flat"
           >
@@ -93,7 +72,9 @@ export const Navbar = () => {
       </NavbarContent>
 
       <NavbarContent className="sm:hidden basis-1 pl-4" justify="end">
-        <Link isExternal aria-label="Github" href={siteConfig.links.github}>
+        <Link isExternal aria-label="Github"
+        // href={siteConfig.links.github}
+        >
           <GithubIcon className="text-default-500" />
         </Link>
         <ThemeSwitch />
@@ -114,7 +95,7 @@ export const Navbar = () => {
                 href="#"
                 size="lg"
               >
-                {item.label}
+                {item.title}
               </Link>
             </NavbarMenuItem>
           ))}
