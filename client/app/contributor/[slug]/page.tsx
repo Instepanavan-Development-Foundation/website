@@ -62,7 +62,6 @@ export default async function ContributorPage({ params }: IContributorParams) {
   if (!contributor) {
     return null; // TODO not found component
   }
-  console.log(contributor);
 
   return (
     <section className="container mx-auto px-4 py-8">

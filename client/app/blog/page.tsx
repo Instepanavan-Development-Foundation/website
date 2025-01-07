@@ -10,6 +10,7 @@ import { BlogPost } from "../../components/BlogPost";
 import { Chip } from "@nextui-org/chip";
 import getData from "@/src/helpers/getData";
 import { IBlog } from "@/src/models/blog";
+import { Link } from "@nextui-org/link";
 
 // TODO keep filters in url for default value
 export default function BlogPage() {
@@ -27,7 +28,9 @@ export default function BlogPage() {
           images: { fields: ["url"] },
           contribution: { populate: ["contributor"] },
           attachments: { fields: ["url", "name"] },
+          project: { fields: ["name", "slug"] },
         },
+        sort: "isFeatured:desc, createdAt:desc",
       });
 
       setBlogs(data);
@@ -188,10 +191,11 @@ export default function BlogPage() {
       <div className="columns-1 md:columns-3 gap-6 space-y-6">
         {blogs.map((blog, index) => (
           <div key={index} className="break-inside-avoid">
-            <BlogPost {...blog} />
+            <BlogPost {...blog} link={true} />
           </div>
         ))}
       </div>
+      {/* TODO implement infinite scroll */}
     </div>
   );
 }

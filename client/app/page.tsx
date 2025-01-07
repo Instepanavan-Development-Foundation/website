@@ -33,15 +33,22 @@ export default async function Home() {
         populate: ["contribution.contributor"],
       },
     },
+    filters: {
+      isArchived: false,
+    },
   });
+
   const { data: blogs }: { data: IBlog[] } = await getData({
     type: "blogs",
     populate: {
       images: { fields: ["url"] },
+      project: { fields: ["name", "slug"] },
       contribution: { populate: ["contributor"] },
       attachments: { fields: ["url", "name"] },
     },
   });
+
+
 
   const formatCurrency = (amount: number, currency: string) => {
     return new Intl.NumberFormat("en-US", {
@@ -67,12 +74,15 @@ export default async function Home() {
         <h2 className="text-3xl font-bold mb-6">Ակտիվ նախագծեր</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
           {projects.map((project, index) => (
-            <ProjectCard key={index} {...project} />
+            <Link href={`/project/${project.slug}`} key={index}>
+              <ProjectCard key={index} {...project} />
+            </Link>
           ))}
         </div>
         <div className="flex justify-center mt-8">
+          {/* TODO add archive page */}
           <Link
-            href="/projects"
+            href="/archive"
             className={buttonStyles({
               variant: "flat",
               radius: "full",
@@ -100,9 +110,12 @@ export default async function Home() {
       <div className="w-full max-w-7xl my-12">
         <h2 className="text-3xl font-bold mb-6">Մեր աշխատանքը</h2>
         <div className="gap-6 grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4">
-          {blogs.map((post, index) => (
-            <BlogPost key={index} {...post} />
-          ))}
+          {blogs.length > 0 ?
+            blogs.map((post, index) => (
+              <BlogPost key={index} {...post} link={true} key={index} />
+            ))
+            :
+            (<p>Աշխատանքներ չկան</p>)}
         </div>
         <div className="col-span-full flex justify-center mt-8">
           <Link

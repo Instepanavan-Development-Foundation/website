@@ -1,3 +1,16 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* almost black variable*/
+:root {
+    --almost-black: rgba(0, 0, 0, 0.85);
+}
+
+.yarl__thumbnails_container {
+    background-color: var(--almost-black) !important;
+}
+
+.yarl__container {
+    background-color: var(--almost-black) !important;
+}

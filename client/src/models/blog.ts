@@ -10,6 +10,7 @@ export interface IContribution {
 }
 
 export interface IBlog {
+  slug: string;
   content: string;
   images: IImage[];
   tag: { name: string }[];
@@ -19,4 +20,5 @@ export interface IBlog {
   isFeatured: boolean;
   createdAt: string;
   attachments: IMediaFormat[] | null;
+  link? : boolean;
 }

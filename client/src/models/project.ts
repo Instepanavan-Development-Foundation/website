@@ -2,6 +2,7 @@ import { IBlog } from "./blog";
 import { IImage } from "./media";
 
 export interface IProject {
+  events: string | TrustedHTML;
   name: string;
   description: string;
   slug: string;
