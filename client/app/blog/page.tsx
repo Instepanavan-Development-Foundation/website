@@ -30,6 +30,7 @@ export default function BlogPage() {
           attachments: { fields: ["url", "name"] },
           project: { fields: ["name", "slug"] },
         },
+        sort: "isFeatured:desc, createdAt:desc",
       });
 
       setBlogs(data);
@@ -104,7 +105,7 @@ export default function BlogPage() {
               start: parseDate("2024-04-01"), // TODO filter by createdAr
               end: parseDate("2024-04-08"),
             }}
-          // label="Stay duration"
+            // label="Stay duration"
           />
         </div>
 
@@ -129,73 +130,72 @@ export default function BlogPage() {
       {(selectedProject.length > 0 ||
         selectedTags.length > 0 ||
         searchQuery) && (
-          <div className="flex flex-wrap gap-2 mb-4">
-            {/* Search query chip */}
-            {searchQuery && (
-              <Chip
-                onClose={() => setSearchQuery("")}
-                variant="flat"
-                color="primary"
-              >
-                Որոնում: {searchQuery}
-              </Chip>
-            )}
+        <div className="flex flex-wrap gap-2 mb-4">
+          {/* Search query chip */}
+          {searchQuery && (
+            <Chip
+              onClose={() => setSearchQuery("")}
+              variant="flat"
+              color="primary"
+            >
+              Որոնում: {searchQuery}
+            </Chip>
+          )}
 
-            {/* Project filters */}
-            {selectedProject && (
-              <Chip
-                key={`project-${selectedProject}`}
-                onClose={() => removeProject(selectedProject)}
-                variant="flat"
-                color="secondary"
-                className="capitalize"
-              >
-                Նախագիծ: {selectedProject}
-              </Chip>
-            )}
+          {/* Project filters */}
+          {selectedProject && (
+            <Chip
+              key={`project-${selectedProject}`}
+              onClose={() => removeProject(selectedProject)}
+              variant="flat"
+              color="secondary"
+              className="capitalize"
+            >
+              Նախագիծ: {selectedProject}
+            </Chip>
+          )}
 
-            {/* Tag filters */}
-            {selectedTags.map((tag) => (
-              <Chip
-                key={`tag-${tag}`}
-                onClose={() => removeTag(tag)}
-                variant="flat"
-                color="warning"
-                className="capitalize"
-              >
-                Թեգ: {tag}
-              </Chip>
-            ))}
+          {/* Tag filters */}
+          {selectedTags.map((tag) => (
+            <Chip
+              key={`tag-${tag}`}
+              onClose={() => removeTag(tag)}
+              variant="flat"
+              color="warning"
+              className="capitalize"
+            >
+              Թեգ: {tag}
+            </Chip>
+          ))}
 
-            {/* Clear all filters button */}
-            {(selectedProject.length > 0 ||
-              selectedTags.length > 0 ||
-              searchQuery) && (
-                <Button
-                  size="sm"
-                  variant="light"
-                  onClick={() => {
-                    setSelectedProject("");
-                    setSelectedTags([]);
-                    setSearchQuery("");
-                  }}
-                >
-                  Մաքրել բոլորը
-                </Button>
-              )}
-          </div>
-        )}
+          {/* Clear all filters button */}
+          {(selectedProject.length > 0 ||
+            selectedTags.length > 0 ||
+            searchQuery) && (
+            <Button
+              size="sm"
+              variant="light"
+              onClick={() => {
+                setSelectedProject("");
+                setSelectedTags([]);
+                setSearchQuery("");
+              }}
+            >
+              Մաքրել բոլորը
+            </Button>
+          )}
+        </div>
+      )}
 
       {/* Blog Posts Grid - Modified for Masonry layout */}
       <div className="columns-1 md:columns-3 gap-6 space-y-6">
         {blogs.map((blog, index) => (
           <div key={index} className="break-inside-avoid">
-            <Link href={`/blog/${blog.slug}`} key={index}>
-              <BlogPost {...blog} />
-            </Link>
+            <BlogPost {...blog} link={true} />
           </div>
         ))}
       </div>
+      {/* TODO implement infinite scroll */}
     </div>
   );
 }

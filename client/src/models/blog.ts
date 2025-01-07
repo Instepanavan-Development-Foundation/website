@@ -10,7 +10,7 @@ export interface IContribution {
 }
 
 export interface IBlog {
-  slug: any;
+  slug: string;
   content: string;
   images: IImage[];
   tag: { name: string }[];

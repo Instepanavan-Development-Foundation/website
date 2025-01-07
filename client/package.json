@@ -30,6 +30,7 @@
 		"@react-aria/visually-hidden": "3.8.18",
 		"@tailwindcss/typography": "^0.5.15",
 		"clsx": "2.1.1",
+		"dayjs": "^1.11.13",
 		"framer-motion": "11.13.1",
 		"intl-messageformat": "^10.5.0",
 		"lucide-react": "^0.469.0",
