@@ -6,6 +6,7 @@ import { Paperclip, Bookmark } from "lucide-react";
 import { ContributorsList } from "./ContributorsList";
 import { IBlog } from "@/src/models/blog";
 import getMediaUrl from "@/src/helpers/getMediaUrl";
+import { Link } from "@nextui-org/link";
 
 export function BlogPost({
   content,
@@ -15,16 +16,17 @@ export function BlogPost({
   attachments,
   isFeatured,
   createdAt,
+  project,
 }: IBlog) {
   return (
     // TODO fix styles for isFeatured and mobile version
-    <div className="relative"> 
+    <div className="relative">
       {isFeatured && (
         <div className="absolute -top-3 -right-3 z-30 bg-primary rounded-full w-12 h-12 flex items-center justify-center">
           <Bookmark className="w-6 h-6 text-white" />
         </div>
       )}
-      <Card isPressable className="group">
+      <Card className="group">
         <CardBody className="p-0">
           {/* TODO images like in fb, 3 images on front */}
           {images?.length ? (
@@ -52,6 +54,13 @@ export function BlogPost({
                     {name}
                   </Chip>
                 ))}
+            </div>
+
+            {/* Project */}
+            <div className="flex -space-x-2 mb-4">
+              <Link href={`/project/${project.slug}`} color="secondary">
+                {project.name}
+              </Link>
             </div>
 
             {/* Contributors */}

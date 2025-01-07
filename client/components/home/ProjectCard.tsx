@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { Card, CardBody } from "@nextui-org/card";
+import { Card, CardBody, CardHeader } from "@nextui-org/card";
 import { Image } from "@nextui-org/image";
 import { ContributorsList } from "../ContributorsList";
 import { IProject } from "@/src/models/project";
+import getMediaUrl from "@/src/helpers/getMediaUrl";
 
 interface ProjectCardProps {
   title: string;
@@ -37,8 +38,17 @@ export function ProjectCard({
       className="group bg-gradient-to-br from-background to-default-50 w-full"
     >
       <CardBody className="overflow-visible p-0">
+      <Image
+          alt={name}
+          className="w-full object-cover h-[200px] z-10"
+          radius="lg"
+          shadow="sm"
+          src={getMediaUrl(image)}
+          width="100%"
+        />
+        
         <div className="p-5">
-          <p className="text-lg text-default-600 transition-transform duration-200 group-hover:scale-105">
+          <p className="text-lg text-default-600">
             {name}
           </p>
 

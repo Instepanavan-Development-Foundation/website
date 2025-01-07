@@ -18,7 +18,7 @@ export default async function ProjectPage({ params }: IProjectPageParams) {
     type: "projects",
     populate: {
       blogs: {
-        populate: ["images", "contribution.contributor", "attachments"],
+        populate: ["images", "contribution.contributor", "attachments", "project"],
       },
       image: {
         fields: ["url", "alternativeText", "name"],
@@ -41,7 +41,7 @@ export default async function ProjectPage({ params }: IProjectPageParams) {
       maximumFractionDigits: 0,
     }).format(amount);
   };
-
+  
   return (
     <section className="flex flex-col px-4">
       {/* Hero Section */}
@@ -101,7 +101,7 @@ export default async function ProjectPage({ params }: IProjectPageParams) {
             <div className="text-default-500">
               {Math.round((30000 / 50000) * 100)}% funded by
             </div>
-            <ContributorsList contributors={project.blogs[0].contribution} />
+            <ContributorsList contributors={project.blogs.map(blog => blog.contribution).flat()} />
             {/* TODO fetch all contributions */}
           </div>
         </div>
@@ -130,16 +130,14 @@ export default async function ProjectPage({ params }: IProjectPageParams) {
         </div>
       </div>
 
-      <div className="container mb-16">
-        <h2 className="text-3xl font-bold mb-8">Միջոցառումներ</h2>
-        <Image
-          src="https://dummyimage.com/600x400/000000/ffffff"
-          alt="Dummy Calendar Image"
-          width={600}
-          height={400}
-          className="w-full"
-        />
-      </div>
+      {/* Events Section */}
+      {project.events && (
+        <div className="container mb-16">
+          <h2 className="text-3xl font-bold mb-8">Միջոցառումներ</h2>
+          <div className="text-container" dangerouslySetInnerHTML={{ __html: project.events }} />
+        </div>
+      )}
+
       {/* Project Details Section */}
       <div className="container mb-16">
         <h2 className="text-3xl font-bold mb-8">Ծրագրի մանրամասներ</h2>
@@ -166,39 +164,42 @@ export default async function ProjectPage({ params }: IProjectPageParams) {
         <h2 className="text-3xl font-bold mb-8">Աջակիցներ</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
           {/* TODO add contributors from all blogs. Make request or join from coming data. Add slice for configuring from envs  */}
-          {project.blogs[0].contribution.map((contributor, index) => (
-            <div
-              key={index}
-              className="flex items-center p-3 bg-default-50 rounded-xl hover:bg-default-100 transition-colors relative"
-            >
-              {contributor.isFeatured && (
-                <div className="absolute -top-2 -right-2 bg-warning-400 text-white rounded-full p-1">
-                  <svg
-                    className="w-4 h-4"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                  </svg>
+          {project.blogs
+            .map(blog => blog.contribution)
+            .flat()
+            .map((contributor, index) => (
+              <div
+                key={index}
+                className="flex items-center p-3 bg-default-50 rounded-xl hover:bg-default-100 transition-colors relative"
+              >
+                {contributor.isFeatured && (
+                  <div className="absolute -top-2 -right-2 bg-warning-400 text-white rounded-full p-1">
+                    <svg
+                      className="w-4 h-4"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                  </div>
+                )}
+                <div className="relative min-w-[50px]">
+                  <Image
+                    src={"https://dummyimage.com/600x400/000000/ffffff"}
+                    alt={contributor.contributor.fullName}
+                    width={50}
+                    height={50}
+                    className="rounded-full object-cover"
+                  />
+                  <div className="absolute inset-0 rounded-full ring-2 ring-primary ring-offset-2 ring-offset-background" />
                 </div>
-              )}
-              <div className="relative min-w-[50px]">
-                <Image
-                  src={"https://dummyimage.com/600x400/000000/ffffff"}
-                  alt={contributor.contributor.fullName}
-                  width={50}
-                  height={50}
-                  className="rounded-full object-cover"
-                />
-                <div className="absolute inset-0 rounded-full ring-2 ring-primary ring-offset-2 ring-offset-background" />
+                <div className="">
+                  <p className="p-3">
+                    {contributor.contributor.fullName}՝ {contributor.text}
+                  </p>
+                </div>
               </div>
-              <div className="">
-                <p className="p-3">
-                  {contributor.contributor.fullName}՝ {contributor.text}
-                </p>
-              </div>
-            </div>
-          ))}
+            ))}
         </div>
         <div className="col-span-full flex justify-center mt-8">
           <Link
