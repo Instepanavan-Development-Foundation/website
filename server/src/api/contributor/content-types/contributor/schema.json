@@ -1,10 +1,11 @@
 {
   "kind": "collectionType",
-  "collectionName": "members",
+  "collectionName": "contributors",
   "info": {
-    "singularName": "member",
-    "pluralName": "members",
-    "displayName": "Member"
+    "singularName": "contributor",
+    "pluralName": "contributors",
+    "displayName": "Contributor",
+    "description": ""
   },
   "options": {
     "draftAndPublish": true
@@ -22,6 +23,10 @@
     },
     "about": {
       "type": "text"
+    },
+    "slug": {
+      "type": "string",
+      "unique": true
     }
   }
 }

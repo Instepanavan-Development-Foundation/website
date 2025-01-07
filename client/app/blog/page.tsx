@@ -25,7 +25,7 @@ export default function BlogPage() {
         type: "blogs",
         populate: {
           images: [],
-          contribution: ["member"],
+          contribution: ["contributor"],
           attachments: [],
         },
       });

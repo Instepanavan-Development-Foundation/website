@@ -1,10 +1,11 @@
-type IUrlTypes = "projects" | "blogs";
+type IUrlTypes = "projects" | "blogs" | "contributors";
 
 interface IDataParams {
   type: IUrlTypes;
   populate?: string | string[] | Record<string, string[]>;
   slug?: string;
   params?: Record<string, string | number | boolean>;
+  fields?: string[];
 }
 
 // TODO optimize this function. It works correctly
@@ -14,10 +15,11 @@ export default async function getData({
   type,
   slug,
   params = {},
-  populate = "*",
-}: IDataParams) {
+  populate = {},
+  fields = [],
+}: IDataParams): Promise<{ data: any[] }> {
   try {
-    const url = getUrl({ type, slug, params, populate });
+    const url = getUrl({ type, slug, params, populate, fields });
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_BACKEND_URL}/api${url}`,
       {
@@ -31,13 +33,16 @@ export default async function getData({
 
     return res.json();
   } catch (e) {
-    return { error: e instanceof Error ? e.message : "Unknown error" };
+    console.log(e);
+
+    return { data: [] };
   }
 }
 
-function getUrl({ type, slug, params, populate }: IDataParams): string {
+function getUrl({ type, slug, params, populate, fields }: IDataParams): string {
   const queryParams: Record<string, string> = {
     ...buildPopulateParams(populate as any),
+    ...buildFieldsParams(fields as string[]),
     ...Object.fromEntries(
       Object.entries(params as any).map(([key, value]: any) => [
         key,
@@ -81,4 +86,14 @@ function buildPopulateParams(
     },
     {} as Record<string, string>
   );
+}
+
+function buildFieldsParams(fields: string[]): Record<string, string> {
+  if (!fields.length) {
+    return {};
+  }
+
+  return {
+    fields: fields.join(","),
+  };
 }

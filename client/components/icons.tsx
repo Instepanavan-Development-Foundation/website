@@ -1,7 +1,7 @@
 import * as React from "react";
 
 import { IconSvgProps } from "@/types";
-
+// TODO change to real logo
 export const Logo: React.FC<IconSvgProps> = ({
   size = 36,
   width,
