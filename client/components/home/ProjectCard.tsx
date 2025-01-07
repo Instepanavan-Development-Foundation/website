@@ -34,12 +34,12 @@ export function ProjectCard({
   return (
     <Card
       isPressable
-      className="group bg-gradient-to-br from-background to-default-50"
+      className="group bg-gradient-to-br from-background to-default-50 w-full"
     >
       <CardBody className="overflow-visible p-0">
         <div className="p-5">
           <p className="text-lg text-default-600 transition-transform duration-200 group-hover:scale-105">
-            {description}
+            {name}
           </p>
 
           <div className="mt-4 flex flex-col gap-2">
