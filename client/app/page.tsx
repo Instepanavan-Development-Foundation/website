@@ -151,7 +151,7 @@ export default async function Home() {
               alt="Our Team"
               className="rounded-xl shadow-lg"
               src={
-                "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&h=400&fit=crop"
+                "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&h=400&fit=crop" // TODO there is no about image on the backend?
               }
               width={800}
               height={400}
