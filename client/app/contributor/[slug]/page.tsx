@@ -4,6 +4,7 @@ import getData from "@/src/helpers/getData";
 import { IProject } from "@/src/models/project";
 import getMediaSrc from "@/src/helpers/getMediaUrl";
 import { IParams } from "@/src/models/params";
+import NotFound from "@/components/NotFound";
 
 export default async function ContributorPage({ params }: IParams) {
   const { slug } = await params;
@@ -29,6 +30,9 @@ export default async function ContributorPage({ params }: IParams) {
       },
     },
   });
+  if (!projects.length) {
+    return <NotFound />;
+  }
   const { contributor } = projects[0].blogs[0].contribution[0];
 
   return (

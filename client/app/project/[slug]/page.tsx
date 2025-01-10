@@ -8,6 +8,7 @@ import getData from "@/src/helpers/getData";
 import getMediaUrl from "@/src/helpers/getMediaUrl";
 import { IProject } from "@/src/models/project";
 import { IParams } from "@/src/models/params";
+import NotFound from "@/components/NotFound";
 
 export default async function ProjectPage({ params }: IParams) {
   const { slug } = await params;
@@ -15,7 +16,12 @@ export default async function ProjectPage({ params }: IParams) {
     type: "projects",
     populate: {
       blogs: {
-        populate: ["images", "contribution.contributor", "attachments", "project"],
+        populate: [
+          "images",
+          "contribution.contributor",
+          "attachments",
+          "project",
+        ],
       },
       image: {
         fields: ["url", "alternativeText", "name"],
@@ -28,7 +34,7 @@ export default async function ProjectPage({ params }: IParams) {
 
   const project = data[0];
   if (!project) {
-    return null; // TODO not found component
+    return <NotFound />;
   }
 
   const formatCurrency = (amount: number, currency: string) => {
@@ -38,7 +44,7 @@ export default async function ProjectPage({ params }: IParams) {
       maximumFractionDigits: 0,
     }).format(amount);
   };
-  
+
   return (
     <section className="flex flex-col px-4">
       {/* Hero Section */}
@@ -98,7 +104,11 @@ export default async function ProjectPage({ params }: IParams) {
             <div className="text-default-500">
               {Math.round((30000 / 50000) * 100)}% funded by
             </div>
-            <ContributorsList contributors={project.blogs.map(blog => blog.contribution).flat()} />
+            <ContributorsList
+              contributors={project.blogs
+                .map((blog) => blog.contribution)
+                .flat()}
+            />
             {/* TODO fetch all contributions */}
           </div>
         </div>
@@ -131,7 +141,10 @@ export default async function ProjectPage({ params }: IParams) {
       {project.events && (
         <div className="container mb-16">
           <h2 className="text-3xl font-bold mb-8">Միջոցառումներ</h2>
-          <div className="text-container" dangerouslySetInnerHTML={{ __html: project.events }} />
+          <div
+            className="text-container"
+            dangerouslySetInnerHTML={{ __html: project.events }}
+          />
         </div>
       )}
 
@@ -162,7 +175,7 @@ export default async function ProjectPage({ params }: IParams) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
           {/* TODO add contributors from all blogs. Make request or join from coming data. Add slice for configuring from envs  */}
           {project.blogs
-            .map(blog => blog.contribution)
+            .map((blog) => blog.contribution)
             .flat()
             .map((contributor, index) => (
               <div

@@ -1,4 +1,5 @@
 import { BlogPost } from "@/components/BlogPost";
+import NotFound from "@/components/NotFound";
 import getData from "@/src/helpers/getData";
 import { IBlog } from "@/src/models/blog";
 import { IParams } from "@/src/models/params";
@@ -17,7 +18,7 @@ export default async function BlogPage({ params }: IParams) {
 
   const blog = data[0];
   if (!blog) {
-    return null; // TODO not found component
+    return <NotFound />;
   }
 
   return (

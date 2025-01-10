@@ -4,6 +4,7 @@ import getData from "@/src/helpers/getData";
 import { IStaticPage } from "@/src/models/stat-page";
 import ModifiedMarkdown from '@/src/hok/modifiedMarkdown';
 import { IParams } from "@/src/models/params";
+import NotFound from "@/components/NotFound";
 
 export default async function StaticPage({ params }: IParams) {
     const { slug } = await params;
@@ -15,7 +16,7 @@ export default async function StaticPage({ params }: IParams) {
 
     const staticPage = data[0];
     if (!staticPage) {
-        return null; // TODO not found component
+        return <NotFound/>;
     }
 
     return (
