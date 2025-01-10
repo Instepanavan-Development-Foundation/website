@@ -3,13 +3,9 @@ import { Card, CardBody } from "@nextui-org/card";
 import getData from "@/src/helpers/getData";
 import { IProject } from "@/src/models/project";
 import getMediaSrc from "@/src/helpers/getMediaUrl";
+import { IParams } from "@/src/models/params";
 
-// TODO move to global interface, all params are the same
-interface IContributorParams {
-  params: { slug: string };
-}
-
-export default async function ContributorPage({ params }: IContributorParams) {
+export default async function ContributorPage({ params }: IParams) {
   const { slug } = await params;
 
   const { data: projects }: { data: IProject[] } = await getData({

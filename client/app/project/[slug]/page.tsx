@@ -7,12 +7,9 @@ import { ContributorsList } from "../../../components/ContributorsList";
 import getData from "@/src/helpers/getData";
 import getMediaUrl from "@/src/helpers/getMediaUrl";
 import { IProject } from "@/src/models/project";
+import { IParams } from "@/src/models/params";
 
-interface IProjectPageParams {
-  params: { slug: string };
-}
-
-export default async function ProjectPage({ params }: IProjectPageParams) {
+export default async function ProjectPage({ params }: IParams) {
   const { slug } = await params;
   const { data }: { data: IProject[] } = await getData({
     type: "projects",
