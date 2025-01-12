@@ -3,12 +3,10 @@ import { Card, CardBody, CardFooter, CardHeader } from "@nextui-org/card";
 import getData from "@/src/helpers/getData";
 import { IStaticPage } from "@/src/models/stat-page";
 import ModifiedMarkdown from '@/src/hok/modifiedMarkdown';
+import { IParams } from "@/src/models/params";
+import NotFound from "@/components/NotFound";
 
-interface IProjectPageParams {
-    params: { slug: string };
-}
-
-export default async function StaticPage({ params }: IProjectPageParams) {
+export default async function StaticPage({ params }: IParams) {
     const { slug } = await params;
 
     const { data }: { data: IStaticPage[] } = await getData({
@@ -18,7 +16,7 @@ export default async function StaticPage({ params }: IProjectPageParams) {
 
     const staticPage = data[0];
     if (!staticPage) {
-        return null; // TODO not found component
+        return <NotFound/>;
     }
 
     return (

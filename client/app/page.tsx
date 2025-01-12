@@ -8,21 +8,15 @@ import { HeroSection } from "../components/home/HeroSection";
 import getData from "@/src/helpers/getData";
 import { IProject } from "@/src/models/project";
 import { IBlog } from "@/src/models/blog";
+import { IStaticPage } from "@/src/models/stat-page";
 
 // TODO move to backend
-const aboutContent = {
-  title: "Մեր մասին",
-  description:
-    "Մենք նվիրված ենք տեխնոլոգիական լուծումների միջոցով հայկական համայնքների զարգացմանը: Մեր թիմը միավորում է փորձառու մասնագետների, ովքեր աշխատում են ստեղծել նորարարական գործիքներ՝ հասանելի դարձնելով թվային տեխնոլոգիաները բոլորի համար:",
-  image:
-    "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&h=400&fit=crop",
-  stats: [
-    { label: "Իրականացված ծրագրեր", value: "25+" },
-    { label: "Համայնքներ", value: "40+" },
-    { label: "Շահառուներ", value: "10,000+" },
-    { label: "Կամավորներ", value: "150+" },
-  ],
-};
+const stats = [
+  { label: "Իրականացված ծրագրեր", value: "25+" }, // projects?
+  { label: "Համայնքներ", value: "40+" }, // ?
+  { label: "Շահառուներ", value: "10,000+" }, // ?
+  { label: "Կամավորներ", value: "150+" },  // contributors?
+];
 
 export default async function Home() {
   const { data: projects }: { data: IProject[] } = await getData({
@@ -48,7 +42,11 @@ export default async function Home() {
     },
   });
 
-
+  const { data: staticPages }: { data: IStaticPage[] } = await getData({
+    type: "static-pages",
+    filters: { slug: "about" },
+  });
+  const aboutContent = staticPages[0];
 
   const formatCurrency = (amount: number, currency: string) => {
     return new Intl.NumberFormat("en-US", {
@@ -110,12 +108,13 @@ export default async function Home() {
       <div className="w-full max-w-7xl my-12">
         <h2 className="text-3xl font-bold mb-6">Մեր աշխատանքը</h2>
         <div className="gap-6 grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4">
-          {blogs.length > 0 ?
+          {blogs.length > 0 ? (
             blogs.map((post, index) => (
-              <BlogPost key={index} {...post} link={true} key={index} />
+              <BlogPost key={index} {...post} link={true} />
             ))
-            :
-            (<p>Աշխատանքներ չկան</p>)}
+          ) : (
+            <p>Աշխատանքներ չկան</p>
+          )}
         </div>
         <div className="col-span-full flex justify-center mt-8">
           <Link
@@ -151,7 +150,9 @@ export default async function Home() {
             <Image
               alt="Our Team"
               className="rounded-xl shadow-lg"
-              src={aboutContent.image}
+              src={
+                "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&h=400&fit=crop" // TODO there is no about image on the backend?
+              }
               width={800}
               height={400}
             />
@@ -163,7 +164,7 @@ export default async function Home() {
               {aboutContent.description}
             </p>
             <div className="grid grid-cols-2 gap-6">
-              {aboutContent.stats.map((stat, index) => (
+              {stats.map((stat, index) => (
                 <div
                   key={index}
                   className="p-4 bg-default-50 rounded-lg text-center"

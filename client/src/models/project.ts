@@ -11,4 +11,6 @@ export interface IProject {
   image: IImage;
   isFeatured: boolean;
   about: string;
+  createdAt: string;
+  isArchived: boolean;
 }
