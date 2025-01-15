@@ -40,6 +40,7 @@ export default async function Home() {
       contribution: { populate: ["contributor"] },
       attachments: { fields: ["url", "name"] },
     },
+    sort: "createdAt:desc",
   });
 
   const { data: staticPages }: { data: IStaticPage[] } = await getData({
@@ -78,7 +79,6 @@ export default async function Home() {
           ))}
         </div>
         <div className="flex justify-center mt-8">
-          {/* TODO add archive page */}
           <Link
             href="/archive"
             className={buttonStyles({
@@ -110,7 +110,7 @@ export default async function Home() {
         <div className="gap-6 grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4">
           {blogs.length > 0 ? (
             blogs.map((post, index) => (
-              <BlogPost key={index} {...post} link={true} />
+              <BlogPost key={index} {...post} />
             ))
           ) : (
             <p>Աշխատանքներ չկան</p>

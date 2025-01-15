@@ -1,7 +1,7 @@
 import { Link } from "@nextui-org/link";
 import { Image } from "@nextui-org/image";
 import { button as buttonStyles } from "@nextui-org/theme";
-import { MoveRight } from "lucide-react";
+import { MoveRight, Rss } from "lucide-react";
 import { BlogPost } from "@/components/BlogPost";
 import { ContributorsList } from "../../../components/ContributorsList";
 import getData from "@/src/helpers/getData";
@@ -9,6 +9,8 @@ import getMediaUrl from "@/src/helpers/getMediaUrl";
 import { IProject } from "@/src/models/project";
 import { IParams } from "@/src/models/params";
 import NotFound from "@/components/NotFound";
+import { Chip } from "@nextui-org/chip";
+import { Button } from "@nextui-org/button";
 
 export default async function ProjectPage({ params }: IParams) {
   const { slug } = await params;
@@ -47,6 +49,19 @@ export default async function ProjectPage({ params }: IParams) {
 
   return (
     <section className="flex flex-col px-4">
+      {/* Archive indicator */}
+      {project.isArchived && (
+        <Chip
+          radius="sm"
+          color="warning"
+          variant="shadow"
+          className="w-full mb-4 max-w-full text-lg p-4"
+        >
+          Այս նախագծը արխիվում է, նախագծի մասին տեղեկությունները այլևս չեն
+          թարմացվում։
+        </Chip>
+      )}
+
       {/* Hero Section */}
       <div className="relative container h-[600px] mb-16">
         <Image
@@ -117,6 +132,16 @@ export default async function ProjectPage({ params }: IParams) {
       {/* Related Blog Posts */}
       <div className="container mb-16">
         <h2 className="text-3xl font-bold mb-6">Մեր աշխատանքը</h2>
+
+        <Link
+          href={`${process.env.NEXT_PUBLIC_BACKEND_URL}${process.env.NEXT_PUBLIC_RSS_URL}?project=${project.slug}`}
+          target="_blank"
+        >
+          <Button>
+            <Rss className="w-4 h-4" />
+            Նախագծի RSS
+          </Button>
+        </Link>
         <div className="gap-6 grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4">
           {project.blogs.map((blog, index) => (
             <BlogPost key={index} {...blog} />

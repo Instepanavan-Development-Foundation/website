@@ -1,5 +1,11 @@
 import qs from "qs";
-type IUrlTypes = "projects" | "blogs" | "contributors" | "menus" | "static-pages";
+type IUrlTypes =
+  | "projects"
+  | "blogs"
+  | "contributors"
+  | "menus"
+  | "static-pages"
+  | "site-config";
 
 interface IDataParams {
   type: IUrlTypes;

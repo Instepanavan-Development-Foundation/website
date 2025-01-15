@@ -1,0 +1,5 @@
+/**
+ * rss service
+ */
+
+export default () => ({});
