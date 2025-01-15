@@ -131,17 +131,18 @@ export default async function ProjectPage({ params }: IParams) {
 
       {/* Related Blog Posts */}
       <div className="container mb-16">
-        <h2 className="text-3xl font-bold mb-6">Մեր աշխատանքը</h2>
-
-        <Link
-          href={`${process.env.NEXT_PUBLIC_BACKEND_URL}${process.env.NEXT_PUBLIC_RSS_URL}?project=${project.slug}`}
-          target="_blank"
-        >
-          <Button>
-            <Rss className="w-4 h-4" />
-            Նախագծի RSS
-          </Button>
-        </Link>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-3xl font-bold mb-6">Մեր աշխատանքը</h2>
+          <Link
+            href={`${process.env.NEXT_PUBLIC_BACKEND_URL}${process.env.NEXT_PUBLIC_RSS_URL}?project=${project.slug}`}
+            target="_blank"
+          >
+            <Button variant="bordered" color="warning">
+              <Rss className="w-4 h-4" />
+              RSS
+            </Button>
+          </Link>
+        </div>
         <div className="gap-6 grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4">
           {project.blogs.map((blog, index) => (
             <BlogPost key={index} {...blog} />

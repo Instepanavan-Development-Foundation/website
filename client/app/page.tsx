@@ -9,13 +9,15 @@ import getData from "@/src/helpers/getData";
 import { IProject } from "@/src/models/project";
 import { IBlog } from "@/src/models/blog";
 import { IStaticPage } from "@/src/models/stat-page";
+import { Button } from "@nextui-org/button";
+import { Rss } from "lucide-react";
 
 // TODO move to backend
 const stats = [
   { label: "Իրականացված ծրագրեր", value: "25+" }, // projects?
   { label: "Համայնքներ", value: "40+" }, // ?
   { label: "Շահառուներ", value: "10,000+" }, // ?
-  { label: "Կամավորներ", value: "150+" },  // contributors?
+  { label: "Կամավորներ", value: "150+" }, // contributors?
 ];
 
 export default async function Home() {
@@ -58,7 +60,7 @@ export default async function Home() {
   };
 
   return (
-    <section className="flex flex-col px-4">
+    <section className="flex flex-col items-center px-4">
       {/* TODO move to backend */}
       <HeroSection
         title="Մենք նվիրված ենք տեխնոլոգիական լուծումների միջոցով հայկական համայնքների զարգացմանը:"
@@ -106,12 +108,21 @@ export default async function Home() {
       </div>
 
       <div className="w-full max-w-7xl my-12">
-        <h2 className="text-3xl font-bold mb-6">Մեր աշխատանքը</h2>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-3xl font-bold mb-6">Մեր աշխատանքը</h2>
+          <Link
+            href={`${process.env.NEXT_PUBLIC_BACKEND_URL}${process.env.NEXT_PUBLIC_RSS_URL}`}
+            target="_blank"
+          >
+            <Button variant="bordered" color="warning">
+              <Rss className="w-4 h-4" />
+              RSS
+            </Button>
+          </Link>
+        </div>
         <div className="gap-6 grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4">
           {blogs.length > 0 ? (
-            blogs.map((post, index) => (
-              <BlogPost key={index} {...post} />
-            ))
+            blogs.map((post, index) => <BlogPost key={index} {...post} />)
           ) : (
             <p>Աշխատանքներ չկան</p>
           )}
