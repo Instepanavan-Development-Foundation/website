@@ -20,7 +20,7 @@ export default async function ProjectPage({ params }: IParams) {
       blogs: {
         populate: [
           "images",
-          "contribution.contributor",
+          "contribution.contributor.avatar",
           "attachments",
           "project",
         ],

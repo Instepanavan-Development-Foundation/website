@@ -9,6 +9,7 @@
 		"lint": "eslint . --ext .ts,.tsx -c .eslintrc.json --fix"
 	},
 	"dependencies": {
+		"@aws-crypto/sha256-js": "^5.2.0",
 		"@internationalized/date": "^3.6.0",
 		"@nextui-org/button": "2.2.3",
 		"@nextui-org/card": "^2.2.7",
@@ -42,6 +43,7 @@
 		"react-markdown": "^9.0.3",
 		"rehype-raw": "^7.0.0",
 		"remark-gfm": "^4.0.0",
+		"sha256": "^0.2.0",
 		"yet-another-react-lightbox": "^3.21.7"
 	},
 	"devDependencies": {

@@ -27,6 +27,13 @@
     "slug": {
       "type": "string",
       "unique": true
+    },
+    "avatar": {
+      "allowedTypes": [
+        "images"
+      ],
+      "type": "media",
+      "multiple": true
     }
   }
 }
