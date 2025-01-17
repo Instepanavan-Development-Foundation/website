@@ -12,6 +12,7 @@ import getData from "@/src/helpers/getData";
 import { IBlog } from "@/src/models/blog";
 import { useRouter, useSearchParams } from "next/navigation";
 
+// TODO add metadata in all pages
 export default function BlogPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
