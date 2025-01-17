@@ -10,14 +10,12 @@ import { BlogPost } from "../../components/BlogPost";
 import { Chip } from "@nextui-org/chip";
 import getData from "@/src/helpers/getData";
 import { IBlog } from "@/src/models/blog";
-import { Link } from "@nextui-org/link";
 import { useRouter, useSearchParams } from "next/navigation";
 
 export default function BlogPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Initialize state from URL parameters
   const [searchQuery, setSearchQuery] = useState(
     searchParams.get("search") || ""
   );
@@ -37,11 +35,13 @@ export default function BlogPage() {
     const params = new URLSearchParams(searchParams.toString());
 
     Object.entries(newParams).forEach(([key, value]) => {
-      if (!value || (Array.isArray(value) && !value.length)) {
+      const isFilledArr = Array.isArray(value) && value.length > 0;
+      if (!value || isFilledArr) {
         params.delete(key);
-      } else {
-        params.set(key, Array.isArray(value) ? value.join(",") : value);
+        return;
       }
+
+      params.set(key, Array.isArray(value) ? value.join(",") : value);
     });
 
     router.push(`/blog?${params.toString()}`);
@@ -59,7 +59,7 @@ export default function BlogPage() {
       }
 
       if (selectedProject) {
-        filters["project"] = { name: selectedProject };
+        filters.project = { name: selectedProject };
       }
 
       if (selectedTags.length) {
@@ -90,9 +90,6 @@ export default function BlogPage() {
     };
 
     getBlogs();
-  }, [searchQuery, selectedProject, selectedTags, dateRange]);
-
-  useEffect(() => {
     updateURL({
       search: searchQuery,
       project: selectedProject,
