@@ -242,7 +242,7 @@ export default function BlogPage() {
         </div>
       )}
 
-      {/* Blog Posts Grid */}
+      {/* Blog Posts Grid - Modified for Masonry layout */}
       <div className="columns-1 md:columns-3 gap-6 space-y-6">
         {blogs.map((blog, index) => (
           <div key={index} className="break-inside-avoid">
@@ -250,6 +250,7 @@ export default function BlogPage() {
           </div>
         ))}
       </div>
+      {/* TODO implement infinite scroll */}
     </div>
   );
 }
