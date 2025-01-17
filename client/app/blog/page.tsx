@@ -16,14 +16,10 @@ export default function BlogPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const [searchQuery, setSearchQuery] = useState(
-    searchParams.get("search") || ""
-  );
-  const [selectedProject, setSelectedProject] = useState(
-    searchParams.get("project") || ""
-  );
-  const [selectedTags, setSelectedTags] = useState<string[]>(
-    searchParams.get("tags")?.split(",").filter(Boolean) || []
+  const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "");
+  const [selectedProject, setSelectedProject] = useState(searchParams.get("project") || "");
+  const [selectedTags, setSelectedTags] = useState<string>(
+    searchParams.get("tags") || ""
   );
   const [dateRange, setDateRange] = useState({
     start: searchParams.get("dateStart") || "",
@@ -35,13 +31,11 @@ export default function BlogPage() {
     const params = new URLSearchParams(searchParams.toString());
 
     Object.entries(newParams).forEach(([key, value]) => {
-      const isFilledArr = Array.isArray(value) && value.length > 0;
-      if (!value || isFilledArr) {
+      if (!value || (Array.isArray(value) && value.length === 0)) {
         params.delete(key);
-        return;
+      } else {
+        params.set(key, Array.isArray(value) ? value.join(",") : value);
       }
-
-      params.set(key, Array.isArray(value) ? value.join(",") : value);
     });
 
     router.push(`/blog?${params.toString()}`);
@@ -62,7 +56,7 @@ export default function BlogPage() {
         filters.project = { name: selectedProject };
       }
 
-      if (selectedTags.length) {
+      if (selectedTags) {
         filters.tag = {
           $containsi: selectedTags,
         };
@@ -102,16 +96,23 @@ export default function BlogPage() {
   const resetFilters = () => {
     setSearchQuery("");
     setSelectedProject("");
-    setSelectedTags([]);
+    setSelectedTags("");
     setDateRange({ start: "", end: "" });
+    updateURL({
+      search: "",
+      project: "",
+      tags: "",
+      dateStart: "",
+      dateEnd: "",
+    });
   };
 
   const removeProject = () => {
     setSelectedProject("");
   };
 
-  const removeTag = (tagToRemove: string) => {
-    setSelectedTags(selectedTags.filter((t) => t !== tagToRemove));
+  const removeTag = () => {
+    setSelectedTags("");
   };
 
   return (
@@ -128,9 +129,13 @@ export default function BlogPage() {
 
         <Select
           placeholder="Ընտրել նախագիծը"
-          value={selectedProject}
+          selectedKeys={selectedProject ? [selectedProject] : []}
           aria-label="projects"
-          onChange={(e) => setSelectedProject(e.target.value)}
+          onChange={(e) => {
+            const value = e.target.value;
+            setSelectedProject(value);
+            updateURL({ project: value });
+          }}
         >
           {blogs
             .map((blog) => blog.project)
@@ -148,13 +153,14 @@ export default function BlogPage() {
 
         <Select
           placeholder="Ընտրել պիտակները"
-          selectionMode="multiple"
-          value={selectedTags}
+          selectedKeys={selectedTags ? [selectedTags] : []}
           aria-label="tags"
-          // TODO make multiple?
-          onChange={(e) => setSelectedTags([e.target.value])}
+          onChange={(e) => {
+            const value = e.target.value;
+            setSelectedTags(value);
+            updateURL({ tags: value });
+          }}
         >
-          {/* TODO optimize */}
           {blogs
             .flatMap((blog) => blog.tag || [])
             .map((tag) => tag.name)
@@ -221,21 +227,17 @@ export default function BlogPage() {
             </Chip>
           )}
 
-          {selectedTags.map((tag) => {
-            console.log(selectedTags);
-
-            return (
-              <Chip
-                key={`tag-${tag}`}
-                onClose={() => removeTag(tag)}
-                variant="flat"
-                color="warning"
-                className="capitalize"
-              >
-                Թեգ: {tag}
-              </Chip>
-            );
-          })}
+          {selectedTags && (
+            <Chip
+              key={`tag-${selectedTags}`}
+              onClose={() => removeTag()}
+              variant="flat"
+              color="warning"
+              className="capitalize"
+            >
+              Թեգ: {selectedTags}
+            </Chip>
+          )}
         </div>
       )}
 
