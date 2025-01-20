@@ -10,18 +10,65 @@ import { BlogPost } from "../../components/BlogPost";
 import { Chip } from "@nextui-org/chip";
 import getData from "@/src/helpers/getData";
 import { IBlog } from "@/src/models/blog";
-import { Link } from "@nextui-org/link";
+import { useRouter, useSearchParams } from "next/navigation";
 
-// TODO keep filters in url for default value
+// TODO add metadata in all pages
 export default function BlogPage() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedProject, setSelectedProject] = useState("");
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [dateRange, setDateRange] = useState({ start: "", end: "" });
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "");
+  const [selectedProject, setSelectedProject] = useState(searchParams.get("project") || "");
+  const [selectedTags, setSelectedTags] = useState<string>(
+    searchParams.get("tags") || ""
+  );
+  const [dateRange, setDateRange] = useState({
+    start: searchParams.get("dateStart") || "",
+    end: searchParams.get("dateEnd") || "",
+  });
   const [blogs, setBlogs] = useState<IBlog[]>([]);
+
+  const updateURL = (newParams: Record<string, string | string[] | null>) => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    Object.entries(newParams).forEach(([key, value]) => {
+      if (!value || (Array.isArray(value) && value.length === 0)) {
+        params.delete(key);
+      } else {
+        params.set(key, Array.isArray(value) ? value.join(",") : value);
+      }
+    });
+
+    router.push(`/blog?${params.toString()}`);
+  };
 
   useEffect(() => {
     const getBlogs = async () => {
+      const filters: any = {};
+
+      if (searchQuery) {
+        filters.$or = [
+          { content: { $containsi: searchQuery } },
+          { project: { name: { $containsi: searchQuery } } },
+        ];
+      }
+
+      if (selectedProject) {
+        filters.project = { name: selectedProject };
+      }
+
+      if (selectedTags) {
+        filters.tag = {
+          $containsi: selectedTags,
+        };
+      }
+
+      if (dateRange.start && dateRange.end) {
+        filters.createdAt = {
+          $between: [dateRange.start, dateRange.end],
+        };
+      }
+
       const { data }: { data: IBlog[] } = await getData({
         type: "blogs",
         populate: {
@@ -30,29 +77,43 @@ export default function BlogPage() {
           attachments: { fields: ["url", "name"] },
           project: { fields: ["name", "slug"] },
         },
-        sort: "isFeatured:desc, createdAt:desc",
+        filters,
+        sort: "isFeatured:desc,createdAt:desc",
       });
 
       setBlogs(data);
     };
 
     getBlogs();
-  }, []); // TODO add filtering dependencies and add in filters
+    updateURL({
+      search: searchQuery,
+      project: selectedProject,
+      tags: selectedTags,
+      dateStart: dateRange.start,
+      dateEnd: dateRange.end,
+    });
+  }, [searchQuery, selectedProject, selectedTags, dateRange]);
 
   const resetFilters = () => {
     setSearchQuery("");
     setSelectedProject("");
-    setSelectedTags([]);
+    setSelectedTags("");
     setDateRange({ start: "", end: "" });
+    updateURL({
+      search: "",
+      project: "",
+      tags: "",
+      dateStart: "",
+      dateEnd: "",
+    });
   };
 
-  const removeProject = (projectToRemove: string) => {
-    // TODO implement
+  const removeProject = () => {
+    setSelectedProject("");
   };
 
-  // Function to remove a tag filter
-  const removeTag = (tagToRemove: string) => {
-    setSelectedTags(selectedTags.filter((t) => t !== tagToRemove));
+  const removeTag = () => {
+    setSelectedTags("");
   };
 
   return (
@@ -60,7 +121,6 @@ export default function BlogPage() {
       <h1 className="mb-8 text-5xl">Բլոգ</h1>
       {/* Filters Section */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        {/* TODO add filter by query */}
         <Input
           placeholder="Որոնել..."
           value={searchQuery}
@@ -70,56 +130,70 @@ export default function BlogPage() {
 
         <Select
           placeholder="Ընտրել նախագիծը"
-          value={selectedProject}
+          selectedKeys={selectedProject ? [selectedProject] : []}
           aria-label="projects"
-          onChange={(e) => setSelectedProject(e.target.value)}
+          onChange={(e) => {
+            const value = e.target.value;
+            setSelectedProject(value);
+            updateURL({ project: value });
+          }}
         >
-          {/* TODO add all projects and configure filter */}
-          {[].map((project) => (
-            <SelectItem key={project} value={project}>
-              {project}
-            </SelectItem>
-          ))}
+          {blogs
+            .map((blog) => blog.project)
+            .filter(
+              (project, index, self) =>
+                project &&
+                self.findIndex((p) => p?.name === project?.name) === index
+            )
+            .map((project) => (
+              <SelectItem key={project?.name} value={project?.name || ""}>
+                {project?.name}
+              </SelectItem>
+            ))}
         </Select>
 
         <Select
           placeholder="Ընտրել պիտակները"
-          selectionMode="multiple"
-          value={selectedTags}
+          selectedKeys={selectedTags ? [selectedTags] : []}
           aria-label="tags"
-          onChange={(e) => setSelectedTags(Array.from(e.target.value))}
+          onChange={(e) => {
+            const value = e.target.value;
+            setSelectedTags(value);
+            updateURL({ tags: value });
+          }}
         >
-          {/* TODO add all tags and configure filter */}
-          {[].map((tag) => (
-            <SelectItem key={tag} value={tag}>
-              {tag}
-            </SelectItem>
-          ))}
+          {blogs
+            .flatMap((blog) => blog.tag || [])
+            .map((tag) => tag.name)
+            .filter((tagName, index, self) => self.indexOf(tagName) === index)
+            .map((tagName) => (
+              <SelectItem key={tagName} value={tagName}>
+                {tagName}
+              </SelectItem>
+            ))}
         </Select>
 
-        <div className="flex gap-2">
-          {/* TODO add filter by dateRange */}
-          <DateRangePicker
-            aria-label="date-range"
-            defaultValue={{
-              start: parseDate("2024-04-01"), // TODO filter by createdAr
-              end: parseDate("2024-04-08"),
-            }}
-            // label="Stay duration"
-          />
-        </div>
+        <DateRangePicker
+          aria-label="date-range"
+          value={
+            dateRange.start && dateRange.end
+              ? {
+                  start: parseDate(dateRange.start),
+                  end: parseDate(dateRange.end),
+                }
+              : undefined
+          }
+          onChange={(range) => {
+            if (range) {
+              setDateRange({
+                start: range.start.toString(),
+                end: range.end.toString(),
+              });
+            }
+          }}
+        />
 
-        {/* Filter and Reset Buttons */}
         <div className="flex gap-2">
-          <Button
-            color="primary"
-            className="flex-1"
-            onClick={() => {
-              // Filter is automatically applied through the filteredPosts logic
-            }}
-          >
-            Զտել
-          </Button>
           <Button variant="flat" className="flex-1" onClick={resetFilters}>
             Չեղարկել
           </Button>
@@ -127,11 +201,8 @@ export default function BlogPage() {
       </div>
 
       {/* Active Filters Display */}
-      {(selectedProject.length > 0 ||
-        selectedTags.length > 0 ||
-        searchQuery) && (
+      {(selectedProject || selectedTags.length > 0 || searchQuery) && (
         <div className="flex flex-wrap gap-2 mb-4">
-          {/* Search query chip */}
           {searchQuery && (
             <Chip
               onClose={() => setSearchQuery("")}
@@ -142,47 +213,31 @@ export default function BlogPage() {
             </Chip>
           )}
 
-          {/* Project filters */}
           {selectedProject && (
             <Chip
-              key={`project-${selectedProject}`}
-              onClose={() => removeProject(selectedProject)}
+              onClose={removeProject}
               variant="flat"
               color="secondary"
               className="capitalize"
             >
-              Նախագիծ: {selectedProject}
+              Նախագիծ:{" "}
+              {
+                blogs.find((b) => b.project?.name === selectedProject)?.project
+                  ?.name
+              }
             </Chip>
           )}
 
-          {/* Tag filters */}
-          {selectedTags.map((tag) => (
+          {selectedTags && (
             <Chip
-              key={`tag-${tag}`}
-              onClose={() => removeTag(tag)}
+              key={`tag-${selectedTags}`}
+              onClose={() => removeTag()}
               variant="flat"
               color="warning"
               className="capitalize"
             >
-              Թեգ: {tag}
+              Թեգ: {selectedTags}
             </Chip>
-          ))}
-
-          {/* Clear all filters button */}
-          {(selectedProject.length > 0 ||
-            selectedTags.length > 0 ||
-            searchQuery) && (
-            <Button
-              size="sm"
-              variant="light"
-              onClick={() => {
-                setSelectedProject("");
-                setSelectedTags([]);
-                setSearchQuery("");
-              }}
-            >
-              Մաքրել բոլորը
-            </Button>
           )}
         </div>
       )}
