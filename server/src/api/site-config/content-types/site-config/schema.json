@@ -31,6 +31,12 @@
       "allowedTypes": [
         "images"
       ]
+    },
+    "contactEmail": {
+      "type": "string"
+    },
+    "defaultContact": {
+      "type": "text"
     }
   }
 }

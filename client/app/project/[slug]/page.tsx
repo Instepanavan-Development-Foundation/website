@@ -2,16 +2,18 @@ import { Link } from "@nextui-org/link";
 import { Image } from "@nextui-org/image";
 import { button as buttonStyles } from "@nextui-org/theme";
 import { MoveRight, Rss, Star } from "lucide-react";
+import { Chip } from "@nextui-org/chip";
+import { Button } from "@nextui-org/button";
+
 import { BlogPost } from "@/components/BlogPost";
-import { ContributorsList } from "../../../components/ContributorsList";
+import { ContributorsList } from "@/components/ContributorsList";
 import getData from "@/src/helpers/getData";
 import getMediaUrl from "@/src/helpers/getMediaUrl";
 import { IProject } from "@/src/models/project";
 import { IParams } from "@/src/models/params";
 import NotFound from "@/components/NotFound";
-import { Chip } from "@nextui-org/chip";
-import { Button } from "@nextui-org/button";
 import { Avatar } from "@/components/Avatar";
+import { ContributionBox } from "@/components/ContributionBox";
 
 export default async function ProjectPage({ params }: IParams) {
   const { slug } = await params;
@@ -80,55 +82,51 @@ export default async function ProjectPage({ params }: IParams) {
           <p className="text-xl md:text-2xl text-center max-w-3xl mb-8">
             {project.description}
           </p>
-          <Link
-            href="#"
-            className={buttonStyles({
-              color: "success",
-              radius: "full",
-              variant: "shadow",
-              size: "lg",
-            })}
-          >
-            <span className="text-xl px-8 py-2">Աջակցել նախագծին</span>
-          </Link>
+
+          <ContributionBox project={project} />
         </div>
       </div>
 
       {/* Project Details */}
-      <div className="container mb-16">
-        {/* Funding Progress */}
-        <div className="bg-default-50 rounded-xl p-8">
-          <h2 className="text-2xl font-bold mb-4">Ֆինանսավորում</h2>
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-xl text-default-600">
-              {formatCurrency(30000, "USD")} raised
-            </span>
-            <span className="text-lg text-default-500">
-              Goal: {formatCurrency(50000, "USD")}
-            </span>
-          </div>
-          <div className="w-full h-3 bg-default-100 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-primary transition-all duration-500 rounded-full"
-              style={{
-                width: `${Math.min(100, (30000 / 50000) * 100)}%`,
-              }}
-            />
-          </div>
-
-          {/* Contributors Preview */}
-          <div className="mt-6 flex items-center gap-2 justify-between">
-            <div className="text-default-500">
-              {Math.round((30000 / 50000) * 100)}% funded by
+      {project.gatheredAmount && project.requiredAmount && (
+        <div className="container mb-16">
+          {/* Funding Progress */}
+          <div className="bg-default-50 rounded-xl p-8">
+            <h2 className="text-2xl font-bold mb-4">Ֆինանսավորում</h2>
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-xl text-default-600">
+                {formatCurrency(project.gatheredAmount, "USD")} raised
+              </span>
+              <span className="text-lg text-default-500">
+                Goal: {formatCurrency(project.requiredAmount, "USD")}
+              </span>
             </div>
-            <ContributorsList
-              contributions={project.blogs
-                .map((blog) => blog.contribution)
-                .flat()}
-            />
+            <div className="w-full h-3 bg-default-100 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-primary transition-all duration-500 rounded-full"
+                style={{
+                  width: `${Math.min(100, (project.gatheredAmount / project.requiredAmount) * 100)}%`,
+                }}
+              />
+            </div>
+
+            {/* Contributors Preview */}
+            <div className="mt-6 flex items-center gap-2 justify-between">
+              <div className="text-default-500">
+                {Math.round(
+                  (project.gatheredAmount / project.requiredAmount) * 100
+                )}
+                % աջակիցների կողմից
+              </div>
+              <ContributorsList
+                contributions={project.blogs
+                  .map((blog) => blog.contribution)
+                  .flat()}
+              />
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Related Blog Posts */}
       <div className="container mb-16">
@@ -151,7 +149,7 @@ export default async function ProjectPage({ params }: IParams) {
         </div>
         <div className="col-span-full flex justify-center mt-8">
           <Link
-            href="/blog"
+            href={`/blog?project=${project.name}`}
             className={buttonStyles({
               variant: "flat",
               radius: "full",

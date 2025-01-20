@@ -5,4 +5,6 @@ export interface ISiteConfig {
   logo: {
     url: string;
   };
+  contactEmail: string;
+  defaultContact: string;
 }

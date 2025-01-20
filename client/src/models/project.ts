@@ -2,6 +2,10 @@ import { IBlog } from "./blog";
 import { IImage } from "./media";
 
 export interface IProject {
+  gatheredAmount: number;
+  requiredAmount: number;
+  defaultContact: string;
+  fundraisingURL: string;
   events: string | TrustedHTML;
   name: string;
   description: string;

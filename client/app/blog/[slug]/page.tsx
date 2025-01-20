@@ -12,6 +12,7 @@ export default async function BlogPage({ params }: IParams) {
       images: { fields: ["url"] },
       contribution: { populate: ["contributor"] },
       attachments: { fields: ["url", "name"] },
+      project: { fields: ["name", "slug"] },
     },
     filters: { slug },
   });

@@ -60,6 +60,15 @@
     },
     "events": {
       "type": "text"
+    },
+    "requiredAmount": {
+      "type": "integer"
+    },
+    "gatheredAmount": {
+      "type": "integer"
+    },
+    "fundraisingURL": {
+      "type": "string"
     }
   }
 }

@@ -27,5 +27,7 @@ export const getSiteConfig = async () => {
     navItems: mainMenu,
     navMenuItems: mainMenu,
     footer: footerMenu,
+    contactEmail: siteConfig.contactEmail,
+    defaultContact: siteConfig.defaultContact,
   };
 };
