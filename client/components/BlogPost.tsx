@@ -111,7 +111,7 @@ export function BlogPost({
 
             {/* Contributors */}
             <div className="flex -space-x-2 mb-4">
-              <ContributorsList contributors={contribution} />
+              <ContributorsList contributions={contribution} />
             </div>
 
             {/* Attachments */}
