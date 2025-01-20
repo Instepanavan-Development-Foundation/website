@@ -38,6 +38,7 @@ export default async function Home() {
     filters: {
       isArchived: false,
     },
+    sort: ["isFeatured:desc", "createdAt:desc"],
   });
 
   const { data: blogs }: { data: IBlog[] } = await getData({

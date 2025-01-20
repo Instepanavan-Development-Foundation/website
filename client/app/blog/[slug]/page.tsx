@@ -10,7 +10,7 @@ export default async function BlogPage({ params }: IParams) {
     type: "blogs",
     populate: {
       images: { fields: ["url"] },
-      contribution: { populate: ["contributor"] },
+      contribution: { populate: ["contributor.avatar"] },
       attachments: { fields: ["url", "name"] },
       project: { fields: ["name", "slug"] },
     },

@@ -78,7 +78,7 @@ export default function BlogPage() {
         type: "blogs",
         populate: {
           images: { fields: ["url"] },
-          contribution: { populate: ["contributor"] },
+          contribution: { populate: ["contributor.avatar"] },
           attachments: { fields: ["url", "name"] },
           project: { fields: ["name", "slug"] },
         },
