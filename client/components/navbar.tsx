@@ -32,8 +32,8 @@ export const Navbar = async () => {
       <NavbarContent className="basis-1/5 sm:basis-full" justify="start">
         <NavbarBrand as="li" className="gap-3 max-w-fit">
           <NextLink className="flex justify-start items-center gap-1" href="/">
-            <Logo />
-            <p className="font-bold text-inherit">ACME</p>
+            <Logo src={siteConfig.logo} />
+            <p className="font-bold text-inherit">{siteConfig.logoTitle}</p>
           </NextLink>
         </NavbarBrand>
       </NavbarContent>
@@ -72,8 +72,10 @@ export const Navbar = async () => {
       </NavbarContent>
 
       <NavbarContent className="sm:hidden basis-1 pl-4" justify="end">
-        <Link isExternal aria-label="Github"
-        // href={siteConfig.links.github}
+        <Link
+          isExternal
+          aria-label="Github"
+          // href={siteConfig.links.github}
         >
           <GithubIcon className="text-default-500" />
         </Link>

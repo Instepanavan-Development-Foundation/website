@@ -29,7 +29,7 @@ export function BlogPost({
   createdAt,
   project,
   slug,
-  link,
+  isLink = true,
 }: IBlog) {
   const numberOfImagesShown = 1;
   const [open, setOpen] = useState(false);
@@ -83,9 +83,13 @@ export function BlogPost({
             <p className="text-xs text-gray-500">
               {dayjs(createdAt).format("DD.MM.YYYY HH:mm")}
             </p>
-            <Link href={`/blog/${slug}`}>
+            {isLink ? (
+              <Link href={`/blog/${slug}`}>
+                <p className="text-default-500 mb-4">{content}</p>
+              </Link>
+            ) : (
               <p className="text-default-500 mb-4">{content}</p>
-            </Link>
+            )}
             {/* Tags */}
             <div className="flex gap-2 flex-wrap mb-4">
               {tag &&
@@ -107,7 +111,7 @@ export function BlogPost({
 
             {/* Contributors */}
             <div className="flex -space-x-2 mb-4">
-              <ContributorsList contributors={contribution} />
+              <ContributorsList contributions={contribution} />
             </div>
 
             {/* Attachments */}

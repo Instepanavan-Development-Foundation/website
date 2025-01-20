@@ -1,5 +1,7 @@
 import { Image } from "@nextui-org/image";
 import { Card, CardBody } from "@nextui-org/card";
+
+import { Avatar } from "@/components/Avatar";
 import getData from "@/src/helpers/getData";
 import { IProject } from "@/src/models/project";
 import getMediaSrc from "@/src/helpers/getMediaUrl";
@@ -39,13 +41,7 @@ export default async function ContributorPage({ params }: IParams) {
     <section className="container mx-auto px-4 py-8">
       <div className="flex flex-col md:flex-row items-center md:items-start gap-8 mb-16">
         <div className="relative">
-          <Image
-            src={"https://i.pravatar.cc/150?img=1"} // TODO add gravatar
-            alt={contributor.about}
-            width={200}
-            height={200}
-            className="rounded-full"
-          />
+          <Avatar contributor={contributor} width={200} height={200} />
           <div className="absolute inset-0 rounded-full ring-4 ring-primary ring-offset-4 ring-offset-background" />
         </div>
         <div className="text-center md:text-left">

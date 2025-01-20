@@ -16,7 +16,6 @@ export const viewport: Viewport = {
   ],
 };
 
-
 export default async function RootLayout({
   children,
 }: {
@@ -43,7 +42,7 @@ export default async function RootLayout({
       <body
         className={clsx(
           "min-h-screen bg-background font-sans antialiased",
-          fontSans.variable,
+          fontSans.variable
         )}
       >
         <Providers themeProps={{ attribute: "class", defaultTheme: "dark" }}>

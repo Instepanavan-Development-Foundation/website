@@ -24,7 +24,7 @@ export default async function BlogPage({ params }: IParams) {
   return (
     // TODO maybe change styles?
     <div className="container mx-auto px-4 py-8">
-      <BlogPost {...blog} />
+      <BlogPost {...blog} isLink={false} />
     </div>
   );
 }
