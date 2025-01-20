@@ -83,10 +83,12 @@ export function BlogPost({
             <p className="text-xs text-gray-500">
               {dayjs(createdAt).format("DD.MM.YYYY HH:mm")}
             </p>
-            {isLink && (
+            {isLink ? (
               <Link href={`/blog/${slug}`}>
                 <p className="text-default-500 mb-4">{content}</p>
               </Link>
+            ) : (
+              <p className="text-default-500 mb-4">{content}</p>
             )}
             {/* Tags */}
             <div className="flex gap-2 flex-wrap mb-4">
