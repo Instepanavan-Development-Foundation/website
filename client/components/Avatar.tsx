@@ -19,13 +19,13 @@ export function Avatar({
   width: number;
   height: number;
 }) {
+  const avatarUrl = contributor.avatar?.url
+    ? getMediaUrl(contributor.avatar)
+    : getGravatarUrl(contributor.email);
+
   return (
     <Image
-      src={
-        contributor.avatar?.url
-          ? getMediaUrl(contributor.avatar)
-          : getGravatarUrl(contributor.email)
-      }
+      src={avatarUrl}
       alt={"contributor.name"}
       width={width}
       height={height}

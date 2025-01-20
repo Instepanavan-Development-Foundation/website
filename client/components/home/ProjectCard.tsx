@@ -1,10 +1,8 @@
-import Link from "next/link";
 import { Card, CardBody, CardHeader } from "@nextui-org/card";
 import { Image } from "@nextui-org/image";
 import { ContributorsList } from "../ContributorsList";
 import { IProject } from "@/src/models/project";
 import getMediaUrl from "@/src/helpers/getMediaUrl";
-import { IContribution } from "@/src/models/blog";
 
 interface ProjectCardProps {
   title: string;

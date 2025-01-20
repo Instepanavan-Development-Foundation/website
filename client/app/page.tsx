@@ -26,7 +26,13 @@ export default async function Home() {
     populate: {
       image: { fields: ["url"] },
       blogs: {
-        populate: ["contribution.contributor"],
+        sort: ["isFeatured:desc", "createdAt:desc"],
+        populate: ["contribution.contributor.avatar"],
+        filters: {
+          contribution: {
+            $null: false,
+          },
+        },
       },
     },
     filters: {
@@ -39,7 +45,7 @@ export default async function Home() {
     populate: {
       images: { fields: ["url"] },
       project: { fields: ["name", "slug"] },
-      contribution: { populate: ["contributor"] },
+      contribution: { populate: ["contributor.avatar"] },
       attachments: { fields: ["url", "name"] },
     },
     sort: "createdAt:desc",
@@ -49,6 +55,7 @@ export default async function Home() {
     type: "static-pages",
     filters: { slug: "about" },
   });
+
   const aboutContent = staticPages[0];
 
   const formatCurrency = (amount: number, currency: string) => {

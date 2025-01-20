@@ -18,7 +18,7 @@ export const getSiteConfig = async () => {
   const mainMenu = menus.find((menu) => menu.title === "Main")?.links || [];
   const footerMenu = menus.find((menu) => menu.title === "Footer")?.links || [];
 
-  const logoUrl = siteConfig.logo?.[0]?.url;
+  const logoUrl = siteConfig.logo.url;
   return {
     name: siteConfig.title,
     description: siteConfig.siteDescription,
