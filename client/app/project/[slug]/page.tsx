@@ -156,7 +156,7 @@ export default async function ProjectPage({ params }: IParams) {
               size: "lg",
             })}
           >
-            Դիտել բոլոր հոդվածները
+            Դիտել նախագծի բոլոր հոդվածները
             <MoveRight className="ml-2 w-5 h-5" />
           </Link>
         </div>
