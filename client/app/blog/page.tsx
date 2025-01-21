@@ -32,6 +32,9 @@ export default function BlogPage() {
     end: searchParams.get("dateEnd") || "",
   });
   const [blogs, setBlogs] = useState<IBlog[]>([]);
+  const [offset, setOffset] = useState(0);
+  const [limit] = useState(Number(process.env.NEXT_PUBLIC_QUERY_LIMIT) || 10);
+  const [hasMore, setHasMore] = useState(true);
 
   const updateURL = (newParams: Record<string, string | string[] | null>) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -47,49 +50,59 @@ export default function BlogPage() {
     router.push(`/blog?${params.toString()}`);
   };
 
-  useEffect(() => {
-    const getBlogs = async () => {
-      const filters: any = {};
+  const fetchBlogs = async (reset = false) => {
+    const filters: any = {};
 
-      if (searchQuery) {
-        filters.$or = [
-          { content: { $containsi: searchQuery } },
-          { project: { name: { $containsi: searchQuery } } },
-        ];
-      }
+    if (searchQuery) {
+      filters.$or = [
+        { content: { $containsi: searchQuery } },
+        { project: { name: { $containsi: searchQuery } } },
+      ];
+    }
 
-      if (selectedProject) {
-        filters.project = { name: selectedProject };
-      }
+    if (selectedProject) {
+      filters.project = { name: selectedProject };
+    }
 
-      if (selectedTags) {
-        filters.tag = {
-          $containsi: selectedTags,
-        };
-      }
+    if (selectedTags) {
+      filters.tag = {
+        $containsi: selectedTags,
+      };
+    }
 
-      if (dateRange.start && dateRange.end) {
-        filters.createdAt = {
-          $between: [dateRange.start, dateRange.end],
-        };
-      }
+    if (dateRange.start && dateRange.end) {
+      filters.createdAt = {
+        $between: [dateRange.start, dateRange.end],
+      };
+    }
 
-      const { data }: { data: IBlog[] } = await getData({
-        type: "blogs",
-        populate: {
-          images: { fields: ["url"] },
-          contribution: { populate: ["contributor.avatar"] },
-          attachments: { fields: ["url", "name"] },
-          project: { fields: ["name", "slug"] },
-        },
-        filters,
-        sort: "isFeatured:desc,createdAt:desc",
-      });
+    const { data }: { data: IBlog[] } = await getData({
+      type: "blogs",
+      populate: {
+        images: { fields: ["url"] },
+        contribution: { populate: ["contributor.avatar"] },
+        attachments: { fields: ["url", "name"] },
+        project: { fields: ["name", "slug"] },
+      },
+      filters,
+      sort: "isFeatured:desc,createdAt:desc",
+      offset: reset ? 0 : offset,
+      limit,
+    });
 
+    if (reset) {
       setBlogs(data);
-    };
+      setOffset(data.length);
+    } else {
+      setBlogs((prevBlogs) => [...prevBlogs, ...data]);
+      setOffset((prevOffset) => prevOffset + data.length);
+    }
 
-    getBlogs();
+    setHasMore(data.length === limit);
+  };
+
+  useEffect(() => {
+    fetchBlogs(true);
     updateURL({
       search: searchQuery,
       project: selectedProject,
@@ -259,7 +272,13 @@ export default function BlogPage() {
           </div>
         ))}
       </div>
-      {/* TODO implement infinite scroll */}
+      {hasMore && (
+        <div className="text-center mt-8">
+          <Button color="primary" onClick={() => fetchBlogs()}>
+            Բեռնել ավելին
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
