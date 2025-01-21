@@ -13,6 +13,8 @@ import { BlogPost } from "../../components/BlogPost";
 import getData from "@/src/helpers/getData";
 import { IBlog } from "@/src/models/blog";
 
+const limit = Number(process.env.NEXT_PUBLIC_QUERY_LIMIT) || 10;
+
 // TODO add metadata in all pages
 export default function BlogPage() {
   const router = useRouter();
@@ -33,7 +35,6 @@ export default function BlogPage() {
   });
   const [blogs, setBlogs] = useState<IBlog[]>([]);
   const [offset, setOffset] = useState(0);
-  const [limit] = useState(Number(process.env.NEXT_PUBLIC_QUERY_LIMIT) || 10);
   const [hasMore, setHasMore] = useState(true);
 
   const updateURL = (newParams: Record<string, string | string[] | null>) => {
