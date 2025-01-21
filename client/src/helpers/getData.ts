@@ -14,6 +14,8 @@ interface IDataParams {
   params?: string;
   fields?: string[];
   sort?: string;
+  offset?: number;
+  limit?: number;
 }
 
 // TODO add query by dynamic component (if possible) || create custom query on backend
@@ -24,6 +26,8 @@ export default async function getData({
   populate = {},
   fields = [],
   sort = "",
+  offset = 0,
+  limit = 10,
 }: IDataParams): Promise<{ data: any[] }> {
   const query = qs.stringify(
     {
@@ -32,6 +36,7 @@ export default async function getData({
       params,
       filters,
       sort,
+      pagination: { start: offset, limit },
     },
     {
       encodeValuesOnly: true,
