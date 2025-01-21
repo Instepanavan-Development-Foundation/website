@@ -5,7 +5,6 @@ import { Chip } from "@nextui-org/chip";
 import { Paperclip, Bookmark } from "lucide-react";
 import { useState } from "react";
 import { Image } from "@nextui-org/image";
-import dayjs from "dayjs";
 import { Link } from "@nextui-org/link";
 
 import { ContributorsList } from "./ContributorsList";
@@ -18,6 +17,7 @@ import Thumbnails from "yet-another-react-lightbox/plugins/thumbnails";
 import "yet-another-react-lightbox/styles.css";
 import "yet-another-react-lightbox/plugins/thumbnails.css";
 import NextJsImage from "./NextJsImage";
+import { prettyDate } from "@/src/helpers/prettyDate";
 
 export function BlogPost({
   content,
@@ -81,7 +81,7 @@ export function BlogPost({
 
           <div className="p-5">
             <p className="text-xs text-gray-500">
-              {dayjs(createdAt).format("DD.MM.YYYY HH:mm")}
+              {prettyDate(createdAt)}
             </p>
             {isLink ? (
               <Link href={`/blog/${slug}`}>

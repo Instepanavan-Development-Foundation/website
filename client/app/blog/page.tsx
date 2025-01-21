@@ -6,19 +6,24 @@ import { useEffect, useState } from "react";
 import { Button } from "@nextui-org/button";
 import { DateRangePicker } from "@nextui-org/date-picker";
 import { parseDate } from "@internationalized/date";
-import { BlogPost } from "../../components/BlogPost";
 import { Chip } from "@nextui-org/chip";
+import { useRouter, useSearchParams } from "next/navigation";
+
+import { BlogPost } from "../../components/BlogPost";
 import getData from "@/src/helpers/getData";
 import { IBlog } from "@/src/models/blog";
-import { useRouter, useSearchParams } from "next/navigation";
 
 // TODO add metadata in all pages
 export default function BlogPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "");
-  const [selectedProject, setSelectedProject] = useState(searchParams.get("project") || "");
+  const [searchQuery, setSearchQuery] = useState(
+    searchParams.get("search") || ""
+  );
+  const [selectedProject, setSelectedProject] = useState(
+    searchParams.get("project") || ""
+  );
   const [selectedTags, setSelectedTags] = useState<string>(
     searchParams.get("tags") || ""
   );
@@ -73,7 +78,7 @@ export default function BlogPage() {
         type: "blogs",
         populate: {
           images: { fields: ["url"] },
-          contribution: { populate: ["contributor"] },
+          contribution: { populate: ["contributor.avatar"] },
           attachments: { fields: ["url", "name"] },
           project: { fields: ["name", "slug"] },
         },
@@ -120,12 +125,13 @@ export default function BlogPage() {
     <div className="container mx-auto px-4 py-8">
       <h1 className="mb-8 text-5xl">Բլոգ</h1>
       {/* Filters Section */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-4 mb-8">
         <Input
           placeholder="Որոնել..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           aria-label="search"
+          className="col-span-full md:col-span-12"
         />
 
         <Select
@@ -137,6 +143,7 @@ export default function BlogPage() {
             setSelectedProject(value);
             updateURL({ project: value });
           }}
+          className="col-span-full md:col-span-4"
         >
           {blogs
             .map((blog) => blog.project)
@@ -161,6 +168,7 @@ export default function BlogPage() {
             setSelectedTags(value);
             updateURL({ tags: value });
           }}
+          className="col-span-full md:col-span-4"
         >
           {blogs
             .flatMap((blog) => blog.tag || [])
@@ -191,10 +199,11 @@ export default function BlogPage() {
               });
             }
           }}
+          className="col-span-full md:col-span-3"
         />
 
-        <div className="flex gap-2">
-          <Button variant="flat" className="flex-1" onClick={resetFilters}>
+        <div className="flex gap-2 col-span-full md:col-span-1">
+          <Button color="warning" className="flex-1" onClick={resetFilters}>
             Չեղարկել
           </Button>
         </div>
@@ -246,7 +255,7 @@ export default function BlogPage() {
       <div className="columns-1 md:columns-3 gap-6 space-y-6">
         {blogs.map((blog, index) => (
           <div key={index} className="break-inside-avoid">
-            <BlogPost {...blog} link={true} />
+            <BlogPost {...blog} />
           </div>
         ))}
       </div>

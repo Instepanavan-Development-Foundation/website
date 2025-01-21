@@ -1,16 +1,19 @@
 import { Link } from "@nextui-org/link";
 import { Image } from "@nextui-org/image";
 import { button as buttonStyles } from "@nextui-org/theme";
-import { MoveRight, Rss } from "lucide-react";
+import { MoveRight, Rss, Star } from "lucide-react";
+import { Chip } from "@nextui-org/chip";
+import { Button } from "@nextui-org/button";
+
 import { BlogPost } from "@/components/BlogPost";
-import { ContributorsList } from "../../../components/ContributorsList";
+import { ContributorsList } from "@/components/ContributorsList";
 import getData from "@/src/helpers/getData";
 import getMediaUrl from "@/src/helpers/getMediaUrl";
 import { IProject } from "@/src/models/project";
 import { IParams } from "@/src/models/params";
 import NotFound from "@/components/NotFound";
-import { Chip } from "@nextui-org/chip";
-import { Button } from "@nextui-org/button";
+import { Avatar } from "@/components/Avatar";
+import { ContributionBox } from "@/components/ContributionBox";
 
 export default async function ProjectPage({ params }: IParams) {
   const { slug } = await params;
@@ -24,6 +27,7 @@ export default async function ProjectPage({ params }: IParams) {
           "attachments",
           "project",
         ],
+        sort: ["isFeatured:desc", "createdAt:desc"],
       },
       image: {
         fields: ["url", "alternativeText", "name"],
@@ -78,56 +82,51 @@ export default async function ProjectPage({ params }: IParams) {
           <p className="text-xl md:text-2xl text-center max-w-3xl mb-8">
             {project.description}
           </p>
-          <Link
-            href="#"
-            className={buttonStyles({
-              color: "success",
-              radius: "full",
-              variant: "shadow",
-              size: "lg",
-            })}
-          >
-            <span className="text-xl px-8 py-2">Աջակցել նախագծին</span>
-          </Link>
+
+          <ContributionBox project={project} />
         </div>
       </div>
 
       {/* Project Details */}
-      <div className="container mb-16">
-        {/* Funding Progress */}
-        <div className="bg-default-50 rounded-xl p-8">
-          <h2 className="text-2xl font-bold mb-4">Ֆինանսավորում</h2>
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-xl text-default-600">
-              {formatCurrency(30000, "USD")} raised
-            </span>
-            <span className="text-lg text-default-500">
-              Goal: {formatCurrency(50000, "USD")}
-            </span>
-          </div>
-          <div className="w-full h-3 bg-default-100 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-primary transition-all duration-500 rounded-full"
-              style={{
-                width: `${Math.min(100, (30000 / 50000) * 100)}%`,
-              }}
-            />
-          </div>
-
-          {/* Contributors Preview */}
-          <div className="mt-6 flex items-center gap-2 justify-between">
-            <div className="text-default-500">
-              {Math.round((30000 / 50000) * 100)}% funded by
+      {project.gatheredAmount && project.requiredAmount && (
+        <div className="container mb-16">
+          {/* Funding Progress */}
+          <div className="bg-default-50 rounded-xl p-8">
+            <h2 className="text-2xl font-bold mb-4">Ֆինանսավորում</h2>
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-xl text-default-600">
+                {formatCurrency(project.gatheredAmount, "USD")} raised
+              </span>
+              <span className="text-lg text-default-500">
+                Goal: {formatCurrency(project.requiredAmount, "USD")}
+              </span>
             </div>
-            <ContributorsList
-              contributors={project.blogs
-                .map((blog) => blog.contribution)
-                .flat()}
-            />
-            {/* TODO fetch all contributions */}
+            <div className="w-full h-3 bg-default-100 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-primary transition-all duration-500 rounded-full"
+                style={{
+                  width: `${Math.min(100, (project.gatheredAmount / project.requiredAmount) * 100)}%`,
+                }}
+              />
+            </div>
+
+            {/* Contributors Preview */}
+            <div className="mt-6 flex items-center gap-2 justify-between">
+              <div className="text-default-500">
+                {Math.round(
+                  (project.gatheredAmount / project.requiredAmount) * 100
+                )}
+                % աջակիցների կողմից
+              </div>
+              <ContributorsList
+                contributions={project.blogs
+                  .map((blog) => blog.contribution)
+                  .flat()}
+              />
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Related Blog Posts */}
       <div className="container mb-16">
@@ -150,7 +149,7 @@ export default async function ProjectPage({ params }: IParams) {
         </div>
         <div className="col-span-full flex justify-center mt-8">
           <Link
-            href="/blog"
+            href={`/blog?project=${project.name}`}
             className={buttonStyles({
               variant: "flat",
               radius: "full",
@@ -204,28 +203,21 @@ export default async function ProjectPage({ params }: IParams) {
             .map((blog) => blog.contribution)
             .flat()
             .map((contributor, index) => (
-              <div
+              <Link
+                href={`/contributor/${contributor.contributor.slug}`}
                 key={index}
                 className="flex items-center p-3 bg-default-50 rounded-xl hover:bg-default-100 transition-colors relative"
               >
                 {contributor.isFeatured && (
                   <div className="absolute -top-2 -right-2 bg-warning-400 text-white rounded-full p-1">
-                    <svg
-                      className="w-4 h-4"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
+                    <Star className="w-4 h-4" />
                   </div>
                 )}
                 <div className="relative min-w-[50px]">
-                  <Image
-                    src={"https://dummyimage.com/600x400/000000/ffffff"}
-                    alt={contributor.contributor.fullName}
+                  <Avatar
+                    contributor={contributor.contributor}
                     width={50}
                     height={50}
-                    className="rounded-full object-cover"
                   />
                   <div className="absolute inset-0 rounded-full ring-2 ring-primary ring-offset-2 ring-offset-background" />
                 </div>
@@ -234,7 +226,7 @@ export default async function ProjectPage({ params }: IParams) {
                     {contributor.contributor.fullName}՝ {contributor.text}
                   </p>
                 </div>
-              </div>
+              </Link>
             ))}
         </div>
         <div className="col-span-full flex justify-center mt-8">
