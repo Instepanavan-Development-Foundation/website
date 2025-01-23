@@ -15,6 +15,26 @@ import NotFound from "@/components/NotFound";
 import { Avatar } from "@/components/Avatar";
 import { ContributionBox } from "@/components/ContributionBox";
 
+export async function generateMetadata({ params }: IParams) {
+  const { slug } = await params;
+  const { data }: { data: IProject[] } = await getData({
+    type: "projects",
+    filters: {
+      slug,
+    },
+  });
+
+  const [project] = data;
+  if (!project) {
+    return;
+  }
+
+  return {
+    title: project.name,
+    description: project.description,
+  };
+}
+
 export default async function ProjectPage({ params }: IParams) {
   const { slug } = await params;
   const { data }: { data: IProject[] } = await getData({

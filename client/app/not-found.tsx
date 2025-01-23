@@ -1,13 +1,10 @@
 import NotFound from "@/components/NotFound";
-import { getSiteConfig } from "@/config/site";
 
-export async function generateMetadata({}) {
-  const { name } = await getSiteConfig();
+export const metadata = {
+  title: "Էջը չի գտնվել",
+  description: "Էջը չի գտնվել",
+};
 
-  return {
-    title: `Էջը չի գտնվել | ${name}`,
-    description: `Էջը չի գտնվել ${name}`,
-  };
+export default function NotFoundPage() {
+  return <NotFound />;
 }
-
-export default NotFound;

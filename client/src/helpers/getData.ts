@@ -19,6 +19,7 @@ interface IDataParams {
 }
 
 // TODO add query by dynamic component (if possible) || create custom query on backend
+// TODO fix TS types
 export default async function getData({
   type,
   params = "",

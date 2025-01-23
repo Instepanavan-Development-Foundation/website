@@ -1,5 +1,5 @@
 "use client";
-
+import Head from "next/head";
 import { Input } from "@nextui-org/input";
 import { Select, SelectItem } from "@nextui-org/select";
 import { useEffect, useState } from "react";
@@ -15,7 +15,7 @@ import { IBlog } from "@/src/models/blog";
 
 const limit = Number(process.env.NEXT_PUBLIC_QUERY_LIMIT) || 10;
 
-// TODO add metadata in all pages
+// TODO add metadata
 export default function BlogPage() {
   const router = useRouter();
   const searchParams = useSearchParams();

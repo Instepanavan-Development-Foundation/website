@@ -1,5 +1,5 @@
 import { Card, CardBody, CardFooter, CardHeader } from "@nextui-org/card";
-
+import { notFound } from "next/navigation";
 import getData from "@/src/helpers/getData";
 import { IStaticPage } from "@/src/models/stat-page";
 import ModifiedMarkdown from "@/src/hok/modifiedMarkdown";
@@ -8,6 +8,23 @@ import NotFound from "@/components/NotFound";
 import { Button } from "@nextui-org/button";
 import { Paperclip } from "lucide-react";
 import { Link } from "@nextui-org/link";
+
+export async function generateMetadata({ params }: IParams) {
+  const { slug } = await params;
+  const { data }: { data: IStaticPage[] } = await getData({
+    type: "static-pages",
+    filters: { slug },
+  });
+
+  const [staticPage] = data;
+  if (!staticPage) {
+    return null
+  }
+  return {
+    title: staticPage.title,
+    description: staticPage.description,
+  };
+}
 
 export default async function StaticPage({ params }: IParams) {
   const { slug } = await params;
@@ -22,7 +39,7 @@ export default async function StaticPage({ params }: IParams) {
 
   const [staticPage] = data;
   if (!staticPage) {
-    return <NotFound />;
+    notFound();
   }
 
   return (

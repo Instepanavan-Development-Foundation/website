@@ -4,6 +4,11 @@ import getData from "@/src/helpers/getData";
 import { IProject } from "@/src/models/project";
 import { ProjectCard } from "@/components/home/ProjectCard";
 
+export const metadata = {
+  title: "Արխիվացված նախագծեր",
+  description: "Instepanavan հիմնադրամի արխիվացված նագագծեր",
+};
+
 export default async function Home() {
   const { data: projects }: { data: IProject[] } = await getData({
     type: "projects",
