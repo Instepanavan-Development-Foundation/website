@@ -11,6 +11,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import getData from "@/src/helpers/getData";
 import { IBlog } from "@/src/models/blog";
 import { BlogPost } from "./BlogPost";
+import { INestedObject } from "@/src/models/getData";
 
 const limit = Number(process.env.NEXT_PUBLIC_QUERY_LIMIT) || 10;
 
@@ -50,7 +51,7 @@ export default function BlogList() {
   };
 
   const fetchBlogs = async (reset = false) => {
-    const filters: any = {};
+    const filters: INestedObject = {};
 
     if (searchQuery) {
       filters.$or = [

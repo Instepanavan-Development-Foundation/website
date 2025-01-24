@@ -1,50 +1,31 @@
 import qs from "qs";
-type IUrlTypes =
-  | "projects"
-  | "blogs"
-  | "contributors"
-  | "menus"
-  | "static-pages"
-  | "site-config";
+import { IDataParams, IUrlTypes, TypeMapping } from "../models/getData";
 
-interface IDataParams {
-  type: IUrlTypes;
-  populate?: any;
-  filters?: any;
-  params?: string;
-  fields?: string[];
-  sort?: string;
-  offset?: number;
-  limit?: number;
-}
-
-// TODO add query by dynamic component (if possible) || create custom query on backend
-// TODO fix TS types
-export default async function getData({
+export default async function getData<T extends IUrlTypes>({
   type,
-  params = "",
+  params = {},
   filters = {},
   populate = {},
   fields = [],
   sort = "",
   offset = 0,
   limit = 10,
-}: IDataParams): Promise<{ data: any[] }> {
+}: IDataParams<T>): Promise<{ data: TypeMapping[T] }> {
   const query = qs.stringify(
     {
       populate,
       fields,
-      params,
       filters,
       sort,
       pagination: { start: offset, limit },
+      ...params,
     },
     {
       encodeValuesOnly: true,
     }
   );
 
-  const url = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/${type}?${query}&${params}`;
+  const url = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/${type}?${query}`;
   try {
     const res = await fetch(url, {
       next: { revalidate: 3600 },
@@ -56,8 +37,8 @@ export default async function getData({
 
     return res.json();
   } catch (e) {
-    console.log(e);
+    console.error(e);
 
-    return { data: [] };
+    return { data: [] } as any;
   }
 }
