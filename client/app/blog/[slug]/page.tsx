@@ -4,6 +4,24 @@ import getData from "@/src/helpers/getData";
 import { IBlog } from "@/src/models/blog";
 import { IParams } from "@/src/models/params";
 
+export async function generateMetadata({ params }: IParams) {
+  const { slug } = await params;
+  const { data }: { data: IBlog[] } = await getData({
+    type: "blogs",
+    filters: { slug },
+  });
+
+  const [blog] = data;
+  if (!blog) {
+    return;
+  }
+
+  return {
+    title: "Բլոգ",
+    description: blog.content.slice(0, 100),
+  };
+}
+
 export default async function BlogPage({ params }: IParams) {
   const { slug } = await params;
   const { data }: { data: IBlog[] } = await getData({

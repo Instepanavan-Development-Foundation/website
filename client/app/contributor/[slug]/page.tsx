@@ -10,6 +10,47 @@ import { IBlog } from "@/src/models/blog";
 import { prettyDate } from "@/src/helpers/prettyDate";
 import { Link } from "@nextui-org/link";
 
+export async function generateMetadata({ params }: IParams) {
+  const { slug } = await params;
+
+  const { data: blogs }: { data: IBlog[] } = await getData({
+    type: "blogs",
+    fields: ["id"],
+    populate: {
+      contribution: {
+        fields: ["id"],
+        populate: {
+          contributor: {
+            fields: ["fullName", "about"],
+          },
+        },
+        filters: {
+          contributor: {
+            slug,
+          },
+        },
+      },
+    },
+    filters: {
+      contribution: {
+        contributor: {
+          slug,
+        },
+      },
+    },
+  });
+
+  if (!blogs.length) {
+    return <NotFound />;
+  }
+
+  const contributor = blogs[0].contribution[0].contributor;
+  return {
+    title: contributor.fullName,
+    description: contributor.about,
+  };
+}
+
 export default async function ContributorPage({ params }: IParams) {
   const { slug } = await params;
 

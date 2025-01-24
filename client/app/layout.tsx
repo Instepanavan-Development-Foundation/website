@@ -21,20 +21,7 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const siteConfig = await getSiteConfig();
-
-  const metadata: Metadata = {
-    title: {
-      default: siteConfig.name,
-      template: `%s - ${siteConfig.name}`,
-    },
-    description: siteConfig.description,
-    icons: {
-      icon: "/favicon.ico",
-    },
-  };
-
-  const footerMenu = siteConfig.footer;
+  const { footer: footerMenu } = await getSiteConfig();
 
   return (
     <html suppressHydrationWarning lang="en">

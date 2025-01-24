@@ -2,7 +2,6 @@ import { Button } from "@nextui-org/button";
 import { Link } from "@nextui-org/link";
 
 export default function NotFound() {
-  // TODO, not critical: response with 404 status
   return (
     <div className="flex flex-col items-center justify-center mt-10 gap-4">
       <h1 className="text-center text-4xl font-bold">404: Էջը չի գտնվել</h1>

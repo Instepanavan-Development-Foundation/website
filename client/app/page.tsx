@@ -11,6 +11,8 @@ import { IBlog } from "@/src/models/blog";
 import { IStaticPage } from "@/src/models/stat-page";
 import { Button } from "@nextui-org/button";
 import { Archive, Rss } from "lucide-react";
+import { getSiteConfig } from "@/config/site";
+import { Metadata } from "next";
 
 // TODO move to backend
 const stats = [
@@ -19,6 +21,21 @@ const stats = [
   { label: "Շահառուներ", value: "10,000+" }, // ?
   { label: "Կամավորներ", value: "150+" }, // contributors?
 ];
+
+export async function generateMetadata(): Promise<Metadata> {
+  const { name, description } = await getSiteConfig();
+
+  return {
+    title: {
+      default: name,
+      template: `%s - ${name}`,
+    },
+    description: description,
+    icons: {
+      icon: "/favicon.ico",
+    },
+  };
+}
 
 export default async function Home() {
   const { data: projects }: { data: IProject[] } = await getData({
