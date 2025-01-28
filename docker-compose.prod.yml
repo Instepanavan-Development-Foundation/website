@@ -1,0 +1,49 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: strapi_postgres_dev
+    env_file:
+      - .env
+    volumes:
+      - ./postgres:/var/lib/postgresql/data
+    networks:
+      - postgres
+
+  server:
+    image: server
+    volumes:
+      - ./server-data:/opt/app/public/uploads
+    depends_on:
+      - postgres
+    networks:
+      - postgres
+      - nginx
+
+  client:
+    image: client
+    volumes:
+      - ./client:/opt/app
+    depends_on:
+      - server
+    networks:
+      - nginx
+
+nginx:
+  image: nginx-certbot
+  restart: unless-stopped
+  environment:
+    CERTBOT_EMAIL: contact@instepanavan.am
+  volumes:
+    - ./letsencrypt:/etc/letsencrypt
+  ports:
+    - "80:80"
+    - "443:443"
+  depends_on:
+    - server
+    - client
+  networks:
+    - nginx
+
+networks:
+  nginx:
+  postgres:

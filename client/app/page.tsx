@@ -88,8 +88,8 @@ export default async function Home() {
     <section className="flex flex-col items-center px-4">
       {/* TODO move to backend */}
       <HeroSection
-        title="Մենք նվիրված ենք տեխնոլոգիական լուծումների միջոցով հայկական համայնքների զարգացմանը:"
-        description="Մենք նվիրված ենք տեխնոլոգիական լուծումների միջոցով հայկական համայնքների զարգացմանը:"
+        title="Կայքը վերակառուցվում է"
+        description="Շուտով նոր Ինստեփանավան"
         ctaText="Գնալ արխիվ"
         ctaLink="/blog"
         imageUrl="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&h=400&fit=crop"
