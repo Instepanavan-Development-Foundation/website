@@ -1,7 +1,7 @@
 import { Link } from "@nextui-org/link";
 import { Image } from "@nextui-org/image";
 import { button as buttonStyles } from "@nextui-org/theme";
-import { MoveRight, Rss, Star } from "lucide-react";
+import { MoveRight, Rss } from "lucide-react";
 import { Chip } from "@nextui-org/chip";
 import { Button } from "@nextui-org/button";
 
@@ -12,8 +12,8 @@ import getMediaUrl from "@/src/helpers/getMediaUrl";
 import { IProject } from "@/src/models/project";
 import { IParams } from "@/src/models/params";
 import NotFound from "@/components/NotFound";
-import { Avatar } from "@/components/Avatar";
 import { ContributionBox } from "@/components/ContributionBox";
+import Supporters from "@/components/Supporters";
 
 export async function generateMetadata({ params }: IParams) {
   const { slug } = await params;
@@ -214,67 +214,9 @@ export default async function ProjectPage({ params }: IParams) {
         </div>
       </div>
 
-      {/* Contributors Section */}
-      <div className="container mb-16" id="contributors">
-        <h2 className="text-3xl font-bold mb-8">Աջակիցներ</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-          {/* TODO add contributors from all blogs. Make request or join from coming data. Add slice for configuring from envs  */}
-          {project.blogs
-            .map((blog) => blog.contribution)
-            .flat()
-            .map((contributor, index) => (
-              <Link
-                href={`/contributor/${contributor.contributor.slug}`}
-                key={index}
-                className="flex items-center p-3 bg-default-50 rounded-xl hover:bg-default-100 transition-colors relative"
-              >
-                {contributor.isFeatured && (
-                  <div className="absolute -top-2 -right-2 bg-warning-400 text-white rounded-full p-1">
-                    <Star className="w-4 h-4" />
-                  </div>
-                )}
-                <div className="relative min-w-[50px]">
-                  <Avatar
-                    contributor={contributor.contributor}
-                    width={50}
-                    height={50}
-                  />
-                  <div className="absolute inset-0 rounded-full ring-2 ring-primary ring-offset-2 ring-offset-background" />
-                </div>
-                <div className="">
-                  <p className="p-3">
-                    {contributor.contributor.fullName}՝ {contributor.text}
-                  </p>
-                </div>
-              </Link>
-            ))}
-        </div>
-        <div className="col-span-full flex justify-center mt-8">
-          <Link
-            href="/blog"
-            className={buttonStyles({
-              variant: "flat",
-              radius: "full",
-              size: "lg",
-            })}
-          >
-            Բեռնել ավել
-            <svg
-              className="ml-2 w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M13 7l5 5m0 0l-5 5m5-5H6"
-              />
-            </svg>
-          </Link>
-        </div>
-      </div>
+      <Supporters
+        contributors={project.blogs.map((blog) => blog.contribution).flat()}
+      />
     </section>
   );
 }
