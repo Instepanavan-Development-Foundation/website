@@ -8,7 +8,7 @@ import { button as buttonStyles } from "@nextui-org/theme";
 import { useState } from "react";
 import { Button } from "@nextui-org/button";
 
-const LIMIT = Number(process.env.NEXT_PUBLIC_QUERY_LIMIT || 0);
+const LIMIT = Number(process.env.NEXT_PUBLIC_QUERY_LIMIT || 10);
 
 export default function Supporters({
   contributors,
