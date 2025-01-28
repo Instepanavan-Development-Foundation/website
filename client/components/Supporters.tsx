@@ -2,12 +2,13 @@
 
 import { Avatar } from "@/components/Avatar";
 import { IContribution } from "@/src/models/blog";
-import { Star } from "lucide-react";
+import { Ellipsis, EllipsisVertical, Star } from "lucide-react";
 import { Link } from "@nextui-org/link";
 import { button as buttonStyles } from "@nextui-org/theme";
 import { useState } from "react";
+import { Button } from "@nextui-org/button";
 
-const LIMIT = Number(process.env.NEXT_PUBLIC_QUERY_LIMIT);
+const LIMIT = Number(process.env.NEXT_PUBLIC_QUERY_LIMIT || 0);
 
 export default function Supporters({
   contributors,
@@ -15,12 +16,13 @@ export default function Supporters({
   contributors: IContribution[];
 }) {
   const [limit, setLimit] = useState(LIMIT);
+  const slicedContributors = contributors.slice(0, limit);
 
   return (
     <div className="container mb-16" id="contributors">
       <h2 className="text-3xl font-bold mb-8">Աջակիցներ</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-        {contributors.slice(0, limit).map((contributor, index) => (
+        {slicedContributors.map((contributor, index) => (
           <Link
             href={`/contributor/${contributor.contributor.slug}`}
             key={index}
@@ -49,7 +51,7 @@ export default function Supporters({
       </div>
       <div className="col-span-full flex justify-center mt-8">
         {contributors.length > limit && (
-          <span
+          <Button
             className={buttonStyles({
               variant: "flat",
               radius: "full",
@@ -58,20 +60,8 @@ export default function Supporters({
             onClick={() => setLimit((prev) => prev + LIMIT)}
           >
             Բեռնել ավել
-            <svg
-              className="ml-2 w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M13 7l5 5m0 0l-5 5m5-5H6"
-              />
-            </svg>
-          </span>
+            <EllipsisVertical className="ml-2 w-5 h-5" />
+          </Button>
         )}
       </div>
     </div>
