@@ -1,3 +1,3 @@
 export interface IParams {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }

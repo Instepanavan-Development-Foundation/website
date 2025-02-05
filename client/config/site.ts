@@ -1,33 +1,35 @@
 import getData from "@/src/helpers/getData";
-import { IMenu } from "@/src/models/menu";
+import { IMenu, IMenuLink } from "@/src/models/menu";
 import { ISiteConfig } from "@/src/models/site-config";
 
-export const getSiteConfig = async () => {
+export const getSiteConfig = async (): Promise<ISiteConfig> => {
   const { data: menus }: { data: IMenu[] } = await getData({
     type: "menus",
     populate: ["links"],
   });
 
-  const { data: siteConfig }: { data: ISiteConfig } = await getData({
+  const { data: siteConfig } = await getData({
     type: "site-config",
     populate: {
       logo: { fields: ["url"] },
     },
   });
 
-  const mainMenu = menus.find((menu) => menu.title === "Main")?.links || [];
-  const footerMenu = menus.find((menu) => menu.title === "Footer")?.links || [];
+  const mainMenu =
+    menus.find((menu) => menu.title === "Main")?.links || ([] as IMenuLink[]);
+  const footerMenu =
+    menus.find((menu) => menu.title === "Footer")?.links || ([] as IMenuLink[]);
 
   const logoUrl = siteConfig.logo.url;
+
   return {
-    name: siteConfig.title,
-    description: siteConfig.siteDescription,
+    title: siteConfig.title,
+    siteDescription: siteConfig.siteDescription,
     logoTitle: siteConfig.logoTitle,
-    logo: process.env.NEXT_PUBLIC_BACKEND_URL + logoUrl,
-    navItems: mainMenu,
-    navMenuItems: mainMenu,
-    footer: footerMenu,
+    logo: { url: String(process.env.NEXT_PUBLIC_BACKEND_URL + logoUrl) },
     contactEmail: siteConfig.contactEmail,
+    navItems: mainMenu,
+    footer: footerMenu,
     defaultContact: siteConfig.defaultContact,
   };
 };

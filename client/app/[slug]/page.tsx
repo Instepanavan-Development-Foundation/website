@@ -1,5 +1,4 @@
 import { Card, CardBody, CardFooter, CardHeader } from "@nextui-org/card";
-import { notFound } from "next/navigation";
 import getData from "@/src/helpers/getData";
 import { IStaticPage } from "@/src/models/stat-page";
 import ModifiedMarkdown from "@/src/hok/modifiedMarkdown";
@@ -39,7 +38,7 @@ export default async function StaticPage({ params }: IParams) {
 
   const [staticPage] = data;
   if (!staticPage) {
-    notFound();
+    NotFound();
   }
 
   return (
@@ -55,7 +54,7 @@ export default async function StaticPage({ params }: IParams) {
         </CardBody>
         <CardFooter className="flex flex-row flex-wrap gap-2">
           {staticPage.attachments?.map((attachment) => (
-            <Link href={attachment.url} target="_blank">
+            <Link href={attachment.url} target="_blank" key={attachment.url}>
               <Button className="btn btn-success">
                 <Paperclip className="w-4 h-4" />
                 {attachment.name}

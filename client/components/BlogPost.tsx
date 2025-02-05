@@ -52,12 +52,12 @@ export function BlogPost({
         <CardBody className="p-0">
           {/* TODO images like in fb, 3 images on front */}
           {images?.length ? (
-            <div onClick={() => setOpen(true)} className="cursor-zoom-in">
+            <button onClick={() => setOpen(true)} className="cursor-zoom-in">
               <Lightbox
                 open={open}
                 close={() => setOpen(false)}
                 slides={imageSlides}
-                render={{ slide: NextJsImage, thumbnail: NextJsImage }}
+                render={{ slide: NextJsImage, thumbnail: NextJsImage as any }} // TODO: fix this some day
                 plugins={[Thumbnails]}
               />
               <Image
@@ -74,15 +74,13 @@ export function BlogPost({
                   </div>
                 </div>
               )}
-            </div>
+            </button>
           ) : (
             <div className="w-full h-[200px] bg-gradient-to-br from-primary to-secondary z-10" />
           )}
 
           <div className="p-5">
-            <p className="text-xs text-gray-500">
-              {prettyDate(createdAt)}
-            </p>
+            <p className="text-xs text-gray-500">{prettyDate(createdAt)}</p>
             {isLink ? (
               <Link href={`/blog/${slug}`}>
                 <p className="text-default-500 mb-4">{content}</p>

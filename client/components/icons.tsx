@@ -3,13 +3,27 @@ import Image from "next/image";
 
 import { IconSvgProps } from "@/types";
 // TODO change to real logo
-export const Logo: React.FC<IconSvgProps> = ({
+export const Logo = ({
   size = 36,
   width,
   height,
+  src,
   ...props
+}: {
+  size?: number;
+  width?: number;
+  height?: number;
+  src: string;
+  alt: string;
+  props?: any;
 }) => (
-  <Image src="/logo.svg" alt="logo" width={size || width} height={size || height} {...props}/>
+  <Image
+    src={src}
+    width={Number(size || width)}
+    height={Number(size || height)}
+    // TODO: add alt
+    {...props}
+  />
 );
 
 export const DiscordIcon: React.FC<IconSvgProps> = ({

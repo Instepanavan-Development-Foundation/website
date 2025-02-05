@@ -16,14 +16,12 @@ import clsx from "clsx";
 import { getSiteConfig } from "@/config/site";
 import { ThemeSwitch } from "@/components/theme-switch";
 import {
-  // TwitterIcon,
   GithubIcon,
-  // DiscordIcon,
   HeartFilledIcon,
   SearchIcon,
   Logo,
 } from "@/components/icons";
-import { IMenu } from "@/src/models/menu";
+import { IMenu, IMenuLink } from "@/src/models/menu";
 
 export const Navbar = async () => {
   const siteConfig = await getSiteConfig();
@@ -32,7 +30,7 @@ export const Navbar = async () => {
       <NavbarContent className="basis-1/5 sm:basis-full" justify="start">
         <NavbarBrand as="li" className="gap-3 max-w-fit">
           <NextLink className="flex justify-start items-center gap-1" href="/">
-            <Logo src={siteConfig.logo} />
+            <Logo src={siteConfig.logo.url} alt={siteConfig.logoTitle} />
             <p className="font-bold text-inherit">{siteConfig.logoTitle}</p>
           </NextLink>
         </NavbarBrand>
@@ -42,7 +40,7 @@ export const Navbar = async () => {
         justify="end"
       >
         <ul className="hidden lg:flex gap-4 justify-start ml-2">
-          {siteConfig.navItems.map((item: IMenu) => (
+          {siteConfig.navItems.map((item: IMenuLink) => (
             <NavbarItem key={item.href}>
               <NextLink
                 className={clsx(
@@ -84,13 +82,13 @@ export const Navbar = async () => {
       </NavbarContent>
       <NavbarMenu>
         <div className="mx-4 mt-2 flex flex-col gap-2">
-          {siteConfig.navMenuItems.map((item, index) => (
+          {siteConfig.navItems.map((item, index) => (
             <NavbarMenuItem key={`${item}-${index}`}>
               <Link
                 color={
                   index === 2
                     ? "primary"
-                    : index === siteConfig.navMenuItems.length - 1
+                    : index === siteConfig.navItems.length - 1
                       ? "danger"
                       : "foreground"
                 }

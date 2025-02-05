@@ -29,8 +29,8 @@ export const ContributionBox = ({ project }: { project: IProject }) => {
 
 
 
-  if (project.isArchived) return null;
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
+  if (project.isArchived) return null;
 
   if (!siteConfig) {
     return null;

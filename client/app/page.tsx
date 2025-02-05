@@ -23,14 +23,14 @@ const stats = [
 ];
 
 export async function generateMetadata(): Promise<Metadata> {
-  const { name, description } = await getSiteConfig();
+  const { title, siteDescription } = await getSiteConfig();
 
   return {
     title: {
-      default: name,
+      default: title,
       template: `%s - ${name}`,
     },
-    description: description,
+    description: siteDescription,
     icons: {
       icon: "/favicon.ico",
     },
