@@ -8,7 +8,7 @@ export const getSiteConfig = async (): Promise<ISiteConfig> => {
     populate: ["links"],
   });
 
-  const { data: siteConfig } = await getData({
+  const { data: siteConfig }: { data: ISiteConfig } = await getData({
     type: "site-config",
     populate: {
       logo: { fields: ["url"] },

@@ -4,8 +4,8 @@ pull:
 	git pull origin main
 
 build:
-	docker build -t server ./server
-	docker build -t client ./client
+	docker buildx build -t server ./server
+	docker buildx build -t client ./client
 
 up:
 	docker compose -f docker-compose.prod.yml up -d
