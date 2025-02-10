@@ -205,8 +205,9 @@ function BlogListUnwrapped() {
           onChange={(range) => {
             if (range) {
               setDateRange({
-                start: range.start.toString(),
-                end: range.end.toString(),
+                // TODO: make sure that default value is not null and toString() is not needed
+                start: range.start as any,
+                end: range.end as any,
               });
             }
           }}
