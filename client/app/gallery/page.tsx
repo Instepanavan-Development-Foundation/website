@@ -1,5 +1,5 @@
 // TODO: Add gallery page
 
-export default function GalleryPage() {
+export default function Gallery() {
   return <div>Gallery</div>;
 }
