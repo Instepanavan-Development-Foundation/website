@@ -201,7 +201,7 @@ function BlogListUnwrapped() {
             // TODO: make sure that default value is not null
             start: parseDate(dateRange.start),
             end: parseDate(dateRange.end),
-          }}
+          } as any}
           onChange={(range) => {
             if (range) {
               setDateRange({
