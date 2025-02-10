@@ -31,22 +31,22 @@ services:
     networks:
       - nginx
 
-# nginx:
-#   image: nginx-certbot
-#   restart: unless-stopped
-#   environment:
-#     CERTBOT_EMAIL: contact@instepanavan.am
-#   volumes:
-#     - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
-#     - ./letsencrypt:/etc/letsencrypt
-#   ports:
-#     - "80:80"
-#     - "443:443"
-#   depends_on:
-#     - server
-#     - client
-#   networks:
-#     - nginx
+  nginx:
+    image: nginx-certbot
+    restart: unless-stopped
+    environment:
+      CERTBOT_EMAIL: contact@instepanavan.am
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./letsencrypt:/etc/letsencrypt
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - server
+      - client
+    networks:
+      - nginx
 
 networks:
   nginx:
