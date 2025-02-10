@@ -37,6 +37,7 @@ export default async function getData<T extends IUrlTypes>({
 
     return res.json();
   } catch (e) {
+    console.log("Fetching data failed at ", url);
     console.error(e);
 
     return { data: [] } as any;

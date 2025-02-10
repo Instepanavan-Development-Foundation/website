@@ -7,6 +7,7 @@ import { DateRangePicker } from "@nextui-org/date-picker";
 import { parseDate } from "@internationalized/date";
 import { Chip } from "@nextui-org/chip";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense } from 'react'
 
 import getData from "@/src/helpers/getData";
 import { IBlog } from "@/src/models/blog";
@@ -15,7 +16,7 @@ import { INestedObject } from "@/src/models/getData";
 
 const limit = Number(process.env.NEXT_PUBLIC_QUERY_LIMIT) || 10;
 
-export default function BlogList() {
+ function BlogListUnwrapped() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -281,4 +282,12 @@ export default function BlogList() {
       )}
     </div>
   );
+}
+
+export default function Searchbar() {
+  return (
+    <Suspense>
+      <BlogListUnwrapped />
+    </Suspense>
+  )
 }
