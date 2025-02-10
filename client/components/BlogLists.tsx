@@ -7,7 +7,7 @@ import { DateRangePicker } from "@nextui-org/date-picker";
 import { parseDate } from "@internationalized/date";
 import { Chip } from "@nextui-org/chip";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense } from 'react'
+import { Suspense } from "react";
 
 import getData from "@/src/helpers/getData";
 import { IBlog } from "@/src/models/blog";
@@ -16,7 +16,7 @@ import { INestedObject } from "@/src/models/getData";
 
 const limit = Number(process.env.NEXT_PUBLIC_QUERY_LIMIT) || 10;
 
- function BlogListUnwrapped() {
+function BlogListUnwrapped() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -197,14 +197,11 @@ const limit = Number(process.env.NEXT_PUBLIC_QUERY_LIMIT) || 10;
 
         <DateRangePicker
           aria-label="date-range"
-          value={
-            dateRange.start && dateRange.end
-              ? {
-                  start: parseDate(dateRange.start),
-                  end: parseDate(dateRange.end),
-                }
-              : undefined
-          }
+          value={{
+            // TODO: make sure that default value is not null
+            start: parseDate(dateRange.start),
+            end: parseDate(dateRange.end),
+          }}
           onChange={(range) => {
             if (range) {
               setDateRange({
@@ -289,5 +286,5 @@ export default function Searchbar() {
     <Suspense>
       <BlogListUnwrapped />
     </Suspense>
-  )
+  );
 }
