@@ -12,6 +12,8 @@ services:
   server:
     image: server
     restart: unless-stopped
+    env_file:
+      - ./server/.env
     volumes:
       - ./server-data:/opt/app/public/uploads
     depends_on:

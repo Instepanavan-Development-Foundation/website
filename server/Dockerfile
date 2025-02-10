@@ -16,6 +16,10 @@ COPY . .
 
 RUN chown -R node:node /opt/app
 
+# Rebuild sharp specifically
+RUN npm rebuild sharp
+
+
 USER node
 
 RUN ["npm", "run", "build"]
