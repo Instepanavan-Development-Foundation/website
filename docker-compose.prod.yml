@@ -32,12 +32,12 @@ services:
       - nginx
 
   nginx:
-    image: staticfloat/nginx-certbot
+    image: nginx
     # restart: unless-stopped # TODO: uncomment this
     environment:
       CERTBOT_EMAIL: contact@instepanavan.am
     volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      # - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - ./letsencrypt:/etc/letsencrypt
     ports:
       - "80:80"
