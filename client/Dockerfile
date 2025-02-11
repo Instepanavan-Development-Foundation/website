@@ -11,4 +11,4 @@ COPY . .
 
 RUN npm run build
 
-CMD ["node", "dist/server/entry.mjs"]
+CMD ["node", ".next/standalone/server.js"]
