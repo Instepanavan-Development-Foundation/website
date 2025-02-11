@@ -37,7 +37,7 @@ services:
     environment:
       CERTBOT_EMAIL: contact@instepanavan.am
     volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx:/etc/nginx/user_conf.d:ro
       - ./letsencrypt:/etc/letsencrypt
     ports:
       - "80:80"
