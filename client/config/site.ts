@@ -20,7 +20,7 @@ export const getSiteConfig = async (): Promise<ISiteConfig> => {
   const footerMenu =
     menus.find((menu) => menu.title === "Footer")?.links || ([] as IMenuLink[]);
 
-  const logoUrl = siteConfig.logo.url;
+  const logoUrl = siteConfig?.logo?.url;
 
   return {
     title: siteConfig.title,

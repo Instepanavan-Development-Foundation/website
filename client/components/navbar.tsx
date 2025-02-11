@@ -30,7 +30,7 @@ export const Navbar = async () => {
       <NavbarContent className="basis-1/5 sm:basis-full" justify="start">
         <NavbarBrand as="li" className="gap-3 max-w-fit">
           <NextLink className="flex justify-start items-center gap-1" href="/">
-            <Logo src={siteConfig.logo.url} alt={siteConfig.logoTitle} />
+            <Logo src={siteConfig?.logo?.url} alt={siteConfig.logoTitle} />
             <p className="font-bold text-inherit">{siteConfig.logoTitle}</p>
           </NextLink>
         </NavbarBrand>

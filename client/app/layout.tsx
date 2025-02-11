@@ -3,6 +3,8 @@ import { Metadata, Viewport } from "next";
 import { Link } from "@nextui-org/link";
 import clsx from "clsx";
 
+export const dynamic = 'force-dynamic'
+
 import { Providers } from "./providers";
 
 import { getSiteConfig } from "@/config/site";
