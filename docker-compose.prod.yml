@@ -32,7 +32,7 @@ services:
       - nginx
 
   nginx:
-    image: staticfloat/nginx-certbot
+    image: jonasal/nginx-certbot
     # restart: unless-stopped # TODO: uncomment this
     environment:
       CERTBOT_EMAIL: contact@instepanavan.am
