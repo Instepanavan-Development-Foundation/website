@@ -24,6 +24,8 @@ services:
 
   client:
     image: client
+    environment:
+      - HOSTNAME=0.0.0.0
     volumes:
       - ./client:/opt/app
     depends_on:
