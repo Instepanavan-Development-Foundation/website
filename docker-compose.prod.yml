@@ -52,5 +52,4 @@ services:
 
 networks:
   nginx:
-  server:
   postgres:
