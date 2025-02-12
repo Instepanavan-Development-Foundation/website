@@ -11,4 +11,4 @@ COPY . .
 
 RUN npm run build
 
-CMD ["node", ".next/standalone/server.js"]
+CMD ["npm", "run", "start"]
