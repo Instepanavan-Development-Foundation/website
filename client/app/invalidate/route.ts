@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 // https://api.instepanavan.am/admin/settings/webhooks/create
 // Invalidate website on change
 
-const revalidatePath = async () => {
+const revalidateAll = async () => {
     try {
         revalidatePath("/", "layout");
         return NextResponse.json({
@@ -21,5 +21,5 @@ const revalidatePath = async () => {
     }
 }
 
-export const GET = revalidatePath;
-export const POST = revalidatePath;
+export const GET = revalidateAll;
+export const POST = revalidateAll;
