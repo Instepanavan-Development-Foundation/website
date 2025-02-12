@@ -16,6 +16,7 @@ services:
       - ./server/.env
     volumes:
       - ./server-data:/opt/app/public/uploads
+    user: "${UID}:${GID}"
     depends_on:
       - postgres
     networks:
