@@ -28,7 +28,7 @@ export default async function getData<T extends IUrlTypes>({
   const url = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/${type}?${query}`;
   try {
     const res = await fetch(url, {
-      next: { revalidate: 0 },
+      next: { revalidate: 0 }, // TODO: fix caching
     });
 
     if (!res.ok) {
