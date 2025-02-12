@@ -15,3 +15,9 @@ down:
 
 deploy-prod:
 	ssh instepanavan "cd ./website && make"
+
+commit-and-deploy:
+	git add .
+	git commit
+	git push origin main
+	make deploy-prod
