@@ -6,8 +6,8 @@ services:
       - .env
     volumes:
       - ./postgres:/var/lib/postgresql/data
-    # networks:
-    #   - postgres
+    networks:
+      - postgres
 
   server:
     image: server
@@ -18,9 +18,9 @@ services:
       - ./server-data:/opt/app/public/uploads
     depends_on:
       - postgres
-    # networks:
-    #   - postgres
-    #   - nginx
+    networks:
+      - postgres
+      - nginx
 
   client:
     image: client
@@ -28,9 +28,9 @@ services:
       - ./client:/opt/app
     depends_on:
       - server
-    # networks:
-    #   - nginx
-    #   - server
+    networks:
+      - nginx
+      - server
 
   nginx:
     image: jonasal/nginx-certbot
@@ -46,9 +46,9 @@ services:
     depends_on:
       - server
       - client
-    # networks:
-    #   - nginx
+    networks:
+      - nginx
 
-# networks:
-#   nginx:
-#   postgres:
+networks:
+  nginx:
+  postgres:
