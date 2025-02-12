@@ -14,4 +14,4 @@ down:
 	docker compose -f docker-compose.prod.yml down
 
 deploy-prod:
-	ssh root@instepanavan.am "cd ./website && make"
+	ssh instepanavan "cd ./website && make"
