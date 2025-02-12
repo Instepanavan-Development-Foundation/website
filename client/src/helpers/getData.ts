@@ -28,7 +28,7 @@ export default async function getData<T extends IUrlTypes>({
   const url = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/${type}?${query}`;
   try {
     const res = await fetch(url, {
-      next: { revalidate: 3600 },
+      next: { revalidate: 0 },
     });
 
     if (!res.ok) {
