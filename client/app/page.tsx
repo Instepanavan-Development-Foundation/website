@@ -13,6 +13,7 @@ import { Button } from "@nextui-org/button";
 import { Archive, Rss } from "lucide-react";
 import { getSiteConfig } from "@/config/site";
 import { Metadata } from "next";
+import { Avatar } from "@/components/Avatar";
 
 // TODO move to backend
 const stats = [
@@ -75,9 +76,10 @@ export default async function Home() {
 
   const trustedByContributors = await getData({
     type: "contributors",
+    populate: { avatar: { fields: ["url"] } },
     filters: { isTrustedBy: true },
   });
-  
+
   const aboutContent = staticPages[0];
 
   const formatCurrency = (amount: number, currency: string) => {
@@ -208,17 +210,33 @@ export default async function Home() {
           </div>
         </div>
       </div>
-      
+
+      {/* Trusted Contributors Section */}
+      {trustedByContributors.data.length > 0 && (
+        <div className="w-full container my-8">
+          <h2 className="text-3xl font-bold mb-6">Մեզ վստահում են</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-8 gap-8">
+            {trustedByContributors.data.map((contributor, index) => (
+              <div key={contributor.id}>
+                <Avatar contributor={contributor} width={100} height={100} />
+                <p>{contributor.fullName}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Archived Projects Section */}
       {archivedProjects.length > 0 && (
         <div className="w-full container my-8">
           <h2 className="text-3xl font-bold mb-6">Ավարտված նախագծեր</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
-          {archivedProjects.map((project, index) => (
-            <Link href={`/project/${project.slug}`} key={index}>
-              <ProjectCard key={index} {...project} />
-            </Link>
-          ))}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
+            {archivedProjects.map((project, index) => (
+              <Link href={`/project/${project.slug}`} key={index}>
+                <ProjectCard key={index} {...project} />
+              </Link>
+            ))}
           </div>
         </div>
       )}
