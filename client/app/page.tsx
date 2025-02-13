@@ -215,13 +215,16 @@ export default async function Home() {
       {trustedByContributors.data.length > 0 && (
         <div className="w-full container my-8">
           <h2 className="text-3xl font-bold mb-6">Մեզ վստահում են</h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-8 gap-8">
             {trustedByContributors.data.map((contributor, index) => (
-              <div key={contributor.id}>
+              <Link
+                href={`/contributor/${contributor.slug}`}
+                key={contributor.id}
+              >
                 <Avatar contributor={contributor} width={100} height={100} />
                 <p>{contributor.fullName}</p>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
