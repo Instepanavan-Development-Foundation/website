@@ -6,5 +6,6 @@ export interface IContributor {
   fullName: string;
   about: string;
   slug: string;
+  isTrusted: boolean;
   avatar: IMediaFormat;
 }

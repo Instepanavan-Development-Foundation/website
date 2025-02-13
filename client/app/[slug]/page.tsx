@@ -7,6 +7,7 @@ import NotFound from "@/components/NotFound";
 import { Button } from "@nextui-org/button";
 import { Paperclip } from "lucide-react";
 import { Link } from "@nextui-org/link";
+import getMediaSrc from "@/src/helpers/getMediaUrl";
 
 export async function generateMetadata({ params }: IParams) {
   const { slug } = await params;
@@ -54,7 +55,7 @@ export default async function StaticPage({ params }: IParams) {
         </CardBody>
         <CardFooter className="flex flex-row flex-wrap gap-2">
           {staticPage.attachments?.map((attachment) => (
-            <Link href={attachment.url} target="_blank" key={attachment.url}>
+            <Link href={getMediaSrc(attachment)} target="_blank" key={attachment.url}>
               <Button className="btn btn-success">
                 <Paperclip className="w-4 h-4" />
                 {attachment.name}

@@ -52,11 +52,10 @@ export default async function Home() {
         },
       },
     },
-    filters: {
-      isArchived: false,
-    },
     sort: ["isFeatured:desc", "createdAt:desc"],
   });
+  const currentProjects = projects.filter((project) => !project.isArchived);
+  const archivedProjects = projects.filter((project) => project.isArchived);
 
   const { data: blogs }: { data: IBlog[] } = await getData({
     type: "blogs",
@@ -74,6 +73,11 @@ export default async function Home() {
     filters: { slug: "about" },
   });
 
+  const trustedByContributors = await getData({
+    type: "contributors",
+    filters: { isTrustedBy: true },
+  });
+  
   const aboutContent = staticPages[0];
 
   const formatCurrency = (amount: number, currency: string) => {
@@ -99,13 +103,14 @@ export default async function Home() {
       <div className="w-full container my-8">
         <h2 className="text-3xl font-bold mb-6">Ակտիվ նախագծեր</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
-          {projects.map((project, index) => (
+          {currentProjects.map((project, index) => (
             <Link href={`/project/${project.slug}`} key={index}>
               <ProjectCard key={index} {...project} />
             </Link>
           ))}
         </div>
-        <div className="flex justify-center mt-8">
+        {/* commenign archive button, maybe uncomment in Future?*/}
+        {/* <div className="flex justify-center mt-8">
           <Link
             href="/archive"
             className={buttonStyles({
@@ -117,7 +122,7 @@ export default async function Home() {
             <Archive className="w-5 h-5" />
             Գնալ արխիվ
           </Link>
-        </div>
+        </div> */}
       </div>
 
       <div className="w-full max-w-7xl my-12">
@@ -203,6 +208,20 @@ export default async function Home() {
           </div>
         </div>
       </div>
+      
+      {/* Archived Projects Section */}
+      {archivedProjects.length > 0 && (
+        <div className="w-full container my-8">
+          <h2 className="text-3xl font-bold mb-6">Ավարտված նախագծեր</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
+          {archivedProjects.map((project, index) => (
+            <Link href={`/project/${project.slug}`} key={index}>
+              <ProjectCard key={index} {...project} />
+            </Link>
+          ))}
+          </div>
+        </div>
+      )}
 
       {/* Donation Section */}
       <div className="w-full container my-16 text-center">

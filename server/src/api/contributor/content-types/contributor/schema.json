@@ -35,6 +35,10 @@
       "allowedTypes": [
         "images"
       ]
+    },
+    "isTrustedBy": {
+      "type": "boolean",
+      "default": false
     }
   }
 }
