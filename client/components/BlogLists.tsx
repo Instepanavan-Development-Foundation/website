@@ -212,7 +212,7 @@ function BlogListUnwrapped() {
 
         <DateRangePicker
           aria-label="date-range"
-          value={dateRange}
+          value={dateRange as any}
           onChange={(range) => {
             if (range?.start && range?.end) {
               setDateRange(range);
