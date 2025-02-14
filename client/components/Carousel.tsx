@@ -19,8 +19,9 @@ export default function Carousel({
   slider: IProject["slider"];
   image: IProject["image"];
 }) {
+  const hasSlides = slider && (slider.images.length + Number(!!slider.videoIframe));
+  const hasNoSlides = !hasSlides ;
   const [showArrows, setShowArrows] = useState(false);
-  const [hasNoSlides, setHasNoSlides] = useState(true);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [loaded, setLoaded] = useState(false);
   const [sliderRef, instanceRef] = useKeenSlider({
@@ -53,12 +54,8 @@ export default function Carousel({
   }
 
   useEffect(() => {
-    const hasSlides = slider.images.length + Number(!!slider.videoIframe);
     if (hasSlides > 1) {
       setShowArrows(true);
-    }
-    if (hasSlides > 0) {
-      setHasNoSlides(false);
     }
   }, [slider, slider.images, slider.videoIframe]);
 
@@ -97,16 +94,18 @@ export default function Carousel({
           <>
             <Arrow
               left
-              onClick={(e) =>
-                e.stopPropagation() || instanceRef.current?.prev()
-              }
+              onClick={(e) => {
+                e.stopPropagation();
+                instanceRef.current?.prev();
+              }}
               disabled={currentSlide === 0}
             />
 
             <Arrow
-              onClick={(e) =>
-                e.stopPropagation() || instanceRef.current?.next()
-              }
+              onClick={(e) => {
+                e.stopPropagation();
+                instanceRef.current?.next();
+              }}
               disabled={
                 currentSlide ===
                 instanceRef.current.track.details.slides.length - 1
@@ -117,11 +116,11 @@ export default function Carousel({
       </div>
       {loaded && instanceRef.current && (
         <div className="dots">
-          {[
-            ...Array(instanceRef.current.track.details.slides.length).keys(),
-          ].map((idx) => {
-            return (
-              <button
+          {Array.from(
+            { length: instanceRef.current.track.details.slides.length },
+            (_, idx) => {
+              return (
+                <button
                 key={idx}
                 onClick={() => {
                   instanceRef.current?.moveToIdx(idx);
@@ -138,7 +137,7 @@ export default function Carousel({
 
 // TODO: Maybe change to lucide-react
 function Arrow(props: {
-  left: boolean;
+  left?: boolean;
   disabled: boolean;
   onClick: (e: React.MouseEvent<SVGSVGElement>) => void;
 }) {
