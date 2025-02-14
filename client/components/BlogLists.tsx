@@ -197,17 +197,19 @@ function BlogListUnwrapped() {
 
         <DateRangePicker
           aria-label="date-range"
-          value={{
-            // TODO: make sure that default value is not null
-            start: parseDate(dateRange.start),
-            end: parseDate(dateRange.end),
-          } as any}
+          value={
+            dateRange.start && dateRange.end
+              ? {
+                  start: parseDate(dateRange.start),
+                  end: parseDate(dateRange.end),
+                }
+              : undefined
+          }
           onChange={(range) => {
-            if (range) {
+            if (range?.start && range?.end) {
               setDateRange({
-                // TODO: make sure that default value is not null and toString() is not needed
-                start: range.start as any,
-                end: range.end as any,
+                start: range.start.toString(),
+                end: range.end.toString(),
               });
             }
           }}
@@ -264,6 +266,7 @@ function BlogListUnwrapped() {
       )}
 
       {/* Blog Posts Grid - Modified for Masonry layout */}
+      {!blogs.length && <p className="text-center">Նախագծեր չկան</p>}
       <div className="columns-1 md:columns-3 gap-6 space-y-6">
         {blogs.map((blog, index) => (
           <div key={index} className="break-inside-avoid">
