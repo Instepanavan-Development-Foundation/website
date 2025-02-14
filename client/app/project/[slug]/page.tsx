@@ -1,5 +1,5 @@
 import { Link } from "@nextui-org/link";
-import { Image } from "@nextui-org/image";
+import { Image } from "@heroui/image";
 import { button as buttonStyles } from "@nextui-org/theme";
 import { MoveRight, Rss } from "lucide-react";
 import { Chip } from "@nextui-org/chip";
@@ -8,12 +8,12 @@ import { Button } from "@nextui-org/button";
 import { BlogPost } from "@/components/BlogPost";
 import { ContributorsList } from "@/components/ContributorsList";
 import getData from "@/src/helpers/getData";
-import getMediaUrl from "@/src/helpers/getMediaUrl";
 import { IProject } from "@/src/models/project";
 import { IParams } from "@/src/models/params";
 import NotFound from "@/components/NotFound";
 import { ContributionBox } from "@/components/ContributionBox";
 import Supporters from "@/components/Supporters";
+import Carousel from "@/components/Carousel";
 
 export async function generateMetadata({ params }: IParams) {
   const { slug } = await params;
@@ -52,6 +52,9 @@ export default async function ProjectPage({ params }: IParams) {
       image: {
         fields: ["url", "alternativeText", "name"],
       },
+      slider: {
+        populate: ["images"],
+      },
     },
     filters: {
       slug,
@@ -88,14 +91,8 @@ export default async function ProjectPage({ params }: IParams) {
 
       {/* Hero Section */}
       <div className="relative container h-[600px] mb-16">
-        <Image
-          alt="Project Cover"
-          className="w-full h-full object-cover brightness-50"
-          src={getMediaUrl(project.image)}
-          width={1920}
-          height={600}
-        />
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-white p-4 z-10">
+        <Carousel slider={project.slider} image={project.image} />
+        <div className=" inset-0 flex flex-col items-center justify-center p-4 z-10">
           <h1 className="text-5xl md:text-6xl font-bold text-center mb-6">
             {project.name}
           </h1>

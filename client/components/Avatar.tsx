@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { Image } from "@nextui-org/image";
+import { Image } from "@heroui/image";
 
 import getMediaUrl from "@/src/helpers/getMediaUrl";
 import { IContributor } from "@/src/models/contributor";
@@ -26,12 +26,14 @@ export function Avatar({
     : getGravatarUrl(contributor.email);
 
   return (
-    <Image
-      src={avatarUrl}
-      alt={"contributor.name"}
-      width={width}
-      height={height}
-      className={isRounded ? "rounded-full  border-2 border-background" : ""}
-    />
+    <>
+      <Image
+        src={avatarUrl}
+        alt={"contributor.name"}
+        width={width}
+        height={height}
+        className={isRounded ? "rounded-full  border-2 border-background" : ""}
+      />
+    </>
   );
 }

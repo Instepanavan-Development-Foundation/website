@@ -1,6 +1,6 @@
 import { Link } from "@nextui-org/link";
 import { button as buttonStyles } from "@nextui-org/theme";
-import { Image } from "@nextui-org/image";
+import { Image } from "@heroui/image";
 
 import { ProjectCard } from "../components/home/ProjectCard";
 import { BlogPost } from "../components/BlogPost";

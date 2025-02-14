@@ -27,8 +27,6 @@ export const ContributionBox = ({ project }: { project: IProject }) => {
     fetchSiteConfig();
   }, []);
 
-
-
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   if (project.isArchived) return null;
 
@@ -39,7 +37,7 @@ export const ContributionBox = ({ project }: { project: IProject }) => {
   if (!project.fundraisingURL) {
     return (
       <>
-        <Button color="success" onPress={onOpen}>
+        <Button color="success" onPress={onOpen} size="lg">
           Կապնվել աջակցելու համար
         </Button>
         <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
@@ -69,7 +67,6 @@ export const ContributionBox = ({ project }: { project: IProject }) => {
       </>
     );
   }
-  
 
   return (
     <Link

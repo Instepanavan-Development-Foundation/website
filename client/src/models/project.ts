@@ -1,5 +1,6 @@
 import { IBlog } from "./blog";
-import { IImage } from "./media";
+import { IContributor } from "./contributor";
+import { IImage, IMediaFormat } from "./media";
 
 export interface IProject {
   gatheredAmount: number;
@@ -16,5 +17,9 @@ export interface IProject {
   isFeatured: boolean;
   about: string;
   createdAt: string;
-  isArchived: boolean;
+  isArchived: boolean;contributors?: IContributor[];
+  slider: {
+    images: IMediaFormat[];
+    videoIframe: string;
+  };
 }

@@ -1,26 +1,10 @@
 import { Card, CardBody, CardHeader } from "@nextui-org/card";
-import { Image } from "@nextui-org/image";
+import { Image } from "@heroui/image";
 import { ContributorsList } from "../ContributorsList";
 import { IProject } from "@/src/models/project";
 import getMediaUrl from "@/src/helpers/getMediaUrl";
 import { HeartHandshake } from "lucide-react";
 
-interface ProjectCardProps {
-  title: string;
-  description: string;
-  tech: string;
-  link: string;
-  img: string;
-  funding: {
-    raised: number;
-    goal: number;
-    currency: string;
-  };
-  contributors?: {
-    name: string;
-    avatar: string;
-  }[];
-}
 
 export function ProjectCard({
   name,

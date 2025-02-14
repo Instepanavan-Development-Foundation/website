@@ -4,7 +4,7 @@ import { Card, CardBody } from "@nextui-org/card";
 import { Chip } from "@nextui-org/chip";
 import { Paperclip, Bookmark } from "lucide-react";
 import { useState } from "react";
-import { Image } from "@nextui-org/image";
+import { Image } from "@heroui/image";
 import { Link } from "@nextui-org/link";
 
 import { ContributorsList } from "./ContributorsList";

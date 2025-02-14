@@ -1,4 +1,4 @@
-import { Image } from "@nextui-org/image";
+import { Image } from "@heroui/image";
 import { Card, CardBody } from "@nextui-org/card";
 
 import { Avatar } from "@/components/Avatar";
