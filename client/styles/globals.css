@@ -7,6 +7,38 @@
     --almost-black: rgba(0, 0, 0, 0.85);
 }
 
+@font-face {
+  font-family: 'Nicolo';
+  src: url("/fonts/Nicolo-Regular.otf");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Nicolo';
+  src: url("/fonts/NicoloBold.otf");
+  font-weight: bold;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Nicolo';
+  src: url("/fonts/Nicolo-Italic.otf");
+  font-weight: normal;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'Nicolo';
+  src: url("/fonts/Nicolo BoldItalic.otf");
+  font-weight: bold;
+  font-style: italic;
+}
+
+body {
+    font-family: "Nicolo", sans-serif !important;
+}
+
 .yarl__thumbnails_container {
     background-color: var(--almost-black) !important;
 }
