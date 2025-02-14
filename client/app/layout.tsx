@@ -29,7 +29,7 @@ export default async function RootLayout({
       <head />
       <body
         className={clsx(
-          "min-h-screen bg-background font-sans antialiased",
+          "min-h-screen bg-background antialiased",
         )}
       >
         <Providers themeProps={{ attribute: "class", defaultTheme: "dark" }}>
