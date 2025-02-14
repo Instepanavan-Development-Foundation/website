@@ -32,7 +32,7 @@ export function Avatar({
         alt={"contributor.name"}
         width={width}
         height={height}
-        className={isRounded ? "rounded-full  border-2 border-background" : ""}
+        className={isRounded ? "rounded-full  border-2 border-background object-cover" : ""}
       />
     </>
   );

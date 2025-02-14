@@ -7,6 +7,7 @@ import { Link } from "@nextui-org/link";
 import { button as buttonStyles } from "@nextui-org/theme";
 import { useState } from "react";
 import { Button } from "@nextui-org/button";
+import { Tooltip } from "@heroui/tooltip";
 
 const LIMIT = Number(process.env.NEXT_PUBLIC_QUERY_LIMIT || 10);
 
@@ -23,9 +24,10 @@ export default function Supporters({
       <h2 className="text-3xl font-bold mb-8">Աջակիցներ</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
         {slicedContributors.map((contributor, index) => (
-          <Link
-            href={`/contributor/${contributor.contributor.slug}`}
-            key={index}
+          <Tooltip content={contributor.contributor.fullName}>
+            <Link
+              href={`/contributor/${contributor.contributor.slug}`}
+              key={index}
             className="flex items-center p-3 bg-default-50 rounded-xl hover:bg-default-100 transition-colors relative"
           >
             {contributor.isFeatured && (
@@ -46,7 +48,8 @@ export default function Supporters({
                 {contributor.contributor.fullName}՝ {contributor.text}
               </p>
             </div>
-          </Link>
+            </Link>
+          </Tooltip>
         ))}
       </div>
       <div className="col-span-full flex justify-center mt-8">

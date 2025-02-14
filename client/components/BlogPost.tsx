@@ -41,7 +41,6 @@ export function BlogPost({
   }));
 
   return (
-    // TODO fix styles for isFeatured and mobile version
     <div className="relative">
       {isFeatured && (
         <div className="absolute -top-3 -right-3 z-30 bg-primary rounded-full w-12 h-12 flex items-center justify-center">
