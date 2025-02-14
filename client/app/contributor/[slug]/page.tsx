@@ -8,7 +8,7 @@ import { IParams } from "@/src/models/params";
 import NotFound from "@/components/NotFound";
 import { IBlog } from "@/src/models/blog";
 import { prettyDate } from "@/src/helpers/prettyDate";
-import { Link } from "@nextui-org/link";
+import { Link } from "@heroui/link";
 
 export async function generateMetadata({ params }: IParams) {
   const { slug } = await params;

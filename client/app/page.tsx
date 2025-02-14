@@ -1,4 +1,4 @@
-import { Link } from "@nextui-org/link";
+import { Link } from "@heroui/link";
 import { button as buttonStyles } from "@nextui-org/theme";
 import { Image } from "@heroui/image";
 
@@ -83,13 +83,6 @@ export default async function Home() {
 
   const aboutContent = staticPages[0];
 
-  const formatCurrency = (amount: number, currency: string) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: currency,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
 
   return (
     <section className="flex flex-col items-center px-4">
@@ -98,7 +91,7 @@ export default async function Home() {
         title="Կայքը վերակառուցվում է"
         description="Շուտով նոր Ինստեփանավան"
         ctaText="Գնալ արխիվ"
-        ctaLink="/blog"
+        ctaLink="/archive"
         imageUrl="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&h=400&fit=crop"
       />
 
@@ -231,7 +224,7 @@ export default async function Home() {
                   <Avatar
                     contributor={contributor}
                     height={100}
-                    isRounded={false}
+                    className="object-contain"
                   />
                 </Link>
               </Tooltip>

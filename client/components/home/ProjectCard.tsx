@@ -6,6 +6,14 @@ import getMediaUrl from "@/src/helpers/getMediaUrl";
 import { HeartHandshake } from "lucide-react";
 
 
+export const formatCurrency = (amount: number, currency: string = "AMD") => {
+  return new Intl.NumberFormat("hy-AM", {
+    style: "currency",
+    currency: currency,
+    maximumFractionDigits: 0,
+  }).format(amount);
+};
+
 export function ProjectCard({
   name,
   description,
@@ -40,10 +48,10 @@ export function ProjectCard({
             <div className="mt-4 flex flex-col gap-2">
               <div className="flex justify-between text-sm mb-1">
                 <span className="text-default-600">
-                  {"USD"} {gatheredAmount}
+                  {formatCurrency(gatheredAmount)}
                 </span>
                 <span className="text-default-400">
-                  Goal: {"USD"} {requiredAmount}
+                  Goal: {formatCurrency(requiredAmount)}
                 </span>
               </div>
               <div className="w-full h-2 bg-default-100 rounded-full">

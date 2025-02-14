@@ -1,4 +1,4 @@
-import { Link } from "@nextui-org/link";
+import { Link } from "@heroui/link";
 import { Image } from "@heroui/image";
 import { button as buttonStyles } from "@nextui-org/theme";
 import { MoveRight, Rss } from "lucide-react";
@@ -14,6 +14,7 @@ import NotFound from "@/components/NotFound";
 import { ContributionBox } from "@/components/ContributionBox";
 import Supporters from "@/components/Supporters";
 import Carousel from "@/components/Carousel";
+import { formatCurrency } from "@/components/home/ProjectCard";
 
 export async function generateMetadata({ params }: IParams) {
   const { slug } = await params;
@@ -66,14 +67,6 @@ export default async function ProjectPage({ params }: IParams) {
     return <NotFound />;
   }
 
-  const formatCurrency = (amount: number, currency: string) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: currency,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
-
   return (
     <section className="flex flex-col px-4">
       {/* Archive indicator */}
@@ -112,10 +105,10 @@ export default async function ProjectPage({ params }: IParams) {
             <h2 className="text-2xl font-bold mb-4">Ֆինանսավորում</h2>
             <div className="flex justify-between items-center mb-2">
               <span className="text-xl text-default-600">
-                {formatCurrency(project.gatheredAmount, "USD")} raised
+                {formatCurrency(project.gatheredAmount)} հավաքված է
               </span>
               <span className="text-lg text-default-500">
-                Goal: {formatCurrency(project.requiredAmount, "USD")}
+                Նպատակ: {formatCurrency(project.requiredAmount)}
               </span>
             </div>
             <div className="w-full h-3 bg-default-100 rounded-full overflow-hidden">

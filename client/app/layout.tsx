@@ -1,6 +1,6 @@
 import "@/styles/globals.css";
 import { Metadata, Viewport } from "next";
-import { Link } from "@nextui-org/link";
+import { Link } from "@heroui/link";
 import clsx from "clsx";
 
 export const dynamic = 'force-dynamic'

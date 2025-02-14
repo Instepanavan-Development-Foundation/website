@@ -1,4 +1,4 @@
-import { Link } from "@nextui-org/link";
+import { Link } from "@heroui/link";
 
 import getData from "@/src/helpers/getData";
 import { IProject } from "@/src/models/project";
@@ -33,7 +33,7 @@ export default async function Home() {
     <section className="flex flex-col px-4">
       {/* Projects Section */}
       <div className="w-full container my-8">
-        <h2 className="text-3xl font-bold mb-6">Ակտիվ նախագծեր</h2>
+        <h2 className="text-3xl font-bold mb-6">Ավարտված նախագծեր</h2>
         {projects.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
             {projects.map((project, index) => (

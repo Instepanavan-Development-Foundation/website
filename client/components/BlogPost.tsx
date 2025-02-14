@@ -5,7 +5,7 @@ import { Chip } from "@nextui-org/chip";
 import { Paperclip, Bookmark } from "lucide-react";
 import { useState } from "react";
 import { Image } from "@heroui/image";
-import { Link } from "@nextui-org/link";
+import { Link } from "@heroui/link";
 
 import { ContributorsList } from "./ContributorsList";
 import { IBlog } from "@/src/models/blog";

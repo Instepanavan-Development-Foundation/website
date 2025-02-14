@@ -1,5 +1,5 @@
 import { Button } from "@nextui-org/button";
-import { Link } from "@nextui-org/link";
+import { Link } from "@heroui/link";
 
 export default function NotFound() {
   return (

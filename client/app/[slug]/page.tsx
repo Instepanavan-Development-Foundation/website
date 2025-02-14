@@ -6,7 +6,7 @@ import { IParams } from "@/src/models/params";
 import NotFound from "@/components/NotFound";
 import { Button } from "@nextui-org/button";
 import { Paperclip } from "lucide-react";
-import { Link } from "@nextui-org/link";
+import { Link } from "@heroui/link";
 import getMediaSrc from "@/src/helpers/getMediaUrl";
 
 // TODO: Name should be generated like this Project Name - website name on every page
