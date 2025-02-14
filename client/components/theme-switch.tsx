@@ -22,7 +22,8 @@ export const ThemeSwitch: FC<ThemeSwitchProps> = ({
   const isSSR = useIsSSR();
 
   const onChange = () => {
-    theme === "light" ? setTheme("dark") : setTheme("light");
+    setTheme("light");
+    // theme === "light" ? setTheme("dark") : setTheme("light");
   };
 
   const {

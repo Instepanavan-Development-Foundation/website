@@ -77,7 +77,7 @@ export const Navbar = async () => {
         >
           <GithubIcon className="text-default-500" />
         </Link>
-        <ThemeSwitch />
+        {/* <ThemeSwitch /> */}
         <NavbarMenuToggle />
       </NavbarContent>
       <NavbarMenu>
