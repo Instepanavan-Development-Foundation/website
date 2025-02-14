@@ -14,10 +14,12 @@ export function Avatar({
   contributor,
   width,
   height,
+  isRounded = true,
 }: {
   contributor: IContributor;
-  width: number;
+  width?: number;
   height: number;
+  isRounded?: boolean;
 }) {
   const avatarUrl = contributor.avatar?.url
     ? getMediaUrl(contributor.avatar)
@@ -29,7 +31,7 @@ export function Avatar({
       alt={"contributor.name"}
       width={width}
       height={height}
-      className="rounded-full border-2 border-background"
+      className={isRounded ? "rounded-full  border-2 border-background" : ""}
     />
   );
 }

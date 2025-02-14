@@ -14,6 +14,7 @@ import { Archive, Rss } from "lucide-react";
 import { getSiteConfig } from "@/config/site";
 import { Metadata } from "next";
 import { Avatar } from "@/components/Avatar";
+import { Tooltip } from "@heroui/tooltip";
 
 // TODO move to backend
 const stats = [
@@ -216,15 +217,24 @@ export default async function Home() {
         <div className="w-full container my-8">
           <h2 className="text-3xl font-bold mb-6">Մեզ վստահում են</h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-8 gap-8">
+          <div className="grid grid-cols-4 md:grid-cols-4 lg:grid-cols-6 gap-8">
             {trustedByContributors.data.map((contributor, index) => (
-              <Link
-                href={`/contributor/${contributor.slug}`}
+              <Tooltip
+                content={contributor.fullName}
+                showArrow={true}
                 key={contributor.id}
               >
-                <Avatar contributor={contributor} width={100} height={100} />
-                <p>{contributor.fullName}</p>
-              </Link>
+                <Link
+                  href={`/contributor/${contributor.slug}`}
+                  className="flex flex-col items-center gap-2"
+                >
+                  <Avatar
+                    contributor={contributor}
+                    height={100}
+                    isRounded={false}
+                  />
+                </Link>
+              </Tooltip>
             ))}
           </div>
         </div>

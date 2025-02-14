@@ -8,7 +8,6 @@ export const dynamic = 'force-dynamic'
 import { Providers } from "./providers";
 
 import { getSiteConfig } from "@/config/site";
-import { fontSans } from "@/config/fonts";
 import { Navbar } from "@/components/navbar";
 
 export const viewport: Viewport = {
@@ -31,7 +30,6 @@ export default async function RootLayout({
       <body
         className={clsx(
           "min-h-screen bg-background font-sans antialiased",
-          fontSans.variable
         )}
       >
         <Providers themeProps={{ attribute: "class", defaultTheme: "dark" }}>
