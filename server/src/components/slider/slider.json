@@ -1,0 +1,22 @@
+{
+  "collectionName": "components_slider_sliders",
+  "info": {
+    "displayName": "slider",
+    "icon": "apps"
+  },
+  "options": {},
+  "attributes": {
+    "images": {
+      "allowedTypes": [
+        "images",
+        "files"
+      ],
+      "type": "media",
+      "multiple": true,
+      "required": false
+    },
+    "videoIframe": {
+      "type": "text"
+    }
+  }
+}
