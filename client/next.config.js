@@ -6,6 +6,7 @@ const nextConfig = {
       "i.pravatar.cc",
       "localhost",
       "instepanavan.am",
+      "api.instepanavan.am",
     ],
   },
   eslint: {

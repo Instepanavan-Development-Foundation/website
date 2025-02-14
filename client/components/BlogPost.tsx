@@ -67,6 +67,7 @@ export function BlogPost({
                 width="100"
                 radius="none"
               />
+              {/* Count of images in the blog post */}
               {images.length > numberOfImagesShown && (
                 <div className="relative">
                   <div className="absolute bottom-0 right-0 z-30 bg-black bg-opacity-50 text-white p-2 text-xs text-right h-7">

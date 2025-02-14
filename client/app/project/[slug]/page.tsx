@@ -90,7 +90,7 @@ export default async function ProjectPage({ params }: IParams) {
       )}
 
       {/* Hero Section */}
-      <div className="relative container h-[600px] mb-16">
+      <div className="relative container mb-16">
         <Carousel slider={project.slider} image={project.image} />
         <div className=" inset-0 flex flex-col items-center justify-center p-4 z-10">
           <h1 className="text-5xl md:text-6xl font-bold text-center mb-6">
