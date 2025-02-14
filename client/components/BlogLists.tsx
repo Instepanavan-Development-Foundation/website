@@ -30,10 +30,18 @@ function BlogListUnwrapped() {
   const [selectedTags, setSelectedTags] = useState<string>(
     searchParams.get("tags") || ""
   );
-  const [dateRange, setDateRange] = useState<RangeValue<DateValue>>({
-    start: parseDate(searchParams.get("dateStart") || ""),
-    end: parseDate(searchParams.get("dateEnd") || ""),
-  });
+
+  const defaultDateRange = {
+    start: searchParams.get("dateStart")
+      ? parseDate(searchParams.get("dateStart") || "")
+      : undefined,
+    end: searchParams.get("dateEnd")
+      ? parseDate(searchParams.get("dateEnd") || "")
+      : undefined,
+  } as RangeValue<DateValue>;
+
+  const [dateRange, setDateRange] =
+    useState<RangeValue<DateValue>>(defaultDateRange);
 
   const [blogs, setBlogs] = useState<IBlog[]>([]);
   const [offset, setOffset] = useState(0);
@@ -75,7 +83,7 @@ function BlogListUnwrapped() {
 
     if (dateRange.start && dateRange.end) {
       filters.createdAt = {
-        $between: [dateRange.start, dateRange.end],
+        $between: [dateRange.start.toString(), dateRange.end.toString()],
       };
     }
 
@@ -116,10 +124,15 @@ function BlogListUnwrapped() {
   }, [searchQuery, selectedProject, selectedTags, dateRange]);
 
   const resetFilters = () => {
+    const noDateRange = {
+      start: undefined,
+      end: undefined,
+    } as unknown as RangeValue<DateValue>;
+
     setSearchQuery("");
     setSelectedProject("");
     setSelectedTags("");
-    setDateRange({ start: parseDate(""), end: parseDate("") });
+    setDateRange(noDateRange);
     updateURL({
       search: "",
       project: "",
