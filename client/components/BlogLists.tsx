@@ -4,7 +4,7 @@ import { Select, SelectItem } from "@nextui-org/select";
 import { useEffect, useState } from "react";
 import { Button } from "@nextui-org/button";
 import { DateRangePicker } from "@nextui-org/date-picker";
-import { parseDate } from "@internationalized/date";
+import { DateValue, parseDate } from "@internationalized/date";
 import { Chip } from "@nextui-org/chip";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
@@ -13,6 +13,7 @@ import getData from "@/src/helpers/getData";
 import { IBlog } from "@/src/models/blog";
 import { BlogPost } from "./BlogPost";
 import { INestedObject } from "@/src/models/getData";
+import { RangeValue } from "@react-types/shared";
 
 const limit = Number(process.env.NEXT_PUBLIC_QUERY_LIMIT) || 10;
 
@@ -29,10 +30,11 @@ function BlogListUnwrapped() {
   const [selectedTags, setSelectedTags] = useState<string>(
     searchParams.get("tags") || ""
   );
-  const [dateRange, setDateRange] = useState({
-    start: searchParams.get("dateStart") || "",
-    end: searchParams.get("dateEnd") || "",
+  const [dateRange, setDateRange] = useState<RangeValue<DateValue>>({
+    start: parseDate(searchParams.get("dateStart") || ""),
+    end: parseDate(searchParams.get("dateEnd") || ""),
   });
+
   const [blogs, setBlogs] = useState<IBlog[]>([]);
   const [offset, setOffset] = useState(0);
   const [hasMore, setHasMore] = useState(true);
@@ -108,8 +110,8 @@ function BlogListUnwrapped() {
       search: searchQuery,
       project: selectedProject,
       tags: selectedTags,
-      dateStart: dateRange.start,
-      dateEnd: dateRange.end,
+      dateStart: dateRange.start?.toString(),
+      dateEnd: dateRange.end?.toString(),
     });
   }, [searchQuery, selectedProject, selectedTags, dateRange]);
 
@@ -117,7 +119,7 @@ function BlogListUnwrapped() {
     setSearchQuery("");
     setSelectedProject("");
     setSelectedTags("");
-    setDateRange({ start: "", end: "" });
+    setDateRange({ start: parseDate(""), end: parseDate("") });
     updateURL({
       search: "",
       project: "",
@@ -197,20 +199,10 @@ function BlogListUnwrapped() {
 
         <DateRangePicker
           aria-label="date-range"
-          value={
-            dateRange.start && dateRange.end
-              ? {
-                  start: parseDate(dateRange.start),
-                  end: parseDate(dateRange.end),
-                }
-              : undefined
-          }
+          value={dateRange}
           onChange={(range) => {
             if (range?.start && range?.end) {
-              setDateRange({
-                start: range.start.toString(),
-                end: range.end.toString(),
-              });
+              setDateRange(range);
             }
           }}
           className="col-span-full md:col-span-3"
