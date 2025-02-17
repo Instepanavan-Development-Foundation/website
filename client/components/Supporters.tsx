@@ -3,7 +3,7 @@
 import { Avatar } from "@/components/Avatar";
 import { IContribution } from "@/src/models/blog";
 import { Ellipsis, EllipsisVertical, Star } from "lucide-react";
-import { Link } from "@heroui/link";
+import Link from "next/link";
 import { button as buttonStyles } from "@nextui-org/theme";
 import { useState } from "react";
 import { Button } from "@nextui-org/button";

@@ -5,7 +5,7 @@ import { Chip } from "@nextui-org/chip";
 import { Paperclip, Bookmark } from "lucide-react";
 import { useState } from "react";
 import { Image } from "@heroui/image";
-import { Link } from "@heroui/link";
+import Link from "next/link";
 
 import { ContributorsList } from "./ContributorsList";
 import { IBlog } from "@/src/models/blog";
@@ -83,7 +83,9 @@ export function BlogPost({
             <p className="text-xs text-gray-500">{prettyDate(createdAt)}</p>
             {isLink ? (
               <Link href={`/blog/${slug}`}>
-                <p className="text-default-500 mb-4 line-clamp-[10]">{content}</p>
+                <p className="text-default-500 mb-4 line-clamp-[10]">
+                  {content}
+                </p>
               </Link>
             ) : (
               <p className="text-default-500 mb-4">{content}</p>
@@ -101,9 +103,11 @@ export function BlogPost({
             {/* Project */}
             {project && (
               <div className="flex -space-x-2 mb-4">
-                <Link href={`/project/${project.slug}`}
+                <Link
+                  href={`/project/${project.slug}`}
                   color="secondary"
-                  className="line-clamp-2">
+                  className="line-clamp-2"
+                >
                   {project.name}
                 </Link>
               </div>

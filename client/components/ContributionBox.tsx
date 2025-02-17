@@ -1,6 +1,6 @@
 "use client";
 
-import { Link } from "@heroui/link";
+import Link from "next/link";
 import { IProject } from "@/src/models/project";
 import { button as buttonStyles } from "@nextui-org/theme";
 import { Button } from "@nextui-org/button";

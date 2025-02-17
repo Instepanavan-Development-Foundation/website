@@ -1,5 +1,5 @@
 import { Button } from "@nextui-org/button";
-import { Link } from "@heroui/link";
+import Link from "next/link";
 
 export default function NotFound() {
   return (
@@ -9,10 +9,9 @@ export default function NotFound() {
       <p className="text-center text-lg">
         Մենք չգտանք ենք այդ էջը, կամ այն չի գտնվել է այս կայքում։
       </p>
-      <Link href="/" >
+      <Link href="/">
         <Button>Գնալ գլխավոր էջ</Button>
       </Link>
     </div>
   );
 }
-

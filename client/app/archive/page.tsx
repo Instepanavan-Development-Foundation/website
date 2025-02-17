@@ -1,4 +1,4 @@
-import { Link } from "@heroui/link";
+import Link from "next/link";
 
 import getData from "@/src/helpers/getData";
 import { IProject } from "@/src/models/project";
