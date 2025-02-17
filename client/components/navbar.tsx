@@ -85,7 +85,6 @@ export const Navbar = async () => {
               <Link
                 // TODO: maybe implement this solution in both menus? https://medium.com/@beecodeguy/access-current-pathname-in-server-components-next-js-app-router-81686d2ed60f
                 href={item.href}
-                size="lg"
               >
                 {item.title}
               </Link>
