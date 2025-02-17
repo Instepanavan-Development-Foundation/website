@@ -21,6 +21,12 @@ export function Avatar({
   height: number;
   className?: string;
 }) {
+
+  if(!contributor)
+  {
+    return <></>
+  }
+  
   const avatarUrl = contributor.avatar?.url
     ? getMediaUrl(contributor.avatar)
     : getGravatarUrl(contributor.email);
