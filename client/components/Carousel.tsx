@@ -19,8 +19,9 @@ export default function Carousel({
   slider: IProject["slider"];
   image: IProject["image"];
 }) {
-  const hasSlides = slider && (slider.images.length + Number(!!slider.videoIframe));
-  const hasNoSlides = !hasSlides ;
+  const hasSlides =
+    slider && slider.images.length + Number(!!slider.videoIframe);
+  const hasNoSlides = !hasSlides;
   const [showArrows, setShowArrows] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [loaded, setLoaded] = useState(false);
@@ -35,7 +36,7 @@ export default function Carousel({
   });
 
   const height = "h-96";
-
+  // TODO: please fix, having just one video crashes the app
   if (hasNoSlides || !slider) {
     return (
       <div className="keen-slider">
@@ -121,21 +122,22 @@ export default function Carousel({
             (_, idx) => {
               return (
                 <button
-                key={idx}
-                onClick={() => {
-                  instanceRef.current?.moveToIdx(idx);
-                }}
-                className={"dot" + (currentSlide === idx ? " active" : "")}
-              ></button>
-            );
-          })}
+                  key={idx}
+                  onClick={() => {
+                    instanceRef.current?.moveToIdx(idx);
+                  }}
+                  className={"dot" + (currentSlide === idx ? " active" : "")}
+                ></button>
+              );
+            }
+          )}
         </div>
       )}
     </>
   );
 }
 
-// TODO: Maybe change to lucide-react
+// TODO: Maybe change to lucide-react, though not necessarily for this component
 function Arrow(props: {
   left?: boolean;
   disabled: boolean;
