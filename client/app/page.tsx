@@ -1,4 +1,4 @@
-import { Link } from "@heroui/link";
+import Link from "next/link";
 import { button as buttonStyles } from "@nextui-org/theme";
 import { Image } from "@heroui/image";
 
@@ -82,7 +82,6 @@ export default async function Home() {
   });
 
   const aboutContent = staticPages[0];
-
 
   return (
     <section className="flex flex-col items-center px-4">

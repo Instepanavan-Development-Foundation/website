@@ -1,9 +1,9 @@
 import "@/styles/globals.css";
 import { Metadata, Viewport } from "next";
-import { Link } from "@heroui/link";
+import Link from "next/link";
 import clsx from "clsx";
 
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic";
 
 import { Providers } from "./providers";
 
@@ -27,11 +27,7 @@ export default async function RootLayout({
   return (
     <html suppressHydrationWarning lang="en">
       <head />
-      <body
-        className={clsx(
-          "min-h-screen bg-background antialiased",
-        )}
-      >
+      <body className={clsx("min-h-screen bg-background antialiased")}>
         <Providers themeProps={{ attribute: "class", defaultTheme: "light" }}>
           <div className="relative flex flex-col h-screen">
             <Navbar />
@@ -43,7 +39,7 @@ export default async function RootLayout({
                 {footerMenu.map((link) => (
                   <Link
                     key={link.title}
-                    isExternal
+                    target="_blank"
                     href={link.href}
                     className="text-default-600 hover:text-primary"
                   >

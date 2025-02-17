@@ -1,5 +1,4 @@
-import { Link } from "@heroui/link";
-import { Image } from "@heroui/image";
+import Link from "next/link";
 import { button as buttonStyles } from "@nextui-org/theme";
 import { MoveRight, Rss } from "lucide-react";
 import { Chip } from "@nextui-org/chip";
