@@ -13,38 +13,19 @@ import Link from "next/link";
 export async function generateMetadata({ params }: IParams) {
   const { slug } = await params;
 
-  const { data: blogs }: { data: IBlog[] } = await getData({
-    type: "blogs",
-    fields: ["id"],
-    populate: {
-      contribution: {
-        fields: ["id"],
-        populate: {
-          contributor: {
-            fields: ["fullName", "about"],
-          },
-        },
-        filters: {
-          contributor: {
-            slug,
-          },
-        },
-      },
-    },
+  const { data: contributors } = await getData({
+    type: "contributors",
+    populate: { avatar: { fields: ["url"] } },
     filters: {
-      contribution: {
-        contributor: {
-          slug,
-        },
-      },
+      slug,
     },
   });
 
-  if (!blogs.length) {
+  if (!contributors.length) {
     return <NotFound />;
   }
 
-  const contributor = blogs[0].contribution[0].contributor;
+  const contributor = contributors[0];
   return {
     title: contributor.fullName,
     description: contributor.about,
@@ -54,6 +35,19 @@ export async function generateMetadata({ params }: IParams) {
 export default async function ContributorPage({ params }: IParams) {
   const { slug } = await params;
 
+  const { data: contributors } = await getData({
+    type: "contributors",
+    populate: { avatar: { fields: ["url"] } },
+    filters: {
+      slug,
+    },
+  });
+
+  if (!contributors.length) {
+    return <NotFound />;
+  }
+
+  // TODO: check necessary fields
   const { data: blogs }: { data: IBlog[] } = await getData({
     type: "blogs",
     fields: ["id", "slug", "createdAt"],
@@ -85,11 +79,7 @@ export default async function ContributorPage({ params }: IParams) {
     },
   });
 
-  if (!blogs.length) {
-    return <NotFound />;
-  }
-
-  const contributor = blogs[0].contribution[0].contributor;
+  const contributor = contributors[0];
 
   return (
     <section className="container mx-auto px-4 py-8">
@@ -104,45 +94,50 @@ export default async function ContributorPage({ params }: IParams) {
         </div>
       </div>
 
-      <div>
-        <h2 className="text-3xl font-bold mb-8">Աջակցություն</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {blogs.map((blog) => (
-            <Card key={blog.slug} className="hover:shadow-lg transition-shadow">
-              <CardBody>
-                <div className="flex flex-col md:flex-row gap-4">
-                  <Link href={`/project/${blog.project.slug}`}>
-                    <Image
-                      src={getMediaSrc(blog.project.image)}
-                      alt={
-                        blog.project.image.alternativeText || "project image"
-                      }
-                      width={80}
-                      height={80}
-                      className="rounded-lg object-cover"
-                    />
-                  </Link>
-                  <div>
+      {blogs.length ? (
+        <div>
+          <h2 className="text-3xl font-bold mb-8">Աջակցություն</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {blogs.map((blog) => (
+              <Card
+                key={blog.slug}
+                className="hover:shadow-lg transition-shadow"
+              >
+                <CardBody>
+                  <div className="flex flex-col md:flex-row gap-4">
                     <Link href={`/project/${blog.project.slug}`}>
-                      Նախագիծ։ {blog.project.name}
+                      <Image
+                        src={getMediaSrc(blog.project.image)}
+                        alt={
+                          blog.project.image.alternativeText || "project image"
+                        }
+                        width={80}
+                        height={80}
+                        className="rounded-lg object-cover"
+                      />
                     </Link>
-                    <p>
-                      <Link
-                        href={`/blog/${blog.slug}`}
-                        className="mb-1"
-                        color="secondary"
-                      >
-                        {blog.contribution[0].text}
+                    <div>
+                      <Link href={`/project/${blog.project.slug}`}>
+                        Նախագիծ։ {blog.project.name}
                       </Link>
-                    </p>
-                    <p>{prettyDate(blog.createdAt)}</p>
+                      <p>
+                        <Link
+                          href={`/blog/${blog.slug}`}
+                          className="mb-1"
+                          color="secondary"
+                        >
+                          {blog.contribution[0].text}
+                        </Link>
+                      </p>
+                      <p>{prettyDate(blog.createdAt)}</p>
+                    </div>
                   </div>
-                </div>
-              </CardBody>
-            </Card>
-          ))}
+                </CardBody>
+              </Card>
+            ))}
+          </div>
         </div>
-      </div>
+      ) : null}
     </section>
   );
 }
