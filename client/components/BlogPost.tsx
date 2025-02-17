@@ -83,7 +83,7 @@ export function BlogPost({
             <p className="text-xs text-gray-500">{prettyDate(createdAt)}</p>
             {isLink ? (
               <Link href={`/blog/${slug}`}>
-                <p className="text-default-500 mb-4">{content}</p>
+                <p className="text-default-500 mb-4 line-clamp-[10]">{content}</p>
               </Link>
             ) : (
               <p className="text-default-500 mb-4">{content}</p>
@@ -101,7 +101,9 @@ export function BlogPost({
             {/* Project */}
             {project && (
               <div className="flex -space-x-2 mb-4">
-                <Link href={`/project/${project.slug}`} color="secondary">
+                <Link href={`/project/${project.slug}`}
+                  color="secondary"
+                  className="line-clamp-2">
                   {project.name}
                 </Link>
               </div>

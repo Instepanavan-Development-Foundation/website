@@ -14,16 +14,14 @@ import NextLink from "next/link";
 import clsx from "clsx";
 
 import { getSiteConfig } from "@/config/site";
-import { ThemeSwitch } from "@/components/theme-switch";
 import {
-  GithubIcon,
-  HeartFilledIcon,
-  SearchIcon,
   Logo,
 } from "@/components/icons";
 import { IMenu, IMenuLink } from "@/src/models/menu";
 
+
 export const Navbar = async () => {
+  
   const siteConfig = await getSiteConfig();
   return (
     <NextUINavbar maxWidth="xl" position="sticky">
@@ -55,7 +53,7 @@ export const Navbar = async () => {
             </NavbarItem>
           ))}
         </ul>
-        <NavbarItem className="hidden md:flex">
+        {/* <NavbarItem className="hidden md:flex">
           <Button
             isExternal
             as={Link}
@@ -66,17 +64,17 @@ export const Navbar = async () => {
           >
             Հանգանակել
           </Button>
-        </NavbarItem>
+        </NavbarItem> */}
       </NavbarContent>
 
-      <NavbarContent className="sm:hidden basis-1 pl-4" justify="end">
-        <Link
+      <NavbarContent className="lg:hidden basis-1 pl-4" justify="end">
+        {/* <Link
           isExternal
           aria-label="Github"
           // href={siteConfig.links.github}
         >
           <GithubIcon className="text-default-500" />
-        </Link>
+        </Link> */}
         {/* <ThemeSwitch /> */}
         <NavbarMenuToggle />
       </NavbarContent>
@@ -85,14 +83,8 @@ export const Navbar = async () => {
           {siteConfig.navItems.map((item, index) => (
             <NavbarMenuItem key={`${item}-${index}`}>
               <Link
-                color={
-                  index === 2
-                    ? "primary"
-                    : index === siteConfig.navItems.length - 1
-                      ? "danger"
-                      : "foreground"
-                }
-                href="#"
+                // TODO: maybe implement this solution in both menus? https://medium.com/@beecodeguy/access-current-pathname-in-server-components-next-js-app-router-81686d2ed60f
+                href={item.href}
                 size="lg"
               >
                 {item.title}

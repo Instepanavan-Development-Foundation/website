@@ -22,11 +22,10 @@ export function Avatar({
   className?: string;
 }) {
 
-  if(!contributor)
-  {
-    return <></>
+  if (!contributor) {
+    return <></>;
   }
-  
+
   const avatarUrl = contributor.avatar?.url
     ? getMediaUrl(contributor.avatar)
     : getGravatarUrl(contributor.email);

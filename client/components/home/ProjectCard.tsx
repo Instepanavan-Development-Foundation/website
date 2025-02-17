@@ -43,7 +43,8 @@ export function ProjectCard({
           />
 
           <div className="p-5">
-            <p className="text-lg text-default-600">{name}</p>
+            {/* Project name should be one line */}
+            <p className="text-lg text-default-600 line-clamp-1">{name}</p>
 
             <div className="mt-4 flex flex-col gap-2">
               <div className="flex justify-between text-sm mb-1">
