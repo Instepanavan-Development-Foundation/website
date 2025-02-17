@@ -9,7 +9,6 @@ import { Paperclip } from "lucide-react";
 import Link from "next/link";
 import getMediaSrc from "@/src/helpers/getMediaUrl";
 
-// TODO: Name should be generated like this "Project Name - website title" on every page
 export async function generateMetadata({ params }: IParams) {
   const { slug } = await params;
   const { data }: { data: IStaticPage[] } = await getData({

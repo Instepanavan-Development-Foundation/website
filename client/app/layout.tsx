@@ -17,6 +17,17 @@ export const viewport: Viewport = {
   ],
 };
 
+export async function generateMetadata(): Promise<Metadata> {
+  const { title } = await getSiteConfig();
+
+  return {
+    title: {
+      template: `%s - ${title}`,
+      default: title,
+    },
+  };
+}
+
 export default async function RootLayout({
   children,
 }: {
