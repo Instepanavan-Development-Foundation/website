@@ -60,7 +60,8 @@
     },
     "slug": {
       "type": "string",
-      "unique": true
+      "unique": true,
+      "regex": "^[A-Za-z0-9-]+$"
     }
   }
 }

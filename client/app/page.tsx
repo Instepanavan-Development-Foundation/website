@@ -24,21 +24,6 @@ const stats = [
   { label: "Կամավորներ", value: "150+" }, // contributors?
 ];
 
-export async function generateMetadata(): Promise<Metadata> {
-  const { title, siteDescription } = await getSiteConfig();
-
-  return {
-    title: {
-      default: title,
-      template: `%s - ${title}`,
-    },
-    description: siteDescription,
-    icons: {
-      icon: "/favicon.ico",
-    },
-  };
-}
-
 export default async function Home() {
   const { data: projects }: { data: IProject[] } = await getData({
     type: "projects",
