@@ -45,10 +45,8 @@ export default async function StaticPage({ params }: IParams) {
 
   return (
     <div className="container mx-auto">
+      <h1 className="text-5xl font-bold text-center mb-10">{staticPage.title}</h1>
       <Card>
-        <CardHeader className="flex justify-center">
-          <h1 className="text-5xl font-bold text-center">{staticPage.title}</h1>
-        </CardHeader>
         <CardBody>
           <div className="prose">
             <ModifiedMarkdown>{staticPage.description}</ModifiedMarkdown>
