@@ -29,7 +29,6 @@ export function ProjectCard({
   return (
     <div className="relative w-full">
       <Card
-        isPressable
         className="group bg-gradient-to-br from-background to-default-50 w-full"
       >
         <CardBody className="overflow-visible p-0">
