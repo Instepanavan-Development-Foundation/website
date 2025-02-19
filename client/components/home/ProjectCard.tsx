@@ -65,6 +65,7 @@ export function ProjectCard({
               <div className="flex flex-col space-between">
                 <div className="flex justify-between items-center">
                   <p className="text-xs text-default-400 mt-1">
+                    {/* TODO: move to separate helper and handle NaN */}
                     {Math.round((gatheredAmount / requiredAmount) * 100)}%
                     funded
                   </p>
