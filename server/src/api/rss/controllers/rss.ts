@@ -2,23 +2,27 @@ import RSSService from "../services/rss";
 
 export default {
   generateRss: async (ctx, next) => {
-    const eclipsesLimit = 20;
+    const eclipsesLimit = 100;
     const minute = 60 * 1000;
 
     try {
       const projectSlug = ctx.query.project;
 
-      const blogs = await strapi.entityService.findMany("api::blog.blog", {
-        filters: {
-          project: {
-            slug: projectSlug,
+      const filters = projectSlug
+        ? {
+            project: {
+              slug: projectSlug,
+            },
           }
-        },
+        : {};
+
+      const blogs = await strapi.entityService.findMany("api::blog.blog", {
+        filters,
         limit: parseInt(process.env.RSS_FEED_LIMIT),
         populate: ["createdBy", "images"],
         sort: ["createdAt:desc"],
       });
-      
+
       const feed = RSSService.getRssFeed();
 
       blogs.forEach((blog) => {
@@ -46,11 +50,16 @@ export default {
             {
               "itunes:image": {
                 _attr: {
-                  href: `${process.env.BASE_URL}${(blog as any).images?.[0]?.url}` || process.env.RSS_ITUNES_IMAGE,
+                  href:
+                    `${process.env.BASE_URL}${(blog as any).images?.[0]?.url}` ||
+                    process.env.RSS_ITUNES_IMAGE,
                 },
               },
             },
-            { "itunes:duration": Math.ceil(blog.content.length / minute) + " minutes" },
+            {
+              "itunes:duration":
+                Math.ceil(blog.content.length / minute) + " minutes",
+            },
           ],
         });
       });
