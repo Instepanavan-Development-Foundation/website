@@ -6,7 +6,7 @@ import getData from "@/src/helpers/getData";
 export default async function TrustedByContributors() {
   const { data: trustedByContributors } = await getData({
     type: "contributors",
-    fields: ["id", "fullName"],
+    fields: ["id", "fullName", "slug"],
     filters: { isTrustedBy: true },
     populate: { avatar: { fields: ["url"] } },
   });

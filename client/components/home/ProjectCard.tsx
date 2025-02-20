@@ -5,7 +5,6 @@ import { IProject } from "@/src/models/project";
 import getMediaUrl from "@/src/helpers/getMediaUrl";
 import { HeartHandshake } from "lucide-react";
 
-
 export const formatCurrency = (amount: number, currency: string = "AMD") => {
   return new Intl.NumberFormat("hy-AM", {
     style: "currency",
@@ -28,9 +27,7 @@ export function ProjectCard({
 }: IProject) {
   return (
     <div className="relative w-full">
-      <Card
-        className="group bg-gradient-to-br from-background to-default-50 w-full"
-      >
+      <Card className="group bg-gradient-to-br from-background to-default-50 w-full">
         <CardBody className="overflow-visible p-0">
           <Image
             alt={name}
@@ -46,7 +43,9 @@ export function ProjectCard({
             <p className="text-lg text-default-600 line-clamp-1">{name}</p>
 
             <div className="mt-4 flex flex-col gap-2">
-              <div className="flex justify-between text-sm mb-1">
+              <div
+                className={`flex justify-between text-sm mb-1 ${!requiredAmount ? "opacity-0" : ""}`}
+              >
                 <span className="text-default-600">
                   {formatCurrency(gatheredAmount)}
                 </span>
@@ -54,7 +53,7 @@ export function ProjectCard({
                   Goal: {formatCurrency(requiredAmount)}
                 </span>
               </div>
-              <div className="w-full h-2 bg-default-100 rounded-full">
+              <div className="w-full h-2 bg-default-100 rounded-full ">
                 <div
                   className="h-full bg-primary rounded-full transition-all duration-300 ease-in-out"
                   style={{
@@ -64,13 +63,17 @@ export function ProjectCard({
               </div>
               <div className="flex flex-col space-between">
                 <div className="flex justify-between items-center">
-                  <p className="text-xs text-default-400 mt-1">
-                    {/* TODO: move to separate helper and handle NaN */}
-                    {Math.round((gatheredAmount / requiredAmount) * 100)}%
+                  <p
+                    className={`text-xs text-default-400 mt-1 ${!requiredAmount ? "opacity-0" : ""}`}
+                  >
+                    {/* TODO: move to separate helper */}
+                    {requiredAmount
+                      ? `${Math.round((gatheredAmount / requiredAmount) * 100)}%`
+                      : "100%"}
                     funded
                   </p>
                   {
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 h-10">
                       <div className="flex -space-x-2">
                         <ContributorsList
                           contributions={blogs
