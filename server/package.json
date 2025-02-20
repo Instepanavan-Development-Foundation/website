@@ -14,6 +14,7 @@
   "dependencies": {
     "@strapi/plugin-users-permissions": "5.7.0",
     "@strapi/strapi": "5.7.0",
+    "markdown-to-txt": "^2.0.1",
     "pg": "8.8.0",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",

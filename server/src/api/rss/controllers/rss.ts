@@ -1,4 +1,5 @@
 import RSSService from "../services/rss";
+import markdownToTxt from "markdown-to-txt";
 
 export default {
   generateRss: async (ctx, next) => {
@@ -26,10 +27,12 @@ export default {
       const feed = RSSService.getRssFeed();
 
       blogs.forEach((blog) => {
+        const content = markdownToTxt(blog.content);
+
         const title =
-          blog.content.length > eclipsesLimit
-            ? blog.content.substring(0, eclipsesLimit) + "..."
-            : blog.content;
+          content.length > eclipsesLimit
+            ? content.substring(0, eclipsesLimit) + "..."
+            : content;
 
         const author =
           (blog as any).createdBy.firstName +
@@ -38,9 +41,9 @@ export default {
 
         feed.item({
           title,
-          description: blog.content,
+          description: content,
           url: `${process.env.FRONTEND_URL}/blog/${blog.slug}`,
-          guid: blog.id,
+          guid: blog.documentId,
           categories: (blog.tag as { name: string }[])?.map((tag) => tag.name),
           author: author,
           date: blog.createdAt,
@@ -58,7 +61,7 @@ export default {
             },
             {
               "itunes:duration":
-                Math.ceil(blog.content.length / minute) + " minutes",
+                Math.ceil(content.length / minute) + " minutes",
             },
           ],
         });
