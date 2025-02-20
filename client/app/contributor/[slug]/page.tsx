@@ -9,12 +9,14 @@ import NotFound from "@/components/NotFound";
 import { IBlog } from "@/src/models/blog";
 import { prettyDate } from "@/src/helpers/prettyDate";
 import Link from "next/link";
+import { Metadata } from "next";
 
-export async function generateMetadata({ params }: IParams) {
+export async function generateMetadata({ params }: IParams): Promise<Metadata> {
   const { slug } = await params;
 
   const { data: contributors } = await getData({
     type: "contributors",
+    fields: ["fullName", "about"],
     populate: { avatar: { fields: ["url"] } },
     filters: {
       slug,
@@ -22,13 +24,19 @@ export async function generateMetadata({ params }: IParams) {
   });
 
   if (!contributors.length) {
-    return <NotFound />;
+    return {
+      title: "",
+    };
   }
 
   const contributor = contributors[0];
   return {
     title: contributor.fullName,
     description: contributor.about,
+    openGraph: {
+      type: "website",
+      images: { url: getMediaSrc(contributor.avatar) },
+    },
   };
 }
 

@@ -14,6 +14,7 @@ import { ContributionBox } from "@/components/ContributionBox";
 import Supporters from "@/components/Supporters";
 import Carousel from "@/components/Carousel";
 import { formatCurrency } from "@/components/home/ProjectCard";
+import getMediaSrc from "@/src/helpers/getMediaUrl";
 
 export async function generateMetadata({ params }: IParams) {
   const { slug } = await params;
@@ -21,6 +22,12 @@ export async function generateMetadata({ params }: IParams) {
     type: "projects",
     filters: {
       slug,
+    },
+    fields: ["name", "description"],
+    populate: {
+      image: {
+        fields: ["url"],
+      },
     },
   });
 
@@ -32,6 +39,10 @@ export async function generateMetadata({ params }: IParams) {
   return {
     title: project.name,
     description: project.description,
+    openGraph: {
+      type: "website",
+      images: { url: getMediaSrc(project.image) },
+    },
   };
 }
 

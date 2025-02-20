@@ -9,6 +9,8 @@ import { Providers } from "./providers";
 
 import { getSiteConfig } from "@/config/site";
 import { Navbar } from "@/components/navbar";
+import getMediaSrc from "@/src/helpers/getMediaUrl";
+import { IMediaFormat } from "@/src/models/media";
 
 export const viewport: Viewport = {
   themeColor: [
@@ -24,6 +26,10 @@ export async function generateMetadata(): Promise<Metadata> {
     title: {
       template: `%s - ${title}`,
       default: title,
+    },
+    openGraph: {
+      type: "website",
+      images: { url: "" }, // TODO: add default image
     },
   };
 }
