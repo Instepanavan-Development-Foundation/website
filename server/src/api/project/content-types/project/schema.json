@@ -75,6 +75,11 @@
       "type": "component",
       "repeatable": false,
       "component": "slider.slider"
+    },
+    "isMain": {
+      "type": "boolean",
+      "default": false,
+      "required": false
     }
   }
 }
