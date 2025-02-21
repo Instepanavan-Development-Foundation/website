@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { button as buttonStyles } from "@nextui-org/theme";
+
 import getData from "@/src/helpers/getData";
 import { IBlog } from "@/src/models/blog";
 import { BlogPost } from "../BlogPost";
 import RSS from "@/components/home/RSS";
+import { ArrowRightIcon } from "lucide-react";
 
 export default async function Blogs() {
   const { data: blogs }: { data: IBlog[] } = await getData({
@@ -39,19 +41,7 @@ export default async function Blogs() {
           })}
         >
           Դիտել բոլոր հոդվածները
-          <svg
-            className="ml-2 w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M13 7l5 5m0 0l-5 5m5-5H6"
-            />
-          </svg>
+          <ArrowRightIcon className="w-4 h-4" />
         </Link>
       </div>
     </div>

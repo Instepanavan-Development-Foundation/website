@@ -1,17 +1,16 @@
 import Link from "next/link";
-import { button as buttonStyles } from "@nextui-org/theme";
 
 import { Avatar } from "@/components/Avatar";
 import { Tooltip } from "@heroui/tooltip";
 import getData from "@/src/helpers/getData";
-import { ArrowRightIcon } from "lucide-react";
 
-export default async function TrustedByContributors() {
+export default async function Contributors() {
   const { data: trustedByContributors } = await getData({
     type: "contributors",
-    fields: ["id", "fullName", "slug"],
-    filters: { isTrustedBy: true },
+    fields: ["id", "fullName", "slug", "email"],
+    filters: {},
     populate: { avatar: { fields: ["url"] } },
+    limit: 10000,
   });
 
   if (!trustedByContributors.length) {
@@ -20,7 +19,7 @@ export default async function TrustedByContributors() {
 
   return (
     <div className="w-full container my-8">
-      <h2 className="text-3xl font-bold mb-6">Մեզ վստահում են</h2>
+      <h1 className="mb-8 text-5xl">Աջակիցներ</h1>
 
       <div className="grid grid-cols-4 md:grid-cols-4 lg:grid-cols-6 gap-8">
         {trustedByContributors.map((contributor) => (
@@ -41,19 +40,6 @@ export default async function TrustedByContributors() {
             </Link>
           </Tooltip>
         ))}
-      </div>
-      <div className="col-span-full flex justify-center mt-8">
-        <Link
-          href="/contributors"
-          className={buttonStyles({
-            variant: "flat",
-            radius: "full",
-            size: "lg",
-          })}
-        >
-          Դիտել աջակցողների ամբողջական ցանկը
-          <ArrowRightIcon className="w-4 h-4" />
-        </Link>
       </div>
     </div>
   );
