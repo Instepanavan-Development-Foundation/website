@@ -9,41 +9,26 @@ import { Image } from "@heroui/image";
 import { IProject } from "@/src/models/project";
 import getMediaUrl from "@/src/helpers/getMediaUrl";
 
-export default function Carousel({
-  slider = {
-    images: [],
-    videoIframe: "",
-  },
-  image,
-}: {
-  slider: IProject["slider"];
-  image: IProject["image"];
-}) {
-  const hasSlides =
-    slider && slider.images.length + Number(!!slider.videoIframe);
-  const hasNoSlides = !hasSlides;
+interface ICarouselProps {
+  slider?: IProject["slider"];
+  image?: IProject["image"];
+}
+
+export default function Carousel({ slider, image }: ICarouselProps) {
   const [showArrows, setShowArrows] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [loaded, setLoaded] = useState(false);
-  const [sliderRef, instanceRef] = useKeenSlider({
-    initial: 0,
-    slideChanged(slider) {
-      setCurrentSlide(slider.track.details.rel);
-    },
-    created() {
-      setLoaded(true);
-    },
-  });
 
-  const height = "h-96";
-  // TODO: please fix, having just one video crashes the app
-  if (hasNoSlides || !slider) {
+  const totalSlides =
+    (slider?.images?.length || 0) + (slider?.videoIframe ? 1 : 0);
+
+  if (!slider && image) {
     return (
       <div className="keen-slider">
         <div className="keen-slider__slide">
           <Image
             alt={image.name}
-            className={`w-full object-cover ${height}`}
+            className="w-full object-cover h-96"
             radius="lg"
             shadow="sm"
             src={getMediaUrl(image)}
@@ -54,35 +39,46 @@ export default function Carousel({
     );
   }
 
-  useEffect(() => {
-    if (hasSlides > 1) {
-      setShowArrows(true);
-    }
-  }, [slider, slider.images, slider.videoIframe]);
+  if (!slider && !image) {
+    return null;
+  }
 
-  // making video full width even if not full with
-  const videoIframe = slider.videoIframe?.replace(
+  const [sliderRef, instanceRef] = useKeenSlider({
+    initial: 0,
+    slideChanged(slider) {
+      setCurrentSlide(slider.track.details.rel);
+    },
+    created() {
+      setLoaded(true);
+    },
+  });
+
+  useEffect(() => {
+    setShowArrows(totalSlides > 1);
+  }, [totalSlides]);
+
+  const videoIframe = slider?.videoIframe?.replace(
     "iframe",
-    `iframe class='w-full ${height}'`
+    'iframe class="w-full h-96"'
   );
 
   return (
     <>
       <div className="navigation-wrapper">
         <div ref={sliderRef} className="keen-slider">
-          {slider.videoIframe && (
+          {slider?.videoIframe && (
             <div className="keen-slider__slide">
               <div
                 className="text-container"
-                dangerouslySetInnerHTML={{ __html: videoIframe }}
+                dangerouslySetInnerHTML={{ __html: videoIframe || "" }}
               />
             </div>
           )}
-          {slider.images.map((image, index) => (
+          {slider?.images?.map((image) => (
             <div className="keen-slider__slide" key={image.id}>
               <Image
                 alt={image.name}
-                className={`w-full object-cover ${height}`}
+                className="w-full object-cover h-96"
                 radius="lg"
                 shadow="sm"
                 src={getMediaUrl(image)}
@@ -101,36 +97,27 @@ export default function Carousel({
               }}
               disabled={currentSlide === 0}
             />
-
             <Arrow
               onClick={(e) => {
                 e.stopPropagation();
                 instanceRef.current?.next();
               }}
-              disabled={
-                currentSlide ===
-                instanceRef.current.track.details.slides.length - 1
-              }
+              disabled={currentSlide === totalSlides - 1}
             />
           </>
         )}
       </div>
-      {loaded && instanceRef.current && (
+      {loaded && instanceRef.current && totalSlides > 1 && (
         <div className="dots">
-          {Array.from(
-            { length: instanceRef.current.track.details.slides.length },
-            (_, idx) => {
-              return (
-                <button
-                  key={idx}
-                  onClick={() => {
-                    instanceRef.current?.moveToIdx(idx);
-                  }}
-                  className={"dot" + (currentSlide === idx ? " active" : "")}
-                ></button>
-              );
-            }
-          )}
+          {[...Array(totalSlides)].map((_, idx) => (
+            <button
+              key={idx}
+              onClick={() => {
+                instanceRef.current?.moveToIdx(idx);
+              }}
+              className={`dot${currentSlide === idx ? " active" : ""}`}
+            />
+          ))}
         </div>
       )}
     </>
