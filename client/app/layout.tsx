@@ -18,12 +18,16 @@ export const viewport: Viewport = {
 };
 
 export async function generateMetadata(): Promise<Metadata> {
-  const { title } = await getSiteConfig();
+  const { title, logo } = await getSiteConfig();
 
   return {
     title: {
       template: `%s - ${title}`,
       default: title,
+    },
+    openGraph: {
+      type: "website",
+      images: { url: logo.url },
     },
   };
 }

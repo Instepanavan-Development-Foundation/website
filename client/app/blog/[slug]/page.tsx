@@ -1,6 +1,7 @@
 import { BlogPost } from "@/components/BlogPost";
 import NotFound from "@/components/NotFound";
 import getData from "@/src/helpers/getData";
+import getMediaSrc from "@/src/helpers/getMediaUrl";
 import { IBlog } from "@/src/models/blog";
 import { IParams } from "@/src/models/params";
 
@@ -8,7 +9,11 @@ export async function generateMetadata({ params }: IParams) {
   const { slug } = await params;
   const { data }: { data: IBlog[] } = await getData({
     type: "blogs",
+    fields: ["content"],
     filters: { slug },
+    populate: {
+      images: { fields: ["url"] },
+    },
   });
 
   const [blog] = data;
@@ -19,6 +24,10 @@ export async function generateMetadata({ params }: IParams) {
   return {
     title: "Բլոգ",
     description: blog.content.slice(0, 100),
+    openGraph: {
+      type: "website",
+      images: { url: getMediaSrc(blog.images[0]) },
+    },
   };
 }
 
