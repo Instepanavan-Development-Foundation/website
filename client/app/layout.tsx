@@ -9,8 +9,6 @@ import { Providers } from "./providers";
 
 import { getSiteConfig } from "@/config/site";
 import { Navbar } from "@/components/navbar";
-import getMediaSrc from "@/src/helpers/getMediaUrl";
-import { IMediaFormat } from "@/src/models/media";
 
 export const viewport: Viewport = {
   themeColor: [
@@ -20,7 +18,7 @@ export const viewport: Viewport = {
 };
 
 export async function generateMetadata(): Promise<Metadata> {
-  const { title } = await getSiteConfig();
+  const { title, logo } = await getSiteConfig();
 
   return {
     title: {
@@ -29,7 +27,7 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     openGraph: {
       type: "website",
-      images: { url: "" }, // TODO: add default image
+      images: { url: logo.url },
     },
   };
 }
