@@ -41,7 +41,7 @@ export default async function StaticPage({ params }: IParams) {
   if (!staticPage) {
     NotFound();
   }
-
+  
   return (
     <div className="container mx-auto">
       <h1 className="text-5xl font-bold text-center mb-10">
@@ -49,22 +49,22 @@ export default async function StaticPage({ params }: IParams) {
       </h1>
       <Card>
         <CardBody>
-          <div className="prose">
+          <div className="prose max-w-none">
             <ModifiedMarkdown>{staticPage.description}</ModifiedMarkdown>
           </div>
         </CardBody>
         <CardFooter className="flex flex-row flex-wrap gap-2">
           {staticPage.attachments?.map((attachment) => (
-            <Link
-              href={getMediaSrc(attachment)}
-              target="_blank"
-              key={attachment.url}
-            >
-              <Button className="btn btn-success">
-                <Paperclip className="w-4 h-4" />
-                {attachment.name}
-              </Button>
-            </Link>
+           <Button
+           as="a"
+           href={getMediaSrc(attachment)}
+           target="_blank"
+           rel="noopener noreferrer"
+           className="btn btn-success"
+         >
+           <Paperclip className="w-4 h-4" />
+           {attachment.name}
+         </Button>
           ))}
         </CardFooter>
       </Card>
