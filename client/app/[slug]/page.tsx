@@ -41,10 +41,7 @@ export default async function StaticPage({ params }: IParams) {
   if (!staticPage) {
     NotFound();
   }
-
-  console.log(staticPage);
   
-
   return (
     <div className="container mx-auto">
       <h1 className="text-5xl font-bold text-center mb-10">
