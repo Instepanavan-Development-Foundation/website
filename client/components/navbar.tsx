@@ -18,11 +18,30 @@ import {
   Logo,
 } from "@/components/icons";
 import { IMenu, IMenuLink } from "@/src/models/menu";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
+
+
+const logoTitleTranslations = {
+  hy: "Ինստեփանավան Զարգացման Հիմանադրամ",
+  en: "",
+  ru: "",
+  fr: "",
+};
 
 export const Navbar = async () => {
-  
   const siteConfig = await getSiteConfig();
+
+  // Get selected language from localStorage or default to "hy"
+  // const selectedLang =
+  //   typeof window !== "undefined"
+  //     ? localStorage.getItem("yt-widget")
+  //       ? JSON.parse(localStorage.getItem("yt-widget")!).lang
+  //       : "hy"
+  //     : "hy";
+
+  // const translatedLogoTitle = logoTitleTranslations[selectedLang] || siteConfig.logoTitle;
+
   return (
     <NextUINavbar maxWidth="xl" position="sticky">
       <NavbarContent className="basis-1/5 sm:basis-full" justify="start">
@@ -52,6 +71,9 @@ export const Navbar = async () => {
               </NextLink>
             </NavbarItem>
           ))}
+          <NavbarItem>
+            <LanguageSwitcher />
+          </NavbarItem>
         </ul>
         {/* <NavbarItem className="hidden md:flex">
           <Button
@@ -90,6 +112,9 @@ export const Navbar = async () => {
               </Link>
             </NavbarMenuItem>
           ))}
+          <NavbarMenuItem>
+            <LanguageSwitcher />
+          </NavbarMenuItem>
         </div>
       </NavbarMenu>
     </NextUINavbar>

@@ -56,6 +56,7 @@ export default async function StaticPage({ params }: IParams) {
         <CardFooter className="flex flex-row flex-wrap gap-2">
           {staticPage.attachments?.map((attachment) => (
            <Button
+           key={attachment.url}
            as="a"
            href={getMediaSrc(attachment)}
            target="_blank"
