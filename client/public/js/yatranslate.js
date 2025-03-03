@@ -17,12 +17,10 @@ const flagEmojis = {
 };
 
 document.addEventListener("DOMContentLoaded", function () {
-    console.log("Yandex Translate script loaded");
     yaTranslateInit();
 });
 
 function yaTranslateInit() {
-    console.log("yaTranslateInit");
 
     let savedLang = yaTranslateGetCode();
 
@@ -31,10 +29,8 @@ function yaTranslateInit() {
         yaTranslateSetLang(yatranslate.lang);
     }
 
-    console.log("Current language:", savedLang);
 
     if (savedLang === "hy") {
-        console.log("Armenian language is selected. No translation needed.");
         yaTranslateRemoveWidget();
         return;
     }
@@ -47,12 +43,10 @@ function yaTranslateInit() {
         let lang = el.getAttribute("data-ya-lang");
 
         if (lang === "hy") {
-            console.log("Switching back to Armenian...");
             yaTranslateSetLang("hy");
             yaTranslateRemoveWidget();
             window.location.reload();
         } else {
-            console.log(`Translating to ${lang}`);
             yaTranslateSetLang(lang);
             window.location.reload();
         }
@@ -62,9 +56,7 @@ function yaTranslateInit() {
     yaTranslateHtmlHandler(savedLang);
 }
 
-function yaTranslateLoadWidget(lang) {
-    console.log(`Loading Yandex Translate for ${lang}...`);
-    
+function yaTranslateLoadWidget(lang) {    
     let script = document.createElement("script");
     script.src = `https://translate.yandex.net/website-widget/v1/widget.js?widgetId=ytWidget&pageLang=${yatranslate.lang}&widgetTheme=light&autoMode=false`;
     script.id = "yandex-translate-script";
@@ -73,8 +65,6 @@ function yaTranslateLoadWidget(lang) {
 }
 
 function yaTranslateRemoveWidget() {
-    console.log("Removing Yandex Translate widget...");
-
     let script = document.getElementById("yandex-translate-script");
     if (script) {
         script.remove();
@@ -93,7 +83,7 @@ function yaTranslateGetCode() {
 function yaTranslateHtmlHandler(code) {
     let activeLangElement = document.querySelector("[data-lang-active]");
     if (activeLangElement) {
-        activeLangElement.innerHTML = flagEmojis[code];
+        activeLangElement.innerHTML = flagEmojis[code];        
     }
 
     let selectedLangElement = document.querySelector(`[data-ya-lang="${code}"]`);

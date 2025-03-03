@@ -1,6 +1,20 @@
-"use client";
+"use client"
 import React, { useEffect, useState } from 'react'
 import "@/public/css/yatranslate.css";
+
+enum Language {
+    HY = 'hy',
+    EN = 'en',
+    RU = 'ru',
+    FR = 'fr'
+}
+
+const flagEmojis: Record<Language, string> = {
+    [Language.HY]: "🇦🇲",
+    [Language.EN]: "🇬🇧",
+    [Language.RU]: "🇷🇺",
+    [Language.FR]: "🇫🇷"
+};
 
 declare global {
     interface Window {
@@ -11,11 +25,8 @@ declare global {
 
 function LanguageSwitcher() {
     const [isOpen, setIsOpen] = useState(false);
+    const [selectedLang, setSelectedLang] = useState<Language>(Language.HY); // Default to Armenian
 
-    useEffect(() => {
-        console.log("isOpen", isOpen);
-        
-     }, [isOpen]);
     useEffect(() => {
         const interval = setInterval(() => {
             if (typeof window !== "undefined" && window.yaTranslateInit) {
@@ -25,43 +36,39 @@ function LanguageSwitcher() {
         }, 50);    
         return () => clearInterval(interval);
     }, []);
-    
-    const handleLanguageChange = (lang: string) => {
+
+    useEffect(() => {
+        const savedLang = localStorage.getItem("yt-widget");
+        if (savedLang) {
+            const parsedLang = JSON.parse(savedLang)?.lang || "hy";
+            setSelectedLang(parsedLang as Language);
+        }
+    }, []);
+
+    const handleLanguageChange = (lang: Language) => {
         if (typeof window !== "undefined") {
             window.yaTranslateSetLang(lang);
+            localStorage.setItem("yt-widget", JSON.stringify({ lang: lang, active: true }));
+            setSelectedLang(lang);
             window.location.reload();
         }
     };
-    
+
     return (
         <div className="lang lang_fixed" onClick={() => setIsOpen(!isOpen)}>
           <div id="ytWidget" style={{ display: "none" }}></div>
-      
-          {/* Selected Language */}
           <div className="lang__link lang__link_select" data-lang-active="">
-            🇦🇲
+            {flagEmojis[selectedLang]}
           </div>
-      
-          {/* Dropdown Flags */}
           <div className="lang__list" data-lang-list="">
-            <div className="lang__link lang__link_sub" onClick={() => handleLanguageChange("ru")}>
-              🇷🇺
-            </div>
-            <div className="lang__link lang__link_sub" onClick={() => handleLanguageChange("en")}>
-              🇬🇧
-            </div>
-            <div className="lang__link lang__link_sub" onClick={() => handleLanguageChange("fr")}>
-              🇫🇷
-            </div>
-            <div className="lang__link lang__link_sub" onClick={() => handleLanguageChange("hy")}>
-              🇦🇲
-            </div>
+            {Object.values(Language).map((lang) => (
+                <div key={lang} className="lang__link lang__link_sub" onClick={() => handleLanguageChange(lang)}>
+                  {flagEmojis[lang]}
+                </div>
+            ))}
           </div>
         </div>
     );
-      
-      
-    
 }
 
-export default LanguageSwitcher
+export default LanguageSwitcher;
