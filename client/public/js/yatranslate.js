@@ -5,8 +5,8 @@
  *****************************************************/
 
 const yatranslate = {
-    lang: "hy",  // Default language (Armenian)
-    langFirstVisit: "en" // First-time visit translation language
+    lang: "hy",
+    langFirstVisit: "en"
 };
 
 const flagEmojis = {
@@ -24,7 +24,6 @@ function yaTranslateInit() {
 
     let savedLang = yaTranslateGetCode();
 
-    // If first-time visit, set the language to langFirstVisit
     if (!savedLang) {
         yaTranslateSetLang(yatranslate.lang);
     }
@@ -35,10 +34,8 @@ function yaTranslateInit() {
         return;
     }
 
-    // Load Yandex Translate widget
     yaTranslateLoadWidget(savedLang);
 
-    // Click event for language change
     yaTranslateEventHandler("click", "[data-ya-lang]", function (el) {
         let lang = el.getAttribute("data-ya-lang");
 
@@ -52,7 +49,6 @@ function yaTranslateInit() {
         }
     });
 
-    // Update UI
     yaTranslateHtmlHandler(savedLang);
 }
 

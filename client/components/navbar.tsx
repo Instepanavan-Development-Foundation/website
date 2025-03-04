@@ -7,7 +7,6 @@ import {
   NavbarItem,
   NavbarMenuItem,
 } from "@nextui-org/navbar";
-import { Button } from "@nextui-org/button";
 import Link from "next/link";
 import { link as linkStyles } from "@nextui-org/theme";
 import NextLink from "next/link";
@@ -17,30 +16,12 @@ import { getSiteConfig } from "@/config/site";
 import {
   Logo,
 } from "@/components/icons";
-import { IMenu, IMenuLink } from "@/src/models/menu";
+import { IMenuLink } from "@/src/models/menu";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 
-
-const logoTitleTranslations = {
-  hy: "Ինստեփանավան Զարգացման Հիմանադրամ",
-  en: "",
-  ru: "",
-  fr: "",
-};
-
 export const Navbar = async () => {
   const siteConfig = await getSiteConfig();
-
-  // Get selected language from localStorage or default to "hy"
-  // const selectedLang =
-  //   typeof window !== "undefined"
-  //     ? localStorage.getItem("yt-widget")
-  //       ? JSON.parse(localStorage.getItem("yt-widget")!).lang
-  //       : "hy"
-  //     : "hy";
-
-  // const translatedLogoTitle = logoTitleTranslations[selectedLang] || siteConfig.logoTitle;
 
   return (
     <NextUINavbar maxWidth="xl" position="sticky">

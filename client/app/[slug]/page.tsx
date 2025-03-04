@@ -6,7 +6,6 @@ import { IParams } from "@/src/models/params";
 import NotFound from "@/components/NotFound";
 import { Button } from "@nextui-org/button";
 import { Paperclip } from "lucide-react";
-import Link from "next/link";
 import getMediaSrc from "@/src/helpers/getMediaUrl";
 
 export async function generateMetadata({ params }: IParams) {
