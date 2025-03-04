@@ -6,7 +6,6 @@ import { IParams } from "@/src/models/params";
 import NotFound from "@/components/NotFound";
 import { Button } from "@nextui-org/button";
 import { Paperclip } from "lucide-react";
-import Link from "next/link";
 import getMediaSrc from "@/src/helpers/getMediaUrl";
 
 export async function generateMetadata({ params }: IParams) {
@@ -56,6 +55,7 @@ export default async function StaticPage({ params }: IParams) {
         <CardFooter className="flex flex-row flex-wrap gap-2">
           {staticPage.attachments?.map((attachment) => (
            <Button
+           key={attachment.url}
            as="a"
            href={getMediaSrc(attachment)}
            target="_blank"
