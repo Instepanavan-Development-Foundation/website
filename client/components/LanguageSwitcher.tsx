@@ -2,18 +2,18 @@
 import React, { useEffect, useState } from 'react'
 import "@/public/css/yatranslate.css";
 
-enum Language {
+enum ELanguage {
     HY = 'hy',
     EN = 'en',
     RU = 'ru',
     FR = 'fr'
 }
 
-const flagEmojis: Record<Language, string> = {
-    [Language.HY]: "🇦🇲",
-    [Language.EN]: "🇬🇧",
-    [Language.RU]: "🇷🇺",
-    [Language.FR]: "🇫🇷"
+const flagEmojis: Record<ELanguage, string> = {
+    [ELanguage.HY]: "🇦🇲",
+    [ELanguage.EN]: "🇬🇧",
+    [ELanguage.RU]: "🇷🇺",
+    [ELanguage.FR]: "🇫🇷"
 };
 
 declare global {
@@ -25,7 +25,7 @@ declare global {
 
 function LanguageSwitcher() {
     const [isOpen, setIsOpen] = useState(false);
-    const [selectedLang, setSelectedLang] = useState<Language>(Language.HY); // Default to Armenian
+    const [selectedLang, setSelectedLang] = useState<ELanguage>(ELanguage.HY);
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -41,11 +41,11 @@ function LanguageSwitcher() {
         const savedLang = localStorage.getItem("yt-widget");
         if (savedLang) {
             const parsedLang = JSON.parse(savedLang)?.lang || "hy";
-            setSelectedLang(parsedLang as Language);
+            setSelectedLang(parsedLang as ELanguage);
         }
     }, []);
 
-    const handleLanguageChange = (lang: Language) => {
+    const handleLanguageChange = (lang: ELanguage) => {
         if (typeof window !== "undefined") {
             window.yaTranslateSetLang(lang);
             localStorage.setItem("yt-widget", JSON.stringify({ lang: lang, active: true }));
@@ -61,7 +61,7 @@ function LanguageSwitcher() {
             {flagEmojis[selectedLang]}
           </div>
           <div className="lang__list" data-lang-list="">
-            {Object.values(Language).map((lang) => (
+            {Object.values(ELanguage).map((lang) => (
                 <div key={lang} className="lang__link lang__link_sub" onClick={() => handleLanguageChange(lang)}>
                   {flagEmojis[lang]}
                 </div>
