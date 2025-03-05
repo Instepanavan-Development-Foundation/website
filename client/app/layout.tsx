@@ -9,7 +9,6 @@ import { Providers } from "./providers";
 
 import { getSiteConfig } from "@/config/site";
 import { Navbar } from "@/components/navbar";
-import Script from "next/script";
 
 export const viewport: Viewport = {
   themeColor: [
@@ -42,9 +41,7 @@ export default async function RootLayout({
 
   return (
     <html suppressHydrationWarning lang="en">
-      <head>
-        <Script src="/js/yatranslate.js" strategy="afterInteractive" />
-      </head>
+      <head />
       <body className={clsx("min-h-screen bg-background antialiased")}>
         <Providers themeProps={{ attribute: "class", defaultTheme: "light" }}>
           <div className="relative flex flex-col h-screen">
