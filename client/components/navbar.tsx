@@ -7,6 +7,7 @@ import {
   NavbarItem,
   NavbarMenuItem,
 } from "@nextui-org/navbar";
+import { Button } from "@nextui-org/button";
 import Link from "next/link";
 import { link as linkStyles } from "@nextui-org/theme";
 import NextLink from "next/link";
@@ -16,13 +17,12 @@ import { getSiteConfig } from "@/config/site";
 import {
   Logo,
 } from "@/components/icons";
-import { IMenuLink } from "@/src/models/menu";
-import LanguageSwitcher from "@/components/LanguageSwitcher";
+import { IMenu, IMenuLink } from "@/src/models/menu";
 
 
 export const Navbar = async () => {
+  
   const siteConfig = await getSiteConfig();
-
   return (
     <NextUINavbar maxWidth="xl" position="sticky">
       <NavbarContent className="basis-1/5 sm:basis-full" justify="start">
@@ -52,9 +52,6 @@ export const Navbar = async () => {
               </NextLink>
             </NavbarItem>
           ))}
-          <NavbarItem>
-            <LanguageSwitcher />
-          </NavbarItem>
         </ul>
         {/* <NavbarItem className="hidden md:flex">
           <Button
@@ -93,9 +90,6 @@ export const Navbar = async () => {
               </Link>
             </NavbarMenuItem>
           ))}
-          <NavbarMenuItem>
-            <LanguageSwitcher />
-          </NavbarMenuItem>
         </div>
       </NavbarMenu>
     </NextUINavbar>
