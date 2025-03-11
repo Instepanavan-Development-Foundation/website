@@ -1,0 +1,29 @@
+{
+  "kind": "collectionType",
+  "collectionName": "payment_logs",
+  "info": {
+    "singularName": "payment-log",
+    "pluralName": "payment-logs",
+    "displayName": "payment-log"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "amount": {
+      "type": "decimal",
+      "required": true
+    },
+    "currency": {
+      "type": "string",
+      "required": true
+    },
+    "project_payment": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::project-payment.project-payment",
+      "inversedBy": "payment_logs"
+    }
+  }
+}

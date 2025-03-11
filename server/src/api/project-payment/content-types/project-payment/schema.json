@@ -1,0 +1,53 @@
+{
+  "kind": "collectionType",
+  "collectionName": "project_payments",
+  "info": {
+    "singularName": "project-payment",
+    "pluralName": "project-payments",
+    "displayName": "project-payment",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "amount": {
+      "type": "decimal",
+      "required": true
+    },
+    "currency": {
+      "type": "string",
+      "required": true
+    },
+    "type": {
+      "type": "enumeration",
+      "enum": [
+        "recurring",
+        "one_time"
+      ],
+      "required": true
+    },
+    "name": {
+      "type": "string"
+    },
+    "project": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::project.project",
+      "inversedBy": "project_payments"
+    },
+    "payment_method": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::payment-method.payment-method",
+      "inversedBy": "project_payments"
+    },
+    "payment_logs": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::payment-log.payment-log",
+      "mappedBy": "project_payment"
+    }
+  }
+}
