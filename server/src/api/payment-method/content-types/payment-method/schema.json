@@ -1,0 +1,35 @@
+{
+  "kind": "collectionType",
+  "collectionName": "payment_methods",
+  "info": {
+    "singularName": "payment-method",
+    "pluralName": "payment-methods",
+    "displayName": "payment-method",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "type": {
+      "type": "string",
+      "default": "ameriabank"
+    },
+    "params": {
+      "type": "json"
+    },
+    "project_payments": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::project-payment.project-payment",
+      "mappedBy": "payment_method"
+    },
+    "users_permissions_user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "payment_methods"
+    }
+  }
+}
