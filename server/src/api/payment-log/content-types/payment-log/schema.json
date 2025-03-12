@@ -4,7 +4,8 @@
   "info": {
     "singularName": "payment-log",
     "pluralName": "payment-logs",
-    "displayName": "payment-log"
+    "displayName": "payment-log",
+    "description": ""
   },
   "options": {
     "draftAndPublish": false
@@ -24,6 +25,9 @@
       "relation": "manyToOne",
       "target": "api::project-payment.project-payment",
       "inversedBy": "payment_logs"
+    },
+    "details": {
+      "type": "json"
     }
   }
 }
