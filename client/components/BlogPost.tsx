@@ -10,6 +10,7 @@ import Link from "next/link";
 import { ContributorsList } from "./ContributorsList";
 import { IBlog } from "@/src/models/blog";
 import getMediaUrl from "@/src/helpers/getMediaUrl";
+import Markdown from "react-markdown";
 
 // Lightbox
 import Lightbox from "yet-another-react-lightbox";
@@ -39,6 +40,8 @@ export function BlogPost({
     width: image.width,
     height: image.height,
   }));
+
+  const youtubeLink = content.match(/https?:\/\/(www\.)?youtube\.com\/watch\?v=([a-zA-Z0-9_-]{11})/);
 
   return (
     <div className="relative">
@@ -84,11 +87,13 @@ export function BlogPost({
             {isLink ? (
               <Link href={`/blog/${slug}`}>
                 <p className="text-default-500 mb-4 line-clamp-[10]">
-                  {content}
+                  <Markdown>{content}</Markdown>
                 </p>
               </Link>
             ) : (
-              <p className="text-default-500 mb-4">{content}</p>
+              <p className="text-default-500 mb-4">
+                <Markdown>{content}</Markdown>
+              </p>
             )}
             {/* Tags */}
             <div className="flex gap-2 flex-wrap mb-4">

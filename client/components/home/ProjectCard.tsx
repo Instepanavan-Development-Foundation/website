@@ -55,7 +55,14 @@ export function ProjectCard({
               </div>
               <div className="w-full h-2 bg-default-100 rounded-full ">
                 <div
-                  className="h-full bg-primary rounded-full transition-all duration-300 ease-in-out"
+                  // let's color code it, green for funded blue if funding 50%+ and red if less than 50%
+                  className={`h-full rounded-full transition-all duration-300 ease-in-out ${
+                    gatheredAmount >= requiredAmount
+                      ? "bg-primary"
+                      : gatheredAmount >= requiredAmount / 2
+                      ? "bg-secondary"
+                      : "bg-danger"
+                  }`}
                   style={{
                     width: `${Math.min((gatheredAmount / requiredAmount) * 100, 100)}%`,
                   }}
@@ -69,8 +76,8 @@ export function ProjectCard({
                     {/* TODO: move to separate helper */}
                     {requiredAmount
                       ? `${Math.round((gatheredAmount / requiredAmount) * 100)}%`
-                      : "100%"}
-                    funded
+                      : "100%"}{" "}
+                    հավաքված
                   </p>
                   {
                     <div className="flex items-center gap-2 h-10">
