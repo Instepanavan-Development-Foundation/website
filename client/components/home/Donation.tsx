@@ -1,7 +1,37 @@
+"use client";
+
 import Link from "next/link";
 import { button as buttonStyles } from "@nextui-org/theme";
+import { useEffect, useState } from "react";
+import getData from "@/src/helpers/getData";
+import { IProject } from "@/src/models/project";
 
 export default function Donation() {
+  const [featuredProject, setFeaturedProject] = useState<IProject | null>(null);
+
+  useEffect(() => {
+    const fetchFeaturedProject = async () => {
+      try {
+        const { data } = await getData({
+          type: "projects",
+          filters: {
+            isFeatured: true,
+            isArchived: false,
+          },
+          limit: 1,
+        });
+        
+        if (data && data.length > 0) {
+          setFeaturedProject(data[0]);
+        }
+      } catch (error) {
+        console.error("Error fetching featured project:", error);
+      }
+    };
+
+    fetchFeaturedProject();
+  }, []);
+
   return (
     <div className="w-full container my-16 text-center">
       <h2 className="text-4xl font-bold mb-4">Աջակցեք մեր առաքելությանը</h2>
@@ -11,7 +41,7 @@ export default function Donation() {
         ստեղծում:
       </p>
       <Link
-        href="#"
+        href={featuredProject ? `/donate/${featuredProject.slug}` : "/projects"}
         className={buttonStyles({
           color: "success",
           radius: "full",

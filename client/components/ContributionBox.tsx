@@ -68,10 +68,28 @@ export const ContributionBox = ({ project }: { project: IProject }) => {
     );
   }
 
+  const isExternalLink = project.fundraisingURL.startsWith('http');
+
+  if (isExternalLink) {
+    return (
+      <Link
+        target="_blank"
+        href={project.fundraisingURL}
+        className={buttonStyles({
+          color: "success",
+          radius: "full",
+          variant: "shadow",
+          size: "lg",
+        })}
+      >
+        <span className="text-xl px-8 py-2">Աջակցել նախագծին</span>
+      </Link>
+    );
+  }
+
   return (
     <Link
-      target="_blank"
-      href={project.fundraisingURL}
+      href={`/donate/${project.slug}`}
       className={buttonStyles({
         color: "success",
         radius: "full",
