@@ -3,6 +3,7 @@ import { button as buttonStyles } from "@nextui-org/theme";
 import { MoveRight, Rss } from "lucide-react";
 import { Chip } from "@nextui-org/chip";
 import { Button } from "@nextui-org/button";
+import Markdown from "react-markdown";
 
 import { BlogPost } from "@/components/BlogPost";
 import { ContributorsList } from "@/components/ContributorsList";
@@ -59,6 +60,7 @@ export default async function ProjectPage({ params }: IParams) {
           "project",
         ],
         sort: ["isFeatured:desc", "createdAt:desc"],
+        // TODO: Add pagination limit
       },
       image: {
         fields: ["url", "alternativeText", "name"],
@@ -195,22 +197,16 @@ export default async function ProjectPage({ params }: IParams) {
 
       {/* Project Details Section */}
       <div className="container mb-16">
+        {project.about && (
+        <>
         <h2 className="text-3xl font-bold mb-8">Ծրագրի մանրամասներ</h2>
         <div className="prose prose-lg max-w-none">
-          <p className="text-default-600 mb-6">{project.about}</p>
-        </div>
-        <div className="flex justify-center mt-8">
-          <Link
-            href="#"
-            className={buttonStyles({
-              color: "success",
-              radius: "full",
-              variant: "shadow",
-              size: "lg",
-            })}
-          >
-            <span className="text-xl px-8 py-2">Աջակցել նախագծին</span>
-          </Link>
+          <Markdown>{project.about}</Markdown>
+          </div>
+        </>
+      )}
+        <div className="flex justify-center">
+          <ContributionBox project={project} />
         </div>
       </div>
 

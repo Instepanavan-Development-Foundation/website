@@ -15,7 +15,7 @@ import { BlogPost } from "./BlogPost";
 import { INestedObject } from "@/src/models/getData";
 import { RangeValue } from "@react-types/shared";
 
-const limit = Number(process.env.NEXT_PUBLIC_QUERY_LIMIT) || 10;
+const LIMIT = Number(process.env.NEXT_PUBLIC_QUERY_LIMIT || 10);
 
 function BlogListUnwrapped() {
   const router = useRouter();
@@ -98,7 +98,7 @@ function BlogListUnwrapped() {
       filters,
       sort: "isFeatured:desc,createdAt:desc",
       offset: reset ? 0 : offset,
-      limit,
+      limit: LIMIT,
     });
 
     if (reset) {
@@ -109,7 +109,7 @@ function BlogListUnwrapped() {
       setOffset((prevOffset) => prevOffset + data.length);
     }
 
-    setHasMore(data.length === limit);
+    setHasMore(data.length === LIMIT);
   };
 
   useEffect(() => {
