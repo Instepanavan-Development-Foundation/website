@@ -82,6 +82,9 @@ export default async function DonatePage({ params }: IParams) {
 
   return (
     <section className="flex flex-col px-4 max-w-5xl mx-auto">
+      {/* Error Message Component */}
+      <ErrorMessage />
+      
       {/* Hero Banner */}
       <div className="relative w-full h-64 md:h-40 mb-8 rounded-xl overflow-hidden">
         <img
@@ -98,6 +101,24 @@ export default async function DonatePage({ params }: IParams) {
       {/* Donation Form */}
       <DonationFormClient project={project} />
     </section>
+  );
+}
+
+// Error Message Component
+import { useSearchParams } from "next/navigation";
+
+function ErrorMessage() {
+  const searchParams = useSearchParams();
+  const error = searchParams.get('error');
+  
+  if (!error) return null;
+  
+  return (
+    <div className="w-full mb-6 bg-red-50 border border-red-300 text-red-700 p-4 rounded-lg">
+      <h3 className="font-bold text-lg mb-1">Վճարման սխալ</h3>
+      <p>{decodeURIComponent(error)}</p>
+      <p className="mt-2 text-sm">Խնդրում ենք փորձել կրկին կամ ընտրել վճարման այլ եղանակ։</p>
+    </div>
   );
 }
 
@@ -167,6 +188,20 @@ function DonationFormClient({ project }: { project: IProject }) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Simulate random payment errors (for demonstration)
+    if (Math.random() < 0.3) { // 30% chance of error for demo purposes
+      const errorMessages = [
+        "Վճարման ընթացքում սխալ է տեղի ունեցել։ Խնդրում ենք փորձել կրկին։",
+        "Ձեր քարտը մերժվել է։ Խնդրում ենք օգտագործել այլ քարտ։",
+        "Անբավարար միջոցներ։ Խնդրում ենք ստուգել ձեր հաշվեկշիռը և փորձել կրկին։"
+      ];
+      
+      const randomError = errorMessages[Math.floor(Math.random() * errorMessages.length)];
+      router.push(`/donate/${project.slug}?error=${encodeURIComponent(randomError)}`);
+      return;
+    }
+    
     console.log({
       project: project.name,
       amount,
@@ -175,7 +210,7 @@ function DonationFormClient({ project }: { project: IProject }) {
       subscribeToNewsletter,
     });
     
-    // alert(`Շնորհակալություն ${project.name} նախագծին ${amount.toLocaleString()} ՀՀ դրամ նվիրաբերելու համար!`);
+    // Navigate to success page
     router.push(`/donate/success`);
   };
 
@@ -402,4 +437,4 @@ function DonationFormClient({ project }: { project: IProject }) {
       </CardFooter>
     </Card>
   );
-} 
+}
