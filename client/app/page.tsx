@@ -1,7 +1,6 @@
 import { HeroSection } from "../components/home/HeroSection";
 import Projects from "@/components/home/Projects";
 import Blogs from "@/components/home/Blogs";
-import AboutUs from "@/components/home/AboutUs";
 import TrustedByContributors from "@/components/home/TrustedByContributors";
 import Donation from "@/components/home/Donation";
 
