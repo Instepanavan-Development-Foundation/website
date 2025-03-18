@@ -10,7 +10,6 @@ import { Progress } from "@heroui/progress";
 import { Share2, Heart, Twitter, Facebook, Copy, Check, ArrowRight, Award, Gift, Star, Trophy } from "lucide-react";
 import Link from "next/link";
 import Confetti from 'react-confetti';
-import { useWindowSize } from 'react-use';
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function DonationSuccessPage() {
@@ -26,7 +25,6 @@ export default function DonationSuccessPage() {
   const [showBadgeAnimation, setShowBadgeAnimation] = useState(false);
   const [showThankYouMessage, setShowThankYouMessage] = useState(false);
   const [donationRank, setDonationRank] = useState(0);
-  const { width, height } = useWindowSize();
   const audioRef = useRef<HTMLAudioElement | null>(null);
   
   // Fix for confetti positioning
