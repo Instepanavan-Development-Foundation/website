@@ -1,3 +1,3 @@
 export default {
-    targetLocales: ['en', 'fr', 'ru'],
+    targetLocales: ['hy','en', 'fr', 'ru'],
 }

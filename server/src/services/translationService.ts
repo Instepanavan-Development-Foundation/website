@@ -43,13 +43,11 @@ export async function translateText(data) {
   return only json object, without any additional text.
   
   `;
-
-  const aiMsg = await llm.invoke([
-    ["system", "You are a highly skilled translator specializing in Armenian to multiple languages."],
-    ["human", prompt],
-  ]);
-
   try {
+    const aiMsg = await llm.invoke([
+      ["system", "You are a highly skilled translator specializing in Armenian to multiple languages."],
+      ["human", prompt],
+    ]);
     return aiMsg.content
   } catch (error) {
     console.error("Error parsing AI response:", error);
