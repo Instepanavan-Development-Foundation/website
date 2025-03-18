@@ -18,10 +18,9 @@ export default async function Home() {
       />
       <Projects isArchived={false} />
       <Blogs />
-      <AboutUs />
       <TrustedByContributors />
-      <Projects isArchived={true} />
       <Donation />
+      <Projects isArchived={true} />
     </section>
   );
 }

@@ -12,13 +12,13 @@ import Link from "next/link";
 import { link as linkStyles } from "@nextui-org/theme";
 import NextLink from "next/link";
 import clsx from "clsx";
+import { Heart } from "lucide-react";
 
 import { getSiteConfig } from "@/config/site";
 import {
   Logo,
 } from "@/components/icons";
 import { IMenu, IMenuLink } from "@/src/models/menu";
-
 
 export const Navbar = async () => {
   
@@ -53,29 +53,31 @@ export const Navbar = async () => {
             </NavbarItem>
           ))}
         </ul>
-        {/* <NavbarItem className="hidden md:flex">
+        <NavbarItem className="hidden md:flex">
           <Button
-            isExternal
             as={Link}
-            className="text-sm font-normal text-default-600 bg-default-100"
-            // href={siteConfig.links.sponsor}
-            startContent={<HeartFilledIcon className="text-danger" />}
+            className="text-sm font-normal text-white bg-gradient-to-r from-pink-500 to-rose-500 hover:from-rose-500 hover:to-pink-500 transition-all duration-300 shadow-md hover:shadow-lg"
+            href="/donate"
+            startContent={<Heart className="text-white" size={18} />}
             variant="flat"
+            size="md"
           >
-            Հանգանակել
+            Աջակցել հիմա
           </Button>
-        </NavbarItem> */}
+        </NavbarItem>
       </NavbarContent>
 
       <NavbarContent className="lg:hidden basis-1 pl-4" justify="end">
-        {/* <Link
-          isExternal
-          aria-label="Github"
-          // href={siteConfig.links.github}
+        <Button
+          as={Link}
+          className="text-sm font-normal text-white bg-gradient-to-r from-pink-500 to-rose-500 hover:from-rose-500 hover:to-pink-500 transition-all duration-300"
+          href="/donate"
+          size="sm"
+          startContent={<Heart className="text-white" size={16} />}
+          variant="flat"
         >
-          <GithubIcon className="text-default-500" />
-        </Link> */}
-        {/* <ThemeSwitch /> */}
+          Աջակցել
+        </Button>
         <NavbarMenuToggle />
       </NavbarContent>
       <NavbarMenu>
@@ -83,13 +85,17 @@ export const Navbar = async () => {
           {siteConfig.navItems.map((item, index) => (
             <NavbarMenuItem key={`${item}-${index}`}>
               <Link
-                // TODO: maybe implement this solution in both menus? https://medium.com/@beecodeguy/access-current-pathname-in-server-components-next-js-app-router-81686d2ed60f
                 href={item.href}
               >
                 {item.title}
               </Link>
             </NavbarMenuItem>
           ))}
+          <NavbarMenuItem>
+            <Link href="/donate" className="flex items-center gap-2 text-rose-500 font-medium">
+              <Heart size={16} /> Աջակցել մեր առաքելությանը
+            </Link>
+          </NavbarMenuItem>
         </div>
       </NavbarMenu>
     </NextUINavbar>
