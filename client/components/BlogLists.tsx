@@ -216,7 +216,7 @@ function BlogListUnwrapped() {
           value={dateRange as any}
           onChange={(range) => {
             if (range?.start && range?.end) {
-              setDateRange(range);
+              setDateRange(range as any);
             }
           }}
           className="col-span-full md:col-span-3"
