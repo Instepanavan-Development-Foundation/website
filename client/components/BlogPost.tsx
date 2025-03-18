@@ -6,11 +6,12 @@ import { Paperclip, Bookmark } from "lucide-react";
 import { useState } from "react";
 import { Image } from "@heroui/image";
 import Link from "next/link";
+import Markdown from "react-markdown";
+import remarkGfm from 'remark-gfm'
 
 import { ContributorsList } from "./ContributorsList";
 import { IBlog } from "@/src/models/blog";
 import getMediaUrl from "@/src/helpers/getMediaUrl";
-import Markdown from "react-markdown";
 
 // Lightbox
 import Lightbox from "yet-another-react-lightbox";
@@ -87,12 +88,13 @@ export function BlogPost({
             {isLink ? (
               <Link href={`/blog/${slug}`}>
                 <p className="text-default-500 mb-4 line-clamp-[10]">
-                  <Markdown>{content}</Markdown>
+                  <Markdown remarkPlugins={[remarkGfm]}>{content}</Markdown>
+                  {/* TODO: why link is not working in markdown? */}
                 </p>
               </Link>
             ) : (
               <p className="text-default-500 mb-4">
-                <Markdown>{content}</Markdown>
+                <Markdown remarkPlugins={[remarkGfm]}>{content}</Markdown>
               </p>
             )}
             {/* Tags */}

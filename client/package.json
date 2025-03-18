@@ -48,7 +48,7 @@
 		"react-dom": "18.3.1",
 		"react-markdown": "^9.0.3",
 		"rehype-raw": "^7.0.0",
-		"remark-gfm": "^4.0.0",
+		"remark-gfm": "^4.0.1",
 		"sha256": "^0.2.0",
 		"yet-another-react-lightbox": "^3.21.7"
 	},

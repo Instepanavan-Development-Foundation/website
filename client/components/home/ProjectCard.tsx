@@ -57,7 +57,7 @@ export function ProjectCard({
             <p className="text-lg text-default-600 line-clamp-1 font-semibold">{name}</p>
             
             {/* Short description */}
-            <p className="text-sm text-default-500 mt-1 line-clamp-2">{description}</p>
+            <p className="text-sm text-default-500 mt-1 line-clamp-2 h-10">{description}</p>
 
             <div className="mt-4 flex flex-col gap-2">
               <div

@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: IParams) {
     description: blog.content.slice(0, 100),
     openGraph: {
       type: "website",
-      images: { url: getMediaSrc(blog.images[0]) },
+      images: { url: getMediaSrc(blog?.images?.[0]) },
     },
   };
 }

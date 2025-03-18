@@ -14,6 +14,7 @@ import { IBlog } from "@/src/models/blog";
 import { BlogPost } from "./BlogPost";
 import { INestedObject } from "@/src/models/getData";
 import { RangeValue } from "@react-types/shared";
+import { ArrowDownIcon } from "lucide-react";
 
 const LIMIT = Number(process.env.NEXT_PUBLIC_QUERY_LIMIT || 10);
 
@@ -96,7 +97,7 @@ function BlogListUnwrapped() {
         project: { fields: ["name", "slug"] },
       },
       filters,
-      sort: "isFeatured:desc,createdAt:desc",
+      sort: "createdAt:desc",
       offset: reset ? 0 : offset,
       limit: LIMIT,
     });
@@ -270,18 +271,32 @@ function BlogListUnwrapped() {
         </div>
       )}
 
-      {/* Blog Posts Grid - Modified for Masonry layout */}
-      {!blogs.length && <p className="text-center">Նախագծեր չկան</p>}
-      <div className="columns-1 md:columns-3 gap-6 space-y-6">
+      {/* Blog Posts Grid - Using standard grid with same height cards */}
+      {!blogs.length && (
+        <div className="text-center py-12 bg-default-50/50 rounded-lg">
+          <p className="text-default-500">Նախագծեր չկան</p>
+        </div>
+      )}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {blogs.map((blog, index) => (
-          <div key={index} className="break-inside-avoid">
+          <div 
+            key={index} 
+            className="h-full transform hover:-translate-y-1 transition-transform duration-300"
+          >
             <BlogPost {...blog} />
           </div>
         ))}
       </div>
       {hasMore && (
-        <div className="text-center mt-8">
-          <Button color="primary" onClick={() => fetchBlogs()}>
+        <div className="text-center mt-12">
+          <Button 
+            color="primary" 
+            variant="flat"
+            onClick={() => fetchBlogs()}
+            className="px-6"
+            endContent={<ArrowDownIcon className="w-4 h-4" />}
+            size="lg"
+          >
             Բեռնել ավելին
           </Button>
         </div>
