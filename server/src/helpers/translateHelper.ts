@@ -23,37 +23,26 @@ export async function translateHelper(
     }
 
     const translations = await translateText(translationData);
-
     const translatedObject = extractJSON(translations);
 
     
     for (const locale of targetLocales) {
         const translation = translatedObject[locale];
         
-        if (locale === result.locale) {
+        if (locale === result.locale || !translation) {
             continue;
         }
-
-        if (!translation) {
-            return
-        };
 
         const service = strapi.documents(event.model.uid);
 
         const updateData = {};
         
-        for (const field of fieldsToTranslate) {
-            if (translation[field]) {
-                updateData[field] = translation[field];
-            }
-        }
+        addFields(updateData, translation, fieldsToTranslate)
 
-        for (const field of requiredFields) {
-            if (result[field] !== undefined) {
-                updateData[field] = result[field];
-            }
-        }
+        addRequiredFields(updateData, result, requiredFields);
 
+        console.log("updateData", updateData);
+        
         await service.update({
             documentId: result.documentId,
             locale,
@@ -90,6 +79,7 @@ export async function blogTranslater(
         }
 
         const service = strapi.documents(event.model.uid);
+
         const updateData = await prepareUpdateData(result, translation, locale, service, requiredFields);
 
         await service.update({
@@ -100,7 +90,8 @@ export async function blogTranslater(
     }
 }
 
-async function prepareUpdateData(result: any, translation: any, locale: string, service: any, requiredFields: string[]) {
+
+export async function prepareUpdateData(result: any, translation: any, locale: string, service: any, requiredFields: string[]) {
     const updateData = {
         content: translation.content,
         contribution: [],
@@ -138,17 +129,22 @@ async function prepareContributions(contributions: any[], translatedContribution
 
     for (const item of contributions) {
         const contributor = await fetchContributor(item.contributor?.documentId, locale);
-        const translatedContribution = translatedContributions.find((tc: any) => tc.id === item.id);
+        const translatedContribution = translatedContributions?.find((tc: any) => tc.id === item.id);
+        
 
+        console.log("translatedContributions", translatedContributions);
+        console.log("item", item);
+        
         if (!translatedContribution) {
             throw new Error(`Translated contribution not found for ID: ${item.id}`);
         }
+        
+        const {id, ...rest} = translatedContribution
 
         updatedContributions.push({
-            documentId: item.documentId, // Ensure the component ID is included
-            ...item,
-            ...translatedContribution,
-            contributor: contributor ? { id: contributor.id } : null // Ensure contributor is properly linked
+            documentId: item.documentId,
+            ...rest,
+            contributor: contributor ? { id: contributor.id } : null
         });
     }
 
@@ -162,10 +158,18 @@ async function fetchContributor(contributorDocumentId: string, locale: string) {
     });
 }
 
-function addRequiredFields(updateData: any, result: any, requiredFields: string[]) {
+export function addRequiredFields(updateData: any, result: any, requiredFields: string[]) {
     for (const field of requiredFields) {
         if (result[field] !== undefined) {
             updateData[field] = result[field];
+        }
+    }
+}
+
+export function addFields(updateData: any, translation: any, fieldsToTranslate: string[]) {
+    for (const field of fieldsToTranslate) {
+        if (translation[field]) {
+            updateData[field] = translation[field];
         }
     }
 }

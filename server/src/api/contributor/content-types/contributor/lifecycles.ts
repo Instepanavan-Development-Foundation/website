@@ -4,7 +4,7 @@ import { translateHelper } from '../../../../helpers/translateHelper';
 
 const targetLocales = locales.targetLocales; 
 const fieldsToTranslate = ['about', 'fullName'];
-const requiredFields = ['email'];
+const requiredFields = ['email', 'avatar', 'isTrustedBy'];
 
 
 
