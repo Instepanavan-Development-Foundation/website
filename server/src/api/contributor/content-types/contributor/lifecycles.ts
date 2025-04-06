@@ -13,9 +13,20 @@ export default {
     event.params.data.slug = generateSlug(event);
   },
   async afterCreate(event) {
-      await translateHelper(event, targetLocales, fieldsToTranslate, requiredFields);
+    const { result } = event
+    const translationData = {
+      about: result.about,
+      fullName: result.fullName
+    }
+  
+    await translateHelper(event, targetLocales, fieldsToTranslate, translationData, requiredFields);
   },
   async afterUpdate(event) {
-      await translateHelper(event, targetLocales, fieldsToTranslate, requiredFields);        
+    const { result } = event
+    const translationData = {
+      about: result.about,
+      fullName: result.fullName
+    }
+    await translateHelper(event, targetLocales, fieldsToTranslate, translationData, requiredFields);
   }
 };

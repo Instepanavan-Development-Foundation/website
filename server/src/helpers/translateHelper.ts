@@ -5,6 +5,7 @@ export async function translateHelper(
     event: any, 
     targetLocales: string[],
     fieldsToTranslate: string[],
+    translationData: any,
     requiredFields: string[] = []
 ) {
 
@@ -13,14 +14,6 @@ export async function translateHelper(
     if (result.locale !== 'hy') {
         return
     };
-
-    const translationData = {};
-    
-    for (const field of fieldsToTranslate) {
-        if (result[field] && typeof result[field] === 'string') {
-            translationData[field] = result[field];
-        }
-    }
 
     const translations = await translateText(translationData);
     const translatedObject = extractJSON(translations);
@@ -40,8 +33,6 @@ export async function translateHelper(
         addFields(updateData, translation, fieldsToTranslate)
 
         addRequiredFields(updateData, result, requiredFields);
-
-        console.log("updateData", updateData);
         
         await service.update({
             documentId: result.documentId,
@@ -79,13 +70,12 @@ export async function blogTranslater(
         }
 
         const service = strapi.documents(event.model.uid);
-
         const updateData = await prepareUpdateData(result, translation, locale, service, requiredFields);
-
+        
         await service.update({
             documentId: result.documentId,
             locale,
-            data: updateData
+            data: updateData,
         });
     }
 }
@@ -131,12 +121,9 @@ async function prepareContributions(contributions: any[], translatedContribution
         const contributor = await fetchContributor(item.contributor?.documentId, locale);
         const translatedContribution = translatedContributions?.find((tc: any) => tc.id === item.id);
         
-
-        console.log("translatedContributions", translatedContributions);
-        console.log("item", item);
-        
         if (!translatedContribution) {
-            throw new Error(`Translated contribution not found for ID: ${item.id}`);
+
+            continue
         }
         
         const {id, ...rest} = translatedContribution
@@ -144,7 +131,7 @@ async function prepareContributions(contributions: any[], translatedContribution
         updatedContributions.push({
             documentId: item.documentId,
             ...rest,
-            contributor: contributor ? { id: contributor.id } : null
+            contributor
         });
     }
 
@@ -168,8 +155,113 @@ export function addRequiredFields(updateData: any, result: any, requiredFields: 
 
 export function addFields(updateData: any, translation: any, fieldsToTranslate: string[]) {
     for (const field of fieldsToTranslate) {
-        if (translation[field]) {
-            updateData[field] = translation[field];
+        updateData[field] = translation[field];
+    }
+}
+
+
+export async function menuTranslater(
+    event: any, 
+    targetLocales: string[],
+    translationData: any
+){
+    const { result } = event;
+
+    if (result.locale !== 'hy') {
+        return;
+    }
+
+    const translations = await translateText(translationData);
+    const translatedObject = extractJSON(translations);
+
+    for (const locale of targetLocales) {
+        const translation = translatedObject[locale];
+
+        if (locale === result.locale || !translation) {
+            continue;
         }
+
+        const service = strapi.documents(event.model.uid);
+
+        const links = result.links?.map((link, index) => {
+            const translatedTitle = translation.links?.[index]?.title || link.title;
+            const { id, ...rest } = link;
+            return { ...rest, title: translatedTitle };
+        });
+        
+        const updateData = {
+            title: translation.title,
+            links
+        }
+        
+        
+        await service.update({
+            documentId: result.documentId,
+            locale,
+            data: updateData
+        });
+    }
+}
+
+export async function projectTranslater(
+    event: any, 
+    targetLocales: string[],
+    fieldsToTranslate: string[],
+    requiredFields: string[] = []
+) {
+    const { result } = event;
+
+    if (result.locale !== 'hy') {
+        return
+    };
+
+    const translationData = {};
+
+    for (const field of fieldsToTranslate) {
+        translationData[field] = result[field];
+    }
+
+    const translations = await translateText(translationData);
+    const translatedObject = extractJSON(translations);
+
+
+    for (const locale of targetLocales) {
+        const translation = translatedObject[locale];
+        
+        if (locale === result.locale || !translation) {
+            continue;
+        }
+
+        const service = strapi.documents(event.model.uid);
+
+        const updateData = {blogs: []};
+        
+        const populated = await service.findOne({
+            documentId: result.documentId,
+            populate: ['blogs'],
+        });
+
+        for(const blog of populated.blogs){
+            const fetchedBlog = await strapi.documents("api::blog.blog").findOne({
+            documentId: blog?.documentId,
+            locale
+            });
+
+            updateData.blogs.push(fetchedBlog)
+        }        
+
+        addFields(updateData, translation, fieldsToTranslate)
+
+        addRequiredFields(updateData, result, requiredFields);
+
+        const {id, ...rest} = updateData["slider"]
+
+        updateData["slider"] = rest
+        
+        await service.update({
+            documentId: result.documentId,
+            locale,
+            data: updateData
+        });
     }
 }
