@@ -1,14 +1,16 @@
 import axios from "axios";
+import xml2js from "xml2js";
 
 const getParams = ({
   amount,
   projectDocumentId,
   paymentMethod,
+  orderId,
   currencyCode = process.env.CURRENCY_AM,
 }) => ({
   ClientID: process.env.CLIENT_ID,
   Amount: amount, // 10 for testing
-  OrderID: 3831011, //TODO: createOrderId logic?
+  OrderID: orderId, //TODO: createOrderId logic?
   Currency: currencyCode,
   BackURL: process.env.BACK_URL,
   Username: process.env.PAYMENT_USERNAME,
@@ -26,14 +28,20 @@ export default () => ({
     currencyCode,
     paymentMethod,
     lang,
+    orderId,
   }) => {
     try {
       const url = `${process.env.PAYMENT_API_BASE_URL}/InitPayment`;
-      console.log({url, params:getParams({ amount, projectDocumentId, currencyCode, paymentMethod })});
-      
+
       const response = await axios.post(
         url,
-        getParams({ amount, projectDocumentId, currencyCode, paymentMethod }),
+        getParams({
+          amount,
+          projectDocumentId,
+          currencyCode,
+          paymentMethod,
+          orderId,
+        }),
         {
           headers: { "Content-Type": "application/json" },
         }
