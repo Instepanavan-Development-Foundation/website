@@ -9,10 +9,7 @@
     "develop": "strapi develop",
     "dev": "strapi develop",
     "start": "strapi start",
-    "strapi": "strapi",
-    "test": "jest --forceExit --detectOpenHandles",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage --forceExit --detectOpenHandles"
+    "strapi": "strapi"
   },
   "dependencies": {
     "@strapi/plugin-users-permissions": "5.7.0",
@@ -28,15 +25,9 @@
     "xml2js": "^0.6.2"
   },
   "devDependencies": {
-    "@types/jest": "^29.5.14",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "@types/supertest": "^6.0.3",
-    "jest": "^29.7.0",
-    "sqlite3": "^5.1.7",
-    "supertest": "^7.1.0",
-    "ts-jest": "^29.3.1",
     "typescript": "^5"
   },
   "engines": {
@@ -45,32 +36,5 @@
   },
   "strapi": {
     "uuid": "65206a3a-eee5-4952-9c32-3b809dbf2f80"
-  },
-  "jest": {
-    "testPathIgnorePatterns": [
-      "/node_modules/",
-      ".tmp",
-      ".cache"
-    ],
-    "testEnvironment": "node",
-    "setupFilesAfterEnv": [
-      "./src/tests/helpers.ts"
-    ],
-    "testMatch": [
-      "**/tests/**/*.test.ts"
-    ],
-    "moduleFileExtensions": [
-      "js",
-      "json",
-      "ts"
-    ],
-    "transform": {
-      "^.+\\.(t|j)s$": "ts-jest"
-    },
-    "collectCoverageFrom": [
-      "src/**/*.(t|j)s",
-      "!src/**/*.d.ts",
-      "!src/tests/**"
-    ]
   }
 }
