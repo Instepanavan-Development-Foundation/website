@@ -19,13 +19,18 @@ export default {
 
     const service = strapi.service(PAYMENT_API);
 
+    const latestOrderId = await service.getLatestOrderId();
+    if (!latestOrderId) {
+      return ctx.send({ errorMessage: "Failed to get latest orderId" }, 500);
+    }
+    
     const { url, errorMessage } = await service.getPaymentUrl({
       amount,
       projectDocumentId,
       currencyCode,
       paymentMethod,
       lang,
-      orderId: 3831009,  // TODO: remove hardcoded orderId
+      orderId: latestOrderId + 1,
     });
 
     if (errorMessage) {
@@ -65,7 +70,7 @@ export default {
         return ctx.send({ error: "Payment method not found" }, 404);
       }
 
-      const paymentLog = await service.createPaymentLog(paymentDetails);
+      const paymentLog = await service.createPaymentLog({ paymentDetails });
       if (!paymentLog) {
         return ctx.send({ errorMessage: "Failed to create payment log" }, 500);
       }

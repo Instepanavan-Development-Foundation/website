@@ -67,20 +67,14 @@ export default () => ({
     paymentDetails: any;
     amount?: number;
   }) => {
-    console.log({
-      amount: amount ?? paymentDetails?.Amount,
-      currency:
-        CURRENCIES[paymentDetails?.Currency ?? process.env.CURRENCY_AM],
-      details: JSON.stringify(paymentDetails),
-    });
     try {
-      
       return await strapi.documents(PAYMENT_LOG_API).create({
         data: {
           amount: amount ?? paymentDetails.Amount,
           currency:
             CURRENCIES[paymentDetails.Currency ?? process.env.CURRENCY_AM],
           details: JSON.stringify(paymentDetails || {}),
+          orderId: paymentDetails.OrderId,
         },
       });
     } catch (e) {
@@ -100,6 +94,24 @@ export default () => ({
     } catch (e) {
       console.log(
         "something went wrong in getProject",
+        JSON.stringify(e, null, 2)
+      );
+
+      return null;
+    }
+  },
+  async getLatestOrderId() {
+    try {
+      const order = await strapi.documents(PAYMENT_LOG_API).findMany({
+        sort: [{ createdAt: "asc" }],
+        limit: 1,
+        fields: ["orderId"],
+      });
+
+      return order[0].orderId;
+    } catch (e) {
+      console.log(
+        "something went wrong in getLatestOrderId",
         JSON.stringify(e, null, 2)
       );
 
