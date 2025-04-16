@@ -19,18 +19,18 @@ export default {
 
     const service = strapi.service(PAYMENT_API);
 
-    const latestOrderId = await service.getLatestOrderId();
-    if (!latestOrderId) {
+    const orderId = await service.getOrderId();
+    if (!orderId) {
       return ctx.send({ errorMessage: "Failed to get latest orderId" }, 500);
     }
-    
+
     const { url, errorMessage } = await service.getPaymentUrl({
       amount,
       projectDocumentId,
       currencyCode,
       paymentMethod,
       lang,
-      orderId: latestOrderId + 1,
+      orderId,
     });
 
     if (errorMessage) {
@@ -65,7 +65,9 @@ export default {
       }
 
       const projectPaymentMethod =
-        service.getProjectPaymentMethod(paymentMethod);
+        await service.getProjectPaymentMethod(paymentMethod);
+      console.log(projectPaymentMethod);
+
       if (!projectPaymentMethod) {
         return ctx.send({ error: "Payment method not found" }, 404);
       }

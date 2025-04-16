@@ -28,11 +28,6 @@
     },
     "details": {
       "type": "json"
-    },
-    "orderId": {
-      "type": "string",
-      "required": true,
-      "unique": true
     }
   }
 }

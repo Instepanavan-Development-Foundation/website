@@ -21,8 +21,7 @@
     "react-router-dom": "^6.0.0",
     "rss": "^1.2.2",
     "strapi-plugin-tagsinput": "^2.0.2",
-    "styled-components": "^6.0.0",
-    "xml2js": "^0.6.2"
+    "styled-components": "^6.0.0"
   },
   "devDependencies": {
     "@types/node": "^20",

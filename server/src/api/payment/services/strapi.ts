@@ -6,7 +6,7 @@ import {
 } from "../constants/apis";
 import { CURRENCIES } from "../constants/currencies";
 
-export default () => ({
+export default {
   createProjectPayment: async ({
     paymentDetails,
     projectPaymentMethod,
@@ -100,22 +100,4 @@ export default () => ({
       return null;
     }
   },
-  async getLatestOrderId() {
-    try {
-      const order = await strapi.documents(PAYMENT_LOG_API).findMany({
-        sort: [{ createdAt: "asc" }],
-        limit: 1,
-        fields: ["orderId"],
-      });
-
-      return order[0].orderId;
-    } catch (e) {
-      console.log(
-        "something went wrong in getLatestOrderId",
-        JSON.stringify(e, null, 2)
-      );
-
-      return null;
-    }
-  },
-});
+};
