@@ -66,7 +66,6 @@ export default {
 
       const projectPaymentMethod =
         await service.getProjectPaymentMethod(paymentMethod);
-      console.log(projectPaymentMethod);
 
       if (!projectPaymentMethod) {
         return ctx.send({ error: "Payment method not found" }, 404);
