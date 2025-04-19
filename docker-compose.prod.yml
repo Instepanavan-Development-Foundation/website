@@ -54,4 +54,6 @@ services:
 
 networks:
   nginx:
+    name: saint-nginx
+    external: true
   postgres:

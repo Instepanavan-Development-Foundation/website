@@ -29,17 +29,46 @@ export const HeroSection = ({ imageUrl, title, description, ctaLink, ctaText }: 
                 <p className="text-xl md:text-2xl text-center max-w-2xl mb-8">
                     {description}
                 </p>
-                <Link
-                    href={ctaLink}
-                    className={buttonStyles({
-                        color: "success",
-                        radius: "full",
-                        variant: "shadow",
-                        size: "lg",
-                    })}
-                >
-                    <span className="text-xl px-8 py-2">{ctaText}</span>
-                </Link>
+                <div className="flex flex-col sm:flex-row gap-4 items-center">
+                    <Link
+                        href={ctaLink}
+                        className={buttonStyles({
+                            color: "success",
+                            radius: "full",
+                            variant: "shadow",
+                            size: "lg",
+                        })}
+                    >
+                        <span className="text-xl px-8 py-2">{ctaText}</span>
+                    </Link>
+                    <Link
+                        href="/donate"
+                        className={buttonStyles({
+                            color: "danger",
+                            radius: "full",
+                            variant: "flat",
+                            size: "lg",
+                        })}
+                    >
+                        <span className="text-xl px-8 py-2">Աջակցել մեր առաքելությանը</span>
+                    </Link>
+                </div>
+                
+                {/* Impact indicators */}
+                <div className="flex flex-wrap justify-center gap-6 mt-12">
+                    <div className="bg-white/20 backdrop-blur-sm rounded-lg px-6 py-3 text-center">
+                        <div className="text-3xl font-bold">25+</div>
+                        <div className="text-sm">Իրականացված ծրագրեր</div>
+                    </div>
+                    <div className="bg-white/20 backdrop-blur-sm rounded-lg px-6 py-3 text-center">
+                        <div className="text-3xl font-bold">10,000+</div>
+                        <div className="text-sm">Շահառուներ</div>
+                    </div>
+                    <div className="bg-white/20 backdrop-blur-sm rounded-lg px-6 py-3 text-center">
+                        <div className="text-3xl font-bold">150+</div>
+                        <div className="text-sm">Կամավորներ</div>
+                    </div>
+                </div>
             </div>
         </div>
     );

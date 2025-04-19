@@ -3,6 +3,8 @@ import { button as buttonStyles } from "@nextui-org/theme";
 import { MoveRight, Rss } from "lucide-react";
 import { Chip } from "@nextui-org/chip";
 import { Button } from "@nextui-org/button";
+import Markdown from "react-markdown";
+import { Progress } from "@heroui/progress";
 
 import { BlogPost } from "@/components/BlogPost";
 import { ContributorsList } from "@/components/ContributorsList";
@@ -59,6 +61,7 @@ export default async function ProjectPage({ params }: IParams) {
           "project",
         ],
         sort: ["isFeatured:desc", "createdAt:desc"],
+        // TODO: Add pagination limit
       },
       image: {
         fields: ["url", "alternativeText", "name"],
@@ -76,6 +79,16 @@ export default async function ProjectPage({ params }: IParams) {
   if (!project) {
     return <NotFound />;
   }
+  
+  const percentComplete = project.requiredAmount ? Math.round((project.gatheredAmount / project.requiredAmount) * 100) : 100;
+  const isUrgent = percentComplete < 30 && !project.isArchived;
+  
+  // Determine progress color based on completion percentage
+  const progressColor = project.gatheredAmount >= project.requiredAmount 
+    ? "success" 
+    : project.gatheredAmount >= project.requiredAmount / 2 
+      ? "primary" 
+      : "danger";
 
   return (
     <section className="flex flex-col px-4">
@@ -94,7 +107,14 @@ export default async function ProjectPage({ params }: IParams) {
 
       {/* Hero Section */}
       <div className="relative container mb-16">
-        <Carousel slider={project.slider} image={project.image} />
+        <div className="relative">
+          <Carousel slider={project.slider} image={project.image} />
+          {isUrgent && (
+            <div className="absolute top-4 left-4 bg-danger text-white text-sm font-bold px-3 py-1.5 rounded-full animate-pulse z-20">
+              Հրատապ օգնության կարիք
+            </div>
+          )}
+        </div>
         <div className=" inset-0 flex flex-col items-center justify-center p-4 z-10">
           <h1 className="text-5xl md:text-6xl font-bold text-center mb-6">
             {project.name}
@@ -111,8 +131,10 @@ export default async function ProjectPage({ params }: IParams) {
       {project.gatheredAmount && project.requiredAmount && (
         <div className="container mb-16">
           {/* Funding Progress */}
-          <div className="bg-default-50 rounded-xl p-8">
-            <h2 className="text-2xl font-bold mb-4">Ֆինանսավորում</h2>
+          <div className="bg-gradient-to-r from-primary-50 to-secondary-50 dark:from-primary-900/20 dark:to-secondary-900/20 rounded-xl p-8 shadow-md">
+            <h2 className="text-2xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-secondary-600 dark:from-primary-400 dark:to-secondary-400">
+              Ֆինանսավորում
+            </h2>
             <div className="flex justify-between items-center mb-2">
               <span className="text-xl text-default-600">
                 {formatCurrency(project.gatheredAmount)} հավաքված է
@@ -121,22 +143,21 @@ export default async function ProjectPage({ params }: IParams) {
                 Նպատակ: {formatCurrency(project.requiredAmount)}
               </span>
             </div>
-            <div className="w-full h-3 bg-default-100 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-primary transition-all duration-500 rounded-full"
-                style={{
-                  width: `${Math.min(100, (project.gatheredAmount / project.requiredAmount) * 100)}%`,
-                }}
-              />
-            </div>
+            
+            {/* HeroUI Progress Component */}
+            <Progress 
+              value={percentComplete} 
+              color={progressColor}
+              size="lg"
+              showValueLabel={false}
+              className="my-2"
+              aria-label="Funding progress"
+            />
 
             {/* Contributors Preview */}
             <div className="mt-6 flex items-center gap-2 justify-between">
               <div className="text-default-500">
-                {Math.round(
-                  (project.gatheredAmount / project.requiredAmount) * 100
-                )}
-                % աջակիցների կողմից
+                {percentComplete}% աջակիցների կողմից
               </div>
               <ContributorsList
                 contributions={project.blogs
@@ -195,22 +216,16 @@ export default async function ProjectPage({ params }: IParams) {
 
       {/* Project Details Section */}
       <div className="container mb-16">
+        {project.about && (
+        <>
         <h2 className="text-3xl font-bold mb-8">Ծրագրի մանրամասներ</h2>
         <div className="prose prose-lg max-w-none">
-          <p className="text-default-600 mb-6">{project.about}</p>
-        </div>
-        <div className="flex justify-center mt-8">
-          <Link
-            href="#"
-            className={buttonStyles({
-              color: "success",
-              radius: "full",
-              variant: "shadow",
-              size: "lg",
-            })}
-          >
-            <span className="text-xl px-8 py-2">Աջակցել նախագծին</span>
-          </Link>
+          <Markdown>{project.about}</Markdown>
+          </div>
+        </>
+      )}
+        <div className="flex justify-center">
+          <ContributionBox project={project} />
         </div>
       </div>
 

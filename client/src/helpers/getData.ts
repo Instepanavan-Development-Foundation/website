@@ -25,6 +25,7 @@ export default async function getData<T extends IUrlTypes>({
     }
   );
 
+  // TODO: move envs to a config file
   const url = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/${type}?${query}`;
   try {
     const res = await fetch(url, {

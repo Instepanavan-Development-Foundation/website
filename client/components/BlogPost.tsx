@@ -6,6 +6,8 @@ import { Paperclip, Bookmark } from "lucide-react";
 import { useState } from "react";
 import { Image } from "@heroui/image";
 import Link from "next/link";
+import Markdown from "react-markdown";
+import remarkGfm from 'remark-gfm'
 
 import { ContributorsList } from "./ContributorsList";
 import { IBlog } from "@/src/models/blog";
@@ -39,6 +41,8 @@ export function BlogPost({
     width: image.width,
     height: image.height,
   }));
+
+  const youtubeLink = content.match(/https?:\/\/(www\.)?youtube\.com\/watch\?v=([a-zA-Z0-9_-]{11})/);
 
   return (
     <div className="relative">
@@ -84,11 +88,14 @@ export function BlogPost({
             {isLink ? (
               <Link href={`/blog/${slug}`}>
                 <p className="text-default-500 mb-4 line-clamp-[10]">
-                  {content}
+                  <Markdown remarkPlugins={[remarkGfm]}>{content}</Markdown>
+                  {/* TODO: why link is not working in markdown? */}
                 </p>
               </Link>
             ) : (
-              <p className="text-default-500 mb-4">{content}</p>
+              <p className="text-default-500 mb-4">
+                <Markdown remarkPlugins={[remarkGfm]}>{content}</Markdown>
+              </p>
             )}
             {/* Tags */}
             <div className="flex gap-2 flex-wrap mb-4">

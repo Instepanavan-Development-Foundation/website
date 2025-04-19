@@ -14,7 +14,7 @@ down:
 	docker compose -f docker-compose.prod.yml down
 
 deploy-prod:
-	ssh instepanavan "cd ./website && make"
+	ssh instepanavan "cd ./website && make deploy"
 
 commit-and-deploy:
 	git add .
