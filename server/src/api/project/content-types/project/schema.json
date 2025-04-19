@@ -80,6 +80,12 @@
       "type": "boolean",
       "default": false,
       "required": false
+    },
+    "project_payments": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::project-payment.project-payment",
+      "mappedBy": "project"
     }
   }
 }
