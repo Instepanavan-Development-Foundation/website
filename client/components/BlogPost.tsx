@@ -43,7 +43,7 @@ export function BlogPost({
   }));
 
   const youtubeLink = content.match(/https?:\/\/(www\.)?youtube\.com\/watch\?v=([a-zA-Z0-9_-]{11})/);
-
+  const gradient = "bg-gradient-to-br from-primary to-secondary";
   return (
     <div className="relative">
       {isFeatured && (
@@ -65,7 +65,7 @@ export function BlogPost({
               />
               <Image
                 alt={content}
-                className="w-full object-cover h-[200px] z-10"
+                className={`w-full object-contain h-[200px] z-10 ${gradient}`}
                 src={getMediaUrl(images[0])}
                 width="100"
                 radius="none"
