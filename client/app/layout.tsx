@@ -62,6 +62,10 @@ export default async function RootLayout({
                   </Link>
                 ))}
               </div>
+              <div>
+                Site is open source under AGPL license. 
+                Feel free to view, contribute or redistribute it under the terms of the license <Link href="https://github.com/instepanavan/website" target="_blank" className="text-primary">here</Link>.
+              </div>
             </footer>
           </div>
         </Providers>
