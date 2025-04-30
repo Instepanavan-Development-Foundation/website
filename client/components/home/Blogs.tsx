@@ -7,7 +7,7 @@ import { BlogPost } from "../BlogPost";
 import RSS from "@/components/home/RSS";
 import { ArrowRightIcon } from "lucide-react";
 
-const LIMIT = Number(process.env.NEXT_PUBLIC_QUERY_LIMIT || 10);
+const LIMIT = Number(process.env.NEXT_PUBLIC_QUERY_LIMIT || 8);
 
 export default async function Blogs() {
   const { data: blogs }: { data: IBlog[] } = await getData({
