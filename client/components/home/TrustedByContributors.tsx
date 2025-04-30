@@ -49,9 +49,6 @@ export default async function TrustedByContributors() {
                       className="object-contain border-2 border-white shadow-md"
                     />
                   </div>
-                  <span className="text-sm font-medium text-center line-clamp-1">
-                    {contributor.fullName.split(' ')[0]}
-                  </span>
                 </Link>
               </Tooltip>
             ))}
