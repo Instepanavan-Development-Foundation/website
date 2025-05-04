@@ -63,10 +63,12 @@
       "type": "text"
     },
     "requiredAmount": {
-      "type": "integer"
+      "type": "integer",
+      "default": 0
     },
     "gatheredAmount": {
-      "type": "integer"
+      "type": "integer",
+      "default": 0
     },
     "fundraisingURL": {
       "type": "string"
