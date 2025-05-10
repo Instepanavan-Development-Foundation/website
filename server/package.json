@@ -12,6 +12,8 @@
     "strapi": "strapi"
   },
   "dependencies": {
+    "@langchain/anthropic": "^0.3.15",
+    "@langchain/core": "^0.3.42",
     "@strapi/plugin-users-permissions": "5.7.0",
     "@strapi/strapi": "5.7.0",
     "markdown-to-txt": "^2.0.1",
