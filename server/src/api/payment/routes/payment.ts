@@ -18,5 +18,14 @@ export default {
         middlewares: [],
       },
     },
+    {
+      method: "POST",
+      path: "/payment/do-recurring-payment",
+      handler: "payment.doRecurringPayment",
+      config: {
+        policies: [],
+        middlewares: [],
+      },
+    },
   ],
 };

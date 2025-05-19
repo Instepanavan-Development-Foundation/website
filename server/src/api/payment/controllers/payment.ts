@@ -4,10 +4,11 @@ export default {
   initPayment: async (ctx, next) => {
     const {
       amount,
-      projectDocumentId,
+      projectDocumentId, // TODO: we have donationType in db, handle it!
       currencyCode = process.env.CURRENCY_AM,
       lang = "am",
       paymentMethod = "ameriabank",
+      email = "",
     } = ctx.request.body;
 
     if (!amount || !projectDocumentId) {
@@ -31,6 +32,7 @@ export default {
       paymentMethod,
       lang,
       orderId,
+      email,
     });
 
     if (errorMessage) {
@@ -40,8 +42,10 @@ export default {
     return ctx.send({ url }, 200);
   },
   getPaymentDetails: async (ctx, next) => {
+    const service = strapi.service(PAYMENT_API);
+
     try {
-      const { paymentId, projectDocumentId, paymentMethod } = ctx.request.body;
+      const { paymentId, projectDocumentId } = ctx.request.body;
 
       if (!paymentId || !projectDocumentId) {
         return ctx.send(
@@ -50,51 +54,37 @@ export default {
         );
       }
 
-      const service = strapi.service(PAYMENT_API);
-
-      const currentProject = await service.getProject(projectDocumentId);
-      if (!currentProject) {
-        return ctx.send({ errorMessage: "Project not found" }, 404);
-      }
-
       const paymentDetails = await service.getPaymentDetails(paymentId);
-      if (paymentDetails.ResponseCode !== process.env.SUCCESS_RESPONSE_CODE) {
-        await service.createPaymentLog({ paymentDetails, amount: 0 });
-
-        return ctx.send({ errorMessage: "Payment failed" }, 500);
-      }
-
-      const projectPaymentMethod =
-        await service.getProjectPaymentMethod(paymentMethod);
-
-      if (!projectPaymentMethod) {
-        return ctx.send({ error: "Payment method not found" }, 404);
-      }
-
-      const paymentLog = await service.createPaymentLog({ paymentDetails });
-      if (!paymentLog) {
-        return ctx.send({ errorMessage: "Failed to create payment log" }, 500);
-      }
-
-      await service.createProjectPayment({
-        paymentDetails,
-        projectPaymentMethod,
-        paymentLog,
-        projectDocumentId,
-      });
-
-      await service.updateProjectData({
-        projectDocumentId,
-        data: {
-          gatheredAmount: currentProject.gatheredAmount + paymentDetails.Amount,
-          isArchived:
-            currentProject.gatheredAmount + paymentDetails.Amount >=
-            currentProject.requiredAmount,
-        },
-      });
+      await service.savePayment({ paymentDetails, projectDocumentId });
 
       return ctx.send(true, 200);
     } catch (error) {
+      await service.createPaymentLog(error.message);
+      return ctx.send({ errorMessage: error.message }, 500);
+    }
+  },
+  doRecurringPayment: async (ctx, next) => {
+    try {
+      const { projectPaymentId } = ctx.request.body;
+      // TODO, close endpoint from outside
+      const service = strapi.service(PAYMENT_API);
+
+      const projectPayment =
+        await service.getProjectPaymentWithMethod(projectPaymentId);
+
+      const orderId = await service.getOrderId();
+      if (!orderId) {
+        return ctx.send({ errorMessage: "Failed to get latest orderId" }, 500);
+      }
+
+      const paymentDetails = await service.makeBindingPayment({
+        projectPayment,
+        orderId,
+      });
+
+      await service.savePayment({ paymentDetails });
+    } catch (error) {
+      console.log(error);
       return ctx.send({ errorMessage: error.message }, 500);
     }
   },
