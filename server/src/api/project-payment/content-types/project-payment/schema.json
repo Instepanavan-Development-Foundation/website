@@ -48,6 +48,10 @@
       "relation": "oneToMany",
       "target": "api::payment-log.payment-log",
       "mappedBy": "project_payment"
+    },
+    "isPaymentInProgress": {
+      "type": "boolean",
+      "default": false
     }
   }
 }

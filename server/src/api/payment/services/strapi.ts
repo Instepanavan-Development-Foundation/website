@@ -7,8 +7,12 @@ import {
 import { CURRENCIES } from "../constants/currencies";
 
 const service = {
-  savePayment: async ({ paymentDetails, projectDocumentId }) => {
+  savePayment: async ({ paymentDetails, projectDocumentId, projectPaymentId }) => {
     if (paymentDetails.ResponseCode !== process.env.SUCCESS_RESPONSE_CODE) {
+      JSON.stringify({
+        paymentDetails,
+        success: false,
+      });
       throw new Error(JSON.stringify({ paymentDetails, success: false }));
     }
 
@@ -17,15 +21,17 @@ const service = {
 
     if (!projectPaymentMethod) {
       throw new Error(
-        JSON.stringify({
-          paymentDetails: "Payment method not found",
-          success: false,
-        })
+        "Payment method not found: " +
+          JSON.stringify({
+            paymentDetails,
+            success: false,
+          })
       );
     }
 
     const paymentLog = await service.createPaymentLog({
       paymentDetails,
+      projectPaymentId,
       success: true,
     });
 
@@ -34,12 +40,14 @@ const service = {
     }
 
     const currentProject = await service.getProject(projectDocumentId);
+
     if (!currentProject) {
       throw new Error(
-        JSON.stringify({
-          paymentDetails: `Project not found: ${projectDocumentId}`,
-          success: false,
-        })
+        `Project not found:` +
+          JSON.stringify({
+            paymentDetails: projectDocumentId,
+            success: false,
+          })
       );
     }
 
@@ -67,17 +75,27 @@ const service = {
     projectDocumentId,
   }) => {
     try {
-      await strapi.documents(PROJECT_PAYMENT_API).create({
-        data: {
-          amount: paymentDetails.Amount,
-          currency: paymentDetails.Currency,
-          type: "recurring", // TODO add dynamic value after adding subscription
-          name: paymentDetails.Description,
-          payment_method: projectPaymentMethod.documentId,
-          payment_logs: [paymentLog.documentId], // TODO: check if this is correct and doesn't rewrite previous values
-          project: projectDocumentId,
-        },
+      const projectPayment = await strapi
+        .documents(PROJECT_PAYMENT_API)
+        .create({
+          data: {
+            amount: paymentDetails.Amount,
+            currency: paymentDetails.Currency,
+            type: "recurring", // TODO add dynamic value after adding subscription
+            name: paymentDetails.Description,
+            payment_method: projectPaymentMethod.documentId,
+            payment_logs: [paymentLog.documentId], // TODO: check if this is correct and doesn't rewrite previous values
+            project: projectDocumentId,
+          },
+        });
+
+      await service.createPaymentLog({
+        success: true,
+        paymentDetails,
+        projectPaymentId: projectPayment.documentId,
       });
+
+      return projectPayment;
     } catch (e) {
       console.log(
         "something went wrong in createProjectPayment",
@@ -124,12 +142,14 @@ const service = {
   createPaymentLog: async ({
     paymentDetails,
     success,
+    projectPaymentId,
   }: {
     paymentDetails: any;
     success: boolean;
+    projectPaymentId?: string;
   }) => {
     try {
-      return await strapi.documents(PAYMENT_LOG_API).create({
+      const log = await strapi.documents(PAYMENT_LOG_API).create({
         data: {
           amount: paymentDetails.Amount,
           currency:
@@ -137,8 +157,12 @@ const service = {
           details: JSON.stringify(paymentDetails || {}),
           orderId: paymentDetails.OrderId,
           success: success,
+          project_payment: projectPaymentId,
         },
       });
+
+      console.log("Payment log", log);
+      return log;
     } catch (e) {
       console.log(
         "something went wrong in createPaymentLog",
@@ -167,10 +191,13 @@ const service = {
       .documents("api::project-payment.project-payment")
       .findOne({
         documentId: projectPaymentId,
-        fields: ["amount", "currency"],
+        fields: ["amount", "currency", "isPaymentInProgress"],
         populate: {
           payment_method: {
             fields: ["params"],
+          },
+          project: {
+            fields: ["id", "donationType", "name"],
           },
         },
       });
@@ -179,15 +206,45 @@ const service = {
       throw new Error("No project payment");
     }
 
-    const { amount, currency } = projectPayment;
-    if (!amount) {
-      throw new Error("No amount");
-    }
+    return projectPayment;
+  },
+  updateProjectPaymentIsPaymentInProgress: async (
+    projectPaymentId: string,
+    isPaymentInProgress: boolean
+  ) => {
+    return await strapi.documents(PROJECT_PAYMENT_API).update({
+      documentId: projectPaymentId,
+      data: { isPaymentInProgress },
+    });
+  },
+  getProjectPaymentLogForThisMonth: async (projectPaymentId) => {
+    const currentDate = new Date();
+    const startOfMonth = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth(),
+      1
+    );
 
-    const params = projectPayment.payment_method.params as any;
-    const { CardHolderID } = params;
+    const endOfMonth = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth() + 1,
+      0
+    );
 
-    return { Amount: amount, CardHolderID, currency };
+    const logs = await strapi.documents(PAYMENT_LOG_API).findMany({
+      filters: {
+        project_payment: {
+          documentId: projectPaymentId,
+        },
+        success: true,
+        createdAt: {
+          $gte: startOfMonth.toISOString(),
+          $lte: endOfMonth.toISOString(),
+        },
+      },
+    });
+
+    return logs[0];
   },
 };
 

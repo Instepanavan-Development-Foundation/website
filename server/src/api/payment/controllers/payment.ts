@@ -8,12 +8,12 @@ export default {
       currencyCode = process.env.CURRENCY_AM,
       lang = "am",
       paymentMethod = "ameriabank",
-      email = "",
+      email,
     } = ctx.request.body;
 
-    if (!amount || !projectDocumentId) {
+    if (!amount || !projectDocumentId || !email) {
       return ctx.send(
-        { error: "amount and projectDocumentId fields are required" },
+        { error: "email, amount and projectDocumentId fields are required" },
         400
       );
     }
@@ -64,13 +64,41 @@ export default {
     }
   },
   doRecurringPayment: async (ctx, next) => {
+    const { projectPaymentId } = ctx.request.body;
+    const service = strapi.service(PAYMENT_API);
+
     try {
-      const { projectPaymentId } = ctx.request.body;
       // TODO, close endpoint from outside
-      const service = strapi.service(PAYMENT_API);
 
       const projectPayment =
         await service.getProjectPaymentWithMethod(projectPaymentId);
+console.log(projectPayment);
+
+      if (!projectPayment.project) {
+        throw new Error("No project found");
+      }
+
+      if (projectPayment.project.donationType !== "recurring") {
+        throw new Error("Project donation type is not recurring");
+      }
+
+      // find payment log for this month with projectPaymentId, success: true,
+      const projectPaymentLogForThisMonth =
+        await service.getProjectPaymentLogForThisMonth(projectPaymentId);
+      if (projectPaymentLogForThisMonth) {
+        throw Error(`The payment was already processed this month`);
+      }
+      // if payment is in progress, skipping the payment
+      if (projectPayment.isPaymentInProgress) {
+        throw Error(
+          `Project Payment with projectPaymentId ${projectPaymentId}  is in progress`
+        );
+      }
+
+      await service.updateProjectPaymentIsPaymentInProgress(
+        projectPaymentId,
+        true
+      );
 
       const orderId = await service.getOrderId();
       if (!orderId) {
@@ -82,9 +110,24 @@ export default {
         orderId,
       });
 
-      await service.savePayment({ paymentDetails });
+      await service.createPaymentLog({
+        paymentDetails,
+        projectPaymentId,
+        success: true,
+      });
+
+      await service.updateProjectPaymentIsPaymentInProgress(
+        projectPaymentId,
+        false
+      );
+
+      return ctx.send(true, 200);
     } catch (error) {
       console.log(error);
+      await service.updateProjectPaymentIsPaymentInProgress(
+        projectPaymentId,
+        false
+      );
       return ctx.send({ errorMessage: error.message }, 500);
     }
   },
