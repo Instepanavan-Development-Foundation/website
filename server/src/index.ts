@@ -19,6 +19,6 @@ export default {
    * run jobs, or perform some special logic.
    */
   bootstrap(/* { strapi }: { strapi: Core.Strapi } */) {
-    // initQueue();
+    initQueue();
   },
 };

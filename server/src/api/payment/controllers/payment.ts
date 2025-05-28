@@ -72,7 +72,7 @@ export default {
 
       const projectPayment =
         await service.getProjectPaymentWithMethod(projectPaymentId);
-console.log(projectPayment);
+      console.log(projectPayment);
 
       if (!projectPayment.project) {
         throw new Error("No project found");
@@ -86,7 +86,12 @@ console.log(projectPayment);
       const projectPaymentLogForThisMonth =
         await service.getProjectPaymentLogForThisMonth(projectPaymentId);
       if (projectPaymentLogForThisMonth) {
-        throw Error(`The payment was already processed this month`);
+        return ctx.send(
+          {
+            message: `The payment was already processed this month`,
+          },
+          203
+        );
       }
       // if payment is in progress, skipping the payment
       if (projectPayment.isPaymentInProgress) {
@@ -121,7 +126,12 @@ console.log(projectPayment);
         false
       );
 
-      return ctx.send(true, 200);
+      return ctx.send(
+        {
+          message: "Payment was successfully processed",
+        },
+        200
+      );
     } catch (error) {
       console.log(error);
       await service.updateProjectPaymentIsPaymentInProgress(
