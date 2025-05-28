@@ -118,6 +118,6 @@ export async function startRecurringPaymentSystem() {
 }
 
 // For manual testing
-export async function triggerManually(projectDocumentId?) {
+export async function triggerAllPaymentsManually(projectDocumentId?) {
   await recurringPaymentsTask.run({});
 }

@@ -27,5 +27,14 @@ export default {
         middlewares: [],
       },
     },
+    {
+      method: "POST",
+      path: "/payment/trigger-all-payments",
+      handler: "payment.triggerAllPayments",
+      config: {
+        policies: [],
+        middlewares: [],
+      },
+    },
   ],
 };

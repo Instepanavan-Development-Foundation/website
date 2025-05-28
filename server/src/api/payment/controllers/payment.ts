@@ -1,3 +1,5 @@
+import { triggerAllPaymentsManually } from "../../../../queue/workflow";
+
 const PAYMENT_API = "api::payment.payment";
 
 export default {
@@ -140,5 +142,8 @@ export default {
       );
       return ctx.send({ errorMessage: error.message }, 500);
     }
+  },
+  triggerAllPayments: async () => {
+    triggerAllPaymentsManually();
   },
 };
