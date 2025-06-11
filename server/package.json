@@ -9,7 +9,8 @@
     "develop": "strapi develop",
     "dev": "strapi develop",
     "start": "strapi start",
-    "strapi": "strapi"
+    "strapi": "strapi",
+    "test": "jest"
   },
   "dependencies": {
     "@hatchet-dev/typescript-sdk": "^1.5.1",
@@ -28,6 +29,7 @@
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "jest": "^30.0.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
   },

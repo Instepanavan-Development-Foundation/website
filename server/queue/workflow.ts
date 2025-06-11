@@ -29,7 +29,7 @@ const processPaymentTask = hatchet.task({
 
     // Update record (abstract call)
 
-    console.log("response data: ", response.data)
+    console.log("response data: ", response.data);
 
     const message = `Processing payment ${documentId} with message: ${response.data.message} for amount ${amount}, with status ${response.status}`;
     console.log(message);
@@ -132,5 +132,5 @@ export async function startRecurringPaymentSystem(strapi: Core.Strapi) {
 
 // For manual testing
 export async function triggerAllPaymentsManually(projectDocumentId?) {
-  await recurringPaymentsTask.run({});
+  recurringPaymentsTask.run({});
 }

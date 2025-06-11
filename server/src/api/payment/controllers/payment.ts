@@ -145,7 +145,8 @@ export default {
     }
   },
   // TODO: make this admin only
-  triggerAllPayments: async () => {
-    triggerAllPaymentsManually();
+  triggerAllPayments: async (ctx) => {
+    await triggerAllPaymentsManually();
+    return ctx.send({ message: "Processing" }, 200);
   },
 };
