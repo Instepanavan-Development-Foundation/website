@@ -1,4 +1,4 @@
-// import type { Core } from '@strapi/strapi';
+import type { Core } from '@strapi/strapi';
 
 import initQueue from "../queue/worker";
 
@@ -18,7 +18,7 @@ export default {
    * This gives you an opportunity to set up your data model,
    * run jobs, or perform some special logic.
    */
-  bootstrap(/* { strapi }: { strapi: Core.Strapi } */) {
-    initQueue();
+  bootstrap({ strapi }: { strapi: Core.Strapi }) {
+    initQueue(strapi);
   },
 };

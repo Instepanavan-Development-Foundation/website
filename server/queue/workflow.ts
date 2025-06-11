@@ -1,29 +1,16 @@
 import axios from "axios";
+import { Core } from "@strapi/strapi";
 import { hatchet } from "./hatchet-client";
-interface RecurringPayment {
-  id: string;
-  userId: string;
-  amount: number;
-  currency: string;
-  paymentMethodId: string;
-  dayOfMonth: number;
-}
 
+let strapiGlobal: Core.Strapi;
 interface ProcessPaymentInput {
   amount: number;
   documentId: string;
   email: string;
 }
-
-// Abstract function calls - implement these elsewhere
-declare function getRecurringPayments(
-  dayOfMonth: number
-): Promise<RecurringPayment[]>;
-declare function processPayment(paymentData: RecurringPayment): Promise<any>;
-declare function updatePaymentRecord(
-  documentId: string,
-  result: any
-): Promise<void>;
+const axiosClient = axios.create({
+  baseURL: process.env.BASE_URL,
+});
 
 // Single payment processing task
 const processPaymentTask = hatchet.task({
@@ -33,39 +20,43 @@ const processPaymentTask = hatchet.task({
 
     console.log(`Processing payment: ${documentId}`);
 
-    const url = `${process.env.BASE_URL}/api/payment/do-recurring-payment`;
+    const url = `/api/payment/do-recurring-payment`;
     const data = { projectPaymentId: documentId };
-
-    const response = await axios.post(url, data);
+    //TODO: make sure that the request is authenticated and can be run by the admin only
+    const response = await axiosClient.post(url, data, {
+      headers: { "Content-Type": "application/json" },
+    });
 
     // Update record (abstract call)
-    await updatePaymentRecord(documentId, response);
 
-    const message = `Processing payment ${documentId} with message: ${response.data.body.message} for amount ${amount}, with status ${response.status}`;
+    console.log("response data: ", response.data)
+
+    const message = `Processing payment ${documentId} with message: ${response.data.message} for amount ${amount}, with status ${response.status}`;
     console.log(message);
     return { message };
   },
 });
 
-// Main recurring payments task for day 2
+// Main recurring payments task for day X
 const recurringPaymentsTask = hatchet.task({
   name: "recurring-payments-monthly",
   fn: async () => {
     console.log(`Running monthly recurring payments`);
 
     //TODO: Add email or user to projectPayment so we can log it and associate with an account
-    const projects = await strapi.documents("api::project.project").findMany({
-      fields: ["name"],
-      filters: {
-        donationType: "recurring",
-      },
-      populate: {
-        project_payments: {
-          fields: ["id", "amount"],
+    const projects = await strapiGlobal
+      .documents("api::project.project")
+      .findMany({
+        fields: ["name"],
+        filters: {
+          donationType: "recurring",
         },
-      },
-    });
-    
+        populate: {
+          project_payments: {
+            fields: ["id", "amount"],
+          },
+        },
+      });
     const results = [];
 
     for (const project of projects) {
@@ -81,7 +72,7 @@ const recurringPaymentsTask = hatchet.task({
         const result = await processPaymentTask.run({
           amount,
           documentId,
-          email: "dummy EMAIL ADD LATER",
+          email: "TODO: dummy EMAIL ADD LATER",
         });
 
         results.push(result);
@@ -97,15 +88,37 @@ const recurringPaymentsTask = hatchet.task({
 });
 
 // Setup cron schedule and start system
-export async function startRecurringPaymentSystem() {
-  const cronSchedule = "0 9 2 * *";
+export async function startRecurringPaymentSystem(strapi: Core.Strapi) {
+  strapiGlobal = strapi;
+  const cronSchedule = "* * * * *";
   // Create worker with tasks
   const worker = await hatchet.worker("recurring-payments-worker", {
     workflows: [processPaymentTask, recurringPaymentsTask],
   });
 
+  // Try to delete existing cron first (if it exists)
+  try {
+    // TODO: make sure that we don't delete logs from hatchet otherwise we will need to register just those we didn't register before
+    const cronList = await hatchet.crons.list({
+      offset: 0,
+      limit: 10,
+    });
+
+    if (!cronList.rows.length) {
+      console.log(`ℹ️ No existing cron to delete`);
+    }
+
+    for (const row of cronList.rows) {
+      await hatchet.crons.delete(row);
+      console.log(`🗑️ Deleted existing cron: ${row.name}`);
+    }
+  } catch (error) {
+    // Ignore if cron doesn't exist
+    console.log(`Can't delete a cron`, error);
+  }
+
   await recurringPaymentsTask.cron(
-    "monthly-payments",
+    `monthly-payments ${cronSchedule}`,
     cronSchedule,
     {} // Empty input since the task doesn't need input
   );
