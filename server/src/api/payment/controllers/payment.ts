@@ -65,6 +65,7 @@ export default {
       return ctx.send({ errorMessage: error.message }, 500);
     }
   },
+  // TODO: make this admin only
   doRecurringPayment: async (ctx, next) => {
     const { projectPaymentId } = ctx.request.body;
     const service = strapi.service(PAYMENT_API);
@@ -143,6 +144,7 @@ export default {
       return ctx.send({ errorMessage: error.message }, 500);
     }
   },
+  // TODO: make this admin only
   triggerAllPayments: async () => {
     triggerAllPaymentsManually();
   },
