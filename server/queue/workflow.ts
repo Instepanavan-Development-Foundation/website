@@ -134,3 +134,6 @@ export async function startRecurringPaymentSystem(strapi: Core.Strapi) {
 export async function triggerAllPaymentsManually(projectDocumentId?) {
   recurringPaymentsTask.run({});
 }
+
+// TODO: make sure that tasks stay in queue when no process exists
+// test if it will fail if we have multiple projects
