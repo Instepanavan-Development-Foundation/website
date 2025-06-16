@@ -1,4 +1,6 @@
 import axios from "axios";
+import { RateLimitDuration } from "@hatchet-dev/typescript-sdk";
+
 import { Core } from "@strapi/strapi";
 import { hatchet } from "./hatchet-client";
 
@@ -12,9 +14,19 @@ const axiosClient = axios.create({
   baseURL: process.env.BASE_URL,
 });
 
+const PROJECT_PAYMENT_CREATE_EVENT = "project-payment:create";
+
 // Single payment processing task
-const processPaymentTask = hatchet.task({
-  name: "process-single-payment",
+
+const upper = hatchet.workflow({
+  name: "upper",
+  on: {
+    event: PROJECT_PAYMENT_CREATE_EVENT,
+  },
+});
+
+upper.task({
+  name: "upper",
   fn: async (input, ctx) => {
     const { amount, documentId, email } = input as ProcessPaymentInput;
 
@@ -40,23 +52,30 @@ const processPaymentTask = hatchet.task({
 // Main recurring payments task for day X
 const recurringPaymentsTask = hatchet.task({
   name: "recurring-payments-monthly",
-  fn: async () => {
+  fn: async ({ projectDocumentId }: { projectDocumentId?: string }) => {
     console.log(`Running monthly recurring payments`);
+
+    const filters: any = {
+      donationType: "recurring",
+    };
+
+    if (projectDocumentId) {
+      filters.documentId = projectDocumentId;
+    }
 
     //TODO: Add email or user to projectPayment so we can log it and associate with an account
     const projects = await strapiGlobal
       .documents("api::project.project")
       .findMany({
         fields: ["name"],
-        filters: {
-          donationType: "recurring",
-        },
+        filters,
         populate: {
           project_payments: {
             fields: ["id", "amount"],
           },
         },
       });
+
     const results = [];
 
     for (const project of projects) {
@@ -69,10 +88,12 @@ const recurringPaymentsTask = hatchet.task({
 
       for (const projectPayment of project.project_payments) {
         const { amount, documentId } = projectPayment;
-        const result = await processPaymentTask.run({
+
+        const result = await hatchet.events.push(PROJECT_PAYMENT_CREATE_EVENT, {
           amount,
           documentId,
           email: "TODO: dummy EMAIL ADD LATER",
+          ShouldSkip: false,
         });
 
         results.push(result);
@@ -89,11 +110,13 @@ const recurringPaymentsTask = hatchet.task({
 
 // Setup cron schedule and start system
 export async function startRecurringPaymentSystem(strapi: Core.Strapi) {
+  await hatchet.admin.putRateLimit("limit", 10, RateLimitDuration.SECOND);
+
   strapiGlobal = strapi;
   const cronSchedule = "* * * * *";
   // Create worker with tasks
   const worker = await hatchet.worker("recurring-payments-worker", {
-    workflows: [processPaymentTask, recurringPaymentsTask],
+    workflows: [recurringPaymentsTask, upper],
   });
 
   // Try to delete existing cron first (if it exists)
@@ -101,7 +124,7 @@ export async function startRecurringPaymentSystem(strapi: Core.Strapi) {
     // TODO: make sure that we don't delete logs from hatchet otherwise we will need to register just those we didn't register before
     const cronList = await hatchet.crons.list({
       offset: 0,
-      limit: 10,
+      limit: 100,
     });
 
     if (!cronList.rows.length) {
@@ -130,9 +153,9 @@ export async function startRecurringPaymentSystem(strapi: Core.Strapi) {
   console.log(`Scheduled cron job: ${cronSchedule}`);
 }
 
-// For manual testing
+// For manual Running
 export async function triggerAllPaymentsManually(projectDocumentId?) {
-  recurringPaymentsTask.run({});
+  return await recurringPaymentsTask.runNoWait({ projectDocumentId });
 }
 
 // TODO: make sure that tasks stay in queue when no process exists

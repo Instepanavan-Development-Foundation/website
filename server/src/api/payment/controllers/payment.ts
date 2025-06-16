@@ -146,7 +146,8 @@ export default {
   },
   // TODO: make this admin only
   triggerAllPayments: async (ctx) => {
-    await triggerAllPaymentsManually();
+    const { projectDocumentId } = ctx.request.body;
+    await triggerAllPaymentsManually(projectDocumentId);
     return ctx.send({ message: "Processing" }, 200);
   },
 };

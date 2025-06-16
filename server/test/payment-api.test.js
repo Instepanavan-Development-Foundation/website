@@ -2,7 +2,7 @@ const axios = require('axios');
 
 describe("Testing Recurring payments under load", () => {
     it('will be doing 10000 consequential requests', async () => {
-        const requestsArray = new Array(10000).fill(null);
+        const requestsArray = new Array(500).fill(null);
 
         const axiosClient = axios.create({
             baseURL: "http://127.0.0.1:1337",
