@@ -1,3 +1,5 @@
+"use client"
+
 import {
   Navbar as NextUINavbar,
   NavbarContent,
@@ -19,10 +21,32 @@ import {
   Logo,
 } from "@/components/icons";
 import { IMenu, IMenuLink } from "@/src/models/menu";
+import { useEffect, useState } from "react";
+import { ISiteConfig } from "@/src/models/site-config";
 
-export const Navbar = async () => {
-  
-  const siteConfig = await getSiteConfig();
+export const Navbar = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [siteConfig, setSiteConfig] = useState<ISiteConfig | null>(null);
+
+  useEffect(() => {
+    setIsLoggedIn(typeof window !== "undefined" && !!localStorage.getItem("jwt"));
+    (async () => {
+      const config = await getSiteConfig();
+      setSiteConfig(config);
+    })();
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("jwt");
+    localStorage.removeItem("email");
+    setIsLoggedIn(false);
+    window.location.reload();
+  };
+
+  if (!siteConfig) {
+    return null;
+  }
+
   return (
     <NextUINavbar maxWidth="xl" position="sticky">
       <NavbarContent className="basis-1/5 sm:basis-full" justify="start">
@@ -53,6 +77,19 @@ export const Navbar = async () => {
             </NavbarItem>
           ))}
         </ul>
+        {!isLoggedIn ? (
+          <NavbarItem className="hidden md:flex">
+            <Button as={Link} href="/register" /* ...styles... */>
+              Գրանցվել
+            </Button>
+          </NavbarItem>
+        ) : (
+          <NavbarItem className="hidden md:flex">
+            <Button onClick={handleLogout} /* ...styles... */>
+              Դուրս գալ
+            </Button>
+          </NavbarItem>
+        )}
         <NavbarItem className="hidden md:flex">
           <Button
             as={Link}
