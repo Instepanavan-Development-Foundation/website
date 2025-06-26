@@ -84,11 +84,18 @@ export const Navbar = () => {
             </Button>
           </NavbarItem>
         ) : (
-          <NavbarItem className="hidden md:flex">
-            <Button onClick={handleLogout} /* ...styles... */>
-              Դուրս գալ
-            </Button>
-          </NavbarItem>
+          <>
+            <NavbarItem className="hidden md:flex">
+              <Button onClick={handleLogout} /* ...styles... */>
+                Դուրս գալ
+              </Button>
+            </NavbarItem>
+            <NavbarItem className="hidden md:flex">
+              <Button as={Link} href="/profile" /* ...styles... */>
+                Իմ պրոֆիլը
+              </Button>
+            </NavbarItem>
+          </>
         )}
         <NavbarItem className="hidden md:flex">
           <Button
