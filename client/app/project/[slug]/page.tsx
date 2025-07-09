@@ -3,7 +3,6 @@ import { button as buttonStyles } from "@nextui-org/theme";
 import { MoveRight, Rss } from "lucide-react";
 import { Chip } from "@nextui-org/chip";
 import { Button } from "@nextui-org/button";
-import Markdown from "react-markdown";
 import { Progress } from "@heroui/progress";
 
 import { BlogPost } from "@/components/BlogPost";
@@ -35,6 +34,7 @@ export async function generateMetadata({ params }: IParams) {
   });
 
   const [project] = data;
+
   if (!project) {
     return;
   }
@@ -77,29 +77,33 @@ export default async function ProjectPage({ params }: IParams) {
   });
 
   const project = data[0];
+
   if (!project) {
     return <NotFound />;
   }
-  
-  const percentComplete = project.requiredAmount ? Math.round((project.gatheredAmount / project.requiredAmount) * 100) : 100;
+
+  const percentComplete = project.requiredAmount
+    ? Math.round((project.gatheredAmount / project.requiredAmount) * 100)
+    : 100;
   const isUrgent = percentComplete < 30 && !project.isArchived;
-  
+
   // Determine progress color based on completion percentage
-  const progressColor = project.gatheredAmount >= project.requiredAmount 
-    ? "success" 
-    : project.gatheredAmount >= project.requiredAmount / 2 
-      ? "primary" 
-      : "danger";
+  const progressColor =
+    project.gatheredAmount >= project.requiredAmount
+      ? "success"
+      : project.gatheredAmount >= project.requiredAmount / 2
+        ? "primary"
+        : "danger";
 
   return (
     <section className="flex flex-col px-4">
       {/* Archive indicator */}
       {project.isArchived && (
         <Chip
-          radius="sm"
-          color="warning"
-          variant="shadow"
           className="w-full mb-4 max-w-full text-lg p-4"
+          color="warning"
+          radius="sm"
+          variant="shadow"
         >
           Այս նախագծը արխիվում է, նախագծի մասին տեղեկությունները այլևս չեն
           թարմացվում։
@@ -109,7 +113,7 @@ export default async function ProjectPage({ params }: IParams) {
       {/* Hero Section */}
       <div className="relative container mb-16">
         <div className="relative">
-          <Carousel slider={project.slider} image={project.image} />
+          <Carousel image={project.image} slider={project.slider} />
           {isUrgent && (
             <div className="absolute top-4 left-4 bg-danger text-white text-sm font-bold px-3 py-1.5 rounded-full animate-pulse z-20">
               Հրատապ օգնության կարիք
@@ -144,15 +148,15 @@ export default async function ProjectPage({ params }: IParams) {
                 Նպատակ: {formatCurrency(project.requiredAmount)}
               </span>
             </div>
-            
+
             {/* HeroUI Progress Component */}
-            <Progress 
-              value={percentComplete} 
-              color={progressColor}
-              size="lg"
-              showValueLabel={false}
-              className="my-2"
+            <Progress
               aria-label="Funding progress"
+              className="my-2"
+              color={progressColor}
+              showValueLabel={false}
+              size="lg"
+              value={percentComplete}
             />
 
             {/* Contributors Preview */}
@@ -178,7 +182,7 @@ export default async function ProjectPage({ params }: IParams) {
             href={`${process.env.NEXT_PUBLIC_BACKEND_URL}${process.env.NEXT_PUBLIC_RSS_URL}?project=${project.slug}`}
             target="_blank"
           >
-            <Button variant="bordered" color="warning">
+            <Button color="warning" variant="bordered">
               <Rss className="w-4 h-4" />
               RSS
             </Button>
@@ -191,12 +195,12 @@ export default async function ProjectPage({ params }: IParams) {
         </div>
         <div className="col-span-full flex justify-center mt-8">
           <Link
-            href={`/blog?project=${project.name}`}
             className={buttonStyles({
               variant: "flat",
               radius: "full",
               size: "lg",
             })}
+            href={`/blog?project=${project.name}`}
           >
             Դիտել նախագծի բոլոր հոդվածները
             <MoveRight className="ml-2 w-5 h-5" />
@@ -209,8 +213,8 @@ export default async function ProjectPage({ params }: IParams) {
         <div className="container mb-16">
           <h2 className="text-3xl font-bold mb-8">Միջոցառումներ</h2>
           <div
-            className="text-container"
             dangerouslySetInnerHTML={{ __html: project.events }}
+            className="text-container"
           />
         </div>
       )}
@@ -218,13 +222,13 @@ export default async function ProjectPage({ params }: IParams) {
       {/* Project Details Section */}
       <div className="container mb-16">
         {project.about && (
-        <>
-        <h2 className="text-3xl font-bold mb-8">Ծրագրի մանրամասներ</h2>
-        <div className="prose prose-lg max-w-none">
-          <ModifiedMarkdown>{project.about}</ModifiedMarkdown>
-          </div>
-        </>
-      )}
+          <>
+            <h2 className="text-3xl font-bold mb-8">Ծրագրի մանրամասներ</h2>
+            <div className="prose prose-lg max-w-none">
+              <ModifiedMarkdown>{project.about}</ModifiedMarkdown>
+            </div>
+          </>
+        )}
         <div className="flex justify-center">
           <ContributionBox project={project} />
         </div>

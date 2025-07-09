@@ -1,12 +1,12 @@
-import { Card, CardBody, CardFooter, CardHeader } from "@nextui-org/card";
+import { Card, CardBody, CardFooter } from "@nextui-org/card";
+import { Button } from "@nextui-org/button";
+import { Paperclip } from "lucide-react";
+
 import getData from "@/src/helpers/getData";
 import { IStaticPage } from "@/src/models/stat-page";
 import ModifiedMarkdown from "@/src/hok/modifiedMarkdown";
 import { IParams } from "@/src/models/params";
 import NotFound from "@/components/NotFound";
-import { Button } from "@nextui-org/button";
-import { Paperclip } from "lucide-react";
-import Link from "next/link";
 import getMediaSrc from "@/src/helpers/getMediaUrl";
 
 export async function generateMetadata({ params }: IParams) {
@@ -17,9 +17,11 @@ export async function generateMetadata({ params }: IParams) {
   });
 
   const [staticPage] = data;
+
   if (!staticPage) {
     return null;
   }
+
   return {
     title: staticPage.title,
     description: staticPage.description,
@@ -38,10 +40,11 @@ export default async function StaticPage({ params }: IParams) {
   });
 
   const [staticPage] = data;
+
   if (!staticPage) {
     NotFound();
   }
-  
+
   return (
     <div className="container mx-auto">
       <h1 className="text-5xl font-bold text-center mb-10">
@@ -55,16 +58,16 @@ export default async function StaticPage({ params }: IParams) {
         </CardBody>
         <CardFooter className="flex flex-row flex-wrap gap-2">
           {staticPage.attachments?.map((attachment) => (
-           <Button
-           as="a"
-           href={getMediaSrc(attachment)}
-           target="_blank"
-           rel="noopener noreferrer"
-           className="btn btn-success"
-         >
-           <Paperclip className="w-4 h-4" />
-           {attachment.name}
-         </Button>
+            <Button
+              as="a"
+              className="btn btn-success"
+              href={getMediaSrc(attachment)}
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              <Paperclip className="w-4 h-4" />
+              {attachment.name}
+            </Button>
           ))}
         </CardFooter>
       </Card>

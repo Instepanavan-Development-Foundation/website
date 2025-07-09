@@ -161,6 +161,10 @@ const service = {
         },
       });
 
+      if(success) {
+        // TODO: add logic to update project payment with this log
+      }
+
       console.log("Payment log", log);
       return log;
     } catch (e) {

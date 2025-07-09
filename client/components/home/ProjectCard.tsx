@@ -1,11 +1,11 @@
-import { Card, CardBody, CardHeader } from "@nextui-org/card";
+import { Card, CardBody } from "@nextui-org/card";
 import { Image } from "@heroui/image";
+import { HeartHandshake } from "lucide-react";
+
 import { ContributorsList } from "../ContributorsList";
+
 import { IProject } from "@/src/models/project";
 import getMediaUrl from "@/src/helpers/getMediaUrl";
-import { HeartHandshake } from "lucide-react";
-import Link from "next/link";
-import { Button } from "@nextui-org/button";
 
 export const formatCurrency = (amount: number, currency: string = "AMD") => {
   return new Intl.NumberFormat("hy-AM", {
@@ -29,9 +29,11 @@ export function ProjectCard({
 }: IProject) {
   // Calculate remaining amount and percentage
   const remainingAmount = Math.max(requiredAmount - gatheredAmount, 0);
-  const percentComplete = requiredAmount ? Math.round((gatheredAmount / requiredAmount) * 100) : 100;
+  const percentComplete = requiredAmount
+    ? Math.round((gatheredAmount / requiredAmount) * 100)
+    : 100;
   const isUrgent = percentComplete < 30;
-  
+
   return (
     <div className="relative w-full">
       <Card className="group bg-gradient-to-br from-background to-default-50 w-full hover:shadow-lg transition-all duration-300">
@@ -54,10 +56,14 @@ export function ProjectCard({
 
           <div className="p-5">
             {/* Project name should be one line */}
-            <p className="text-lg text-default-600 line-clamp-1 font-semibold">{name}</p>
-            
+            <p className="text-lg text-default-600 line-clamp-1 font-semibold">
+              {name}
+            </p>
+
             {/* Short description */}
-            <p className="text-sm text-default-500 mt-1 line-clamp-2 h-10">{description}</p>
+            <p className="text-sm text-default-500 mt-1 line-clamp-2 h-10">
+              {description}
+            </p>
 
             <div className="mt-4 flex flex-col gap-2">
               <div
@@ -76,15 +82,15 @@ export function ProjectCard({
                     gatheredAmount >= requiredAmount
                       ? "bg-primary"
                       : gatheredAmount >= requiredAmount / 2
-                      ? "bg-secondary"
-                      : "bg-danger"
+                        ? "bg-secondary"
+                        : "bg-danger"
                   }`}
                   style={{
                     width: `${Math.min((gatheredAmount / requiredAmount) * 100, 100)}%`,
                   }}
                 />
               </div>
-              
+
               {/* Donation stats */}
               <div className="flex flex-col space-between">
                 <div className="flex justify-between items-center">
@@ -92,10 +98,7 @@ export function ProjectCard({
                     <p
                       className={`text-xs text-default-400 mt-1 ${!requiredAmount ? "opacity-0" : ""}`}
                     >
-                      {requiredAmount
-                        ? `${percentComplete}%`
-                        : "100%"}{" "}
-                      հավաքված
+                      {requiredAmount ? `${percentComplete}%` : "100%"} հավաքված
                     </p>
                     {remainingAmount > 0 && (
                       <p className="text-xs text-danger font-medium mt-1">
@@ -103,7 +106,7 @@ export function ProjectCard({
                       </p>
                     )}
                   </div>
-                  
+
                   {
                     <div className="flex items-center gap-2 h-10">
                       <div className="flex -space-x-2">

@@ -6,19 +6,20 @@ import { Paperclip, Bookmark } from "lucide-react";
 import { useState } from "react";
 import { Image } from "@heroui/image";
 import Link from "next/link";
-import Markdown from "react-markdown";
-import remarkGfm from 'remark-gfm'
+import Lightbox from "yet-another-react-lightbox";
+import Thumbnails from "yet-another-react-lightbox/plugins/thumbnails";
 
 import { ContributorsList } from "./ContributorsList";
+
 import { IBlog } from "@/src/models/blog";
 import getMediaUrl from "@/src/helpers/getMediaUrl";
 
 // Lightbox
-import Lightbox from "yet-another-react-lightbox";
-import Thumbnails from "yet-another-react-lightbox/plugins/thumbnails";
+
 import "yet-another-react-lightbox/styles.css";
 import "yet-another-react-lightbox/plugins/thumbnails.css";
 import NextJsImage from "./NextJsImage";
+
 import { prettyDate } from "@/src/helpers/prettyDate";
 import ModifiedMarkdown from "@/src/hok/modifiedMarkdown";
 
@@ -43,8 +44,11 @@ export function BlogPost({
     height: image.height,
   }));
 
-  const youtubeLink = content.match(/https?:\/\/(www\.)?youtube\.com\/watch\?v=([a-zA-Z0-9_-]{11})/);
+  const youtubeLink = content.match(
+    /https?:\/\/(www\.)?youtube\.com\/watch\?v=([a-zA-Z0-9_-]{11})/,
+  );
   const gradient = "bg-gradient-to-br from-primary to-secondary";
+
   return (
     <div className="relative">
       {isFeatured && (
@@ -56,20 +60,20 @@ export function BlogPost({
         <CardBody className="p-0">
           {/* TODO images like in fb, 3 images on front */}
           {images?.length ? (
-            <button onClick={() => setOpen(true)} className="cursor-zoom-in">
+            <button className="cursor-zoom-in" onClick={() => setOpen(true)}>
               <Lightbox
-                open={open}
                 close={() => setOpen(false)}
-                slides={imageSlides}
-                render={{ slide: NextJsImage, thumbnail: NextJsImage as any }} // TODO: fix this some day
+                open={open}
                 plugins={[Thumbnails]}
+                render={{ slide: NextJsImage, thumbnail: NextJsImage as any }} // TODO: fix this some day
+                slides={imageSlides}
               />
               <Image
                 alt={content}
                 className={`w-full object-contain h-[200px] z-10 ${gradient}`}
+                radius="none"
                 src={getMediaUrl(images[0])}
                 width="100"
-                radius="none"
               />
               {/* Count of images in the blog post */}
               {images.length > numberOfImagesShown && (
@@ -95,7 +99,7 @@ export function BlogPost({
               </Link>
             ) : (
               <p className="text-default-500 mb-4">
-                <ModifiedMarkdown >{content}</ModifiedMarkdown>
+                <ModifiedMarkdown>{content}</ModifiedMarkdown>
               </p>
             )}
             {/* Tags */}
@@ -112,9 +116,9 @@ export function BlogPost({
             {project && (
               <div className="flex -space-x-2 mb-4">
                 <Link
-                  href={`/project/${project.slug}`}
-                  color="secondary"
                   className="line-clamp-2"
+                  color="secondary"
+                  href={`/project/${project.slug}`}
                 >
                   {project.name}
                 </Link>
@@ -132,9 +136,9 @@ export function BlogPost({
                 {attachments.map((attachment, idx) => (
                   <Link
                     key={idx}
-                    href={getMediaUrl(attachment)}
-                    className="flex items-center text-blue-500 hover:underline"
                     download
+                    className="flex items-center text-blue-500 hover:underline"
+                    href={getMediaUrl(attachment)}
                     target="_blank"
                   >
                     <Paperclip className="w-4 h-4 mr-2" />

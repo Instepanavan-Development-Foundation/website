@@ -27,11 +27,30 @@ export interface IDataParams<T extends IUrlTypes> {
   limit?: number;
 }
 
+export interface IDonations {
+  id: number;
+  amount: number;
+  currency: number;
+  createdAt: string;
+  project: IProject
+}
+
+export interface IProjectPayment {
+  id: number;
+  amount: number;
+  currency: number;
+  project: IProject;
+  type: 'recurring' | 'one_time';
+}
+
+
 export type TypeMapping = {
   projects: IProject[];
   blogs: IBlog[];
   contributors: IContributor[];
   menus: IMenu[];
+  donations: IDonations[];
+  "project-payments": IProjectPayment[];
   "static-pages": IStaticPage[];
   "site-config": ISiteConfig;
 };

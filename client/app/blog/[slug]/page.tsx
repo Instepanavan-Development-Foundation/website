@@ -17,6 +17,7 @@ export async function generateMetadata({ params }: IParams) {
   });
 
   const [blog] = data;
+
   if (!blog) {
     return;
   }
@@ -45,6 +46,7 @@ export default async function BlogPage({ params }: IParams) {
   });
 
   const blog = data[0];
+
   if (!blog) {
     return <NotFound />;
   }

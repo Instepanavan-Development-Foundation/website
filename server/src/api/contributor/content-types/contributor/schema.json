@@ -40,6 +40,12 @@
     "isTrustedBy": {
       "type": "boolean",
       "default": false
+    },
+    "donations": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::donation.donation",
+      "mappedBy": "contributor"
     }
   }
 }

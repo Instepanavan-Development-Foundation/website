@@ -32,6 +32,12 @@
     "success": {
       "type": "boolean",
       "default": false
+    },
+    "donation": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::donation.donation",
+      "mappedBy": "payment_log"
     }
   }
 }

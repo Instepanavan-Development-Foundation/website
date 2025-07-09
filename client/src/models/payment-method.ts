@@ -10,4 +10,4 @@ export interface IPaymentMethod {
   isDefault?: boolean;
   createdAt: string;
   updatedAt: string;
-} 
+}

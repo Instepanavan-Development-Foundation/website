@@ -8,13 +8,14 @@ import { DateValue, parseDate } from "@internationalized/date";
 import { Chip } from "@nextui-org/chip";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
+import { RangeValue } from "@react-types/shared";
+import { ArrowDownIcon } from "lucide-react";
+
+import { BlogPost } from "./BlogPost";
 
 import getData from "@/src/helpers/getData";
 import { IBlog } from "@/src/models/blog";
-import { BlogPost } from "./BlogPost";
 import { INestedObject } from "@/src/models/getData";
-import { RangeValue } from "@react-types/shared";
-import { ArrowDownIcon } from "lucide-react";
 
 const LIMIT = Number(process.env.NEXT_PUBLIC_QUERY_LIMIT || 10);
 
@@ -23,13 +24,13 @@ function BlogListUnwrapped() {
   const searchParams = useSearchParams();
 
   const [searchQuery, setSearchQuery] = useState(
-    searchParams.get("search") || ""
+    searchParams.get("search") || "",
   );
   const [selectedProject, setSelectedProject] = useState(
-    searchParams.get("project") || ""
+    searchParams.get("project") || "",
   );
   const [selectedTags, setSelectedTags] = useState<string>(
-    searchParams.get("tags") || ""
+    searchParams.get("tags") || "",
   );
 
   const defaultDateRange = {
@@ -157,30 +158,31 @@ function BlogListUnwrapped() {
       {/* Filters Section */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-4 mb-8">
         <Input
+          aria-label="search"
+          className="col-span-full md:col-span-12"
           placeholder="Որոնել..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          aria-label="search"
-          className="col-span-full md:col-span-12"
         />
 
         <Select
+          aria-label="projects"
+          className="col-span-full md:col-span-4"
           placeholder="Ընտրել նախագիծը"
           selectedKeys={selectedProject ? [selectedProject] : []}
-          aria-label="projects"
           onChange={(e) => {
             const value = e.target.value;
+
             setSelectedProject(value);
             updateURL({ project: value });
           }}
-          className="col-span-full md:col-span-4"
         >
           {blogs
             .map((blog) => blog.project)
             .filter(
               (project, index, self) =>
                 project &&
-                self.findIndex((p) => p?.name === project?.name) === index
+                self.findIndex((p) => p?.name === project?.name) === index,
             )
             .map((project) => (
               <SelectItem key={project?.name} value={project?.name || ""}>
@@ -190,15 +192,16 @@ function BlogListUnwrapped() {
         </Select>
 
         <Select
+          aria-label="tags"
+          className="col-span-full md:col-span-4"
           placeholder="Ընտրել պիտակները"
           selectedKeys={selectedTags ? [selectedTags] : []}
-          aria-label="tags"
           onChange={(e) => {
             const value = e.target.value;
+
             setSelectedTags(value);
             updateURL({ tags: value });
           }}
-          className="col-span-full md:col-span-4"
         >
           {blogs
             .flatMap((blog) => blog.tag || [])
@@ -213,17 +216,17 @@ function BlogListUnwrapped() {
 
         <DateRangePicker
           aria-label="date-range"
+          className="col-span-full md:col-span-3"
           value={dateRange as any}
           onChange={(range) => {
             if (range?.start && range?.end) {
               setDateRange(range as any);
             }
           }}
-          className="col-span-full md:col-span-3"
         />
 
         <div className="flex gap-2 col-span-full md:col-span-1">
-          <Button color="warning" className="flex-1" onClick={resetFilters}>
+          <Button className="flex-1" color="warning" onClick={resetFilters}>
             Չեղարկել
           </Button>
         </div>
@@ -234,9 +237,9 @@ function BlogListUnwrapped() {
         <div className="flex flex-wrap gap-2 mb-4">
           {searchQuery && (
             <Chip
-              onClose={() => setSearchQuery("")}
-              variant="flat"
               color="primary"
+              variant="flat"
+              onClose={() => setSearchQuery("")}
             >
               Որոնում: {searchQuery}
             </Chip>
@@ -244,10 +247,10 @@ function BlogListUnwrapped() {
 
           {selectedProject && (
             <Chip
-              onClose={removeProject}
-              variant="flat"
-              color="secondary"
               className="capitalize"
+              color="secondary"
+              variant="flat"
+              onClose={removeProject}
             >
               Նախագիծ:{" "}
               {
@@ -260,10 +263,10 @@ function BlogListUnwrapped() {
           {selectedTags && (
             <Chip
               key={`tag-${selectedTags}`}
-              onClose={() => removeTag()}
-              variant="flat"
-              color="warning"
               className="capitalize"
+              color="warning"
+              variant="flat"
+              onClose={() => removeTag()}
             >
               Թեգ: {selectedTags}
             </Chip>
@@ -279,8 +282,8 @@ function BlogListUnwrapped() {
       )}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {blogs.map((blog, index) => (
-          <div 
-            key={index} 
+          <div
+            key={index}
             className="h-full transform hover:-translate-y-1 transition-transform duration-300"
           >
             <BlogPost {...blog} />
@@ -289,13 +292,13 @@ function BlogListUnwrapped() {
       </div>
       {hasMore && (
         <div className="text-center mt-12">
-          <Button 
-            color="primary" 
-            variant="flat"
-            onClick={() => fetchBlogs()}
+          <Button
             className="px-6"
+            color="primary"
             endContent={<ArrowDownIcon className="w-4 h-4" />}
             size="lg"
+            variant="flat"
+            onClick={() => fetchBlogs()}
           >
             Բեռնել ավելին
           </Button>

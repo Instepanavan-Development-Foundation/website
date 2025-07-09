@@ -1,0 +1,40 @@
+{
+  "kind": "collectionType",
+  "collectionName": "donations",
+  "info": {
+    "singularName": "donation",
+    "pluralName": "donations",
+    "displayName": "Donation",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "amount": {
+      "type": "decimal"
+    },
+    "currency": {
+      "type": "string"
+    },
+    "payment_log": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::payment-log.payment-log",
+      "inversedBy": "donation"
+    },
+    "contributor": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::contributor.contributor",
+      "inversedBy": "donations"
+    },
+    "project": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::project.project",
+      "inversedBy": "donations"
+    }
+  }
+}

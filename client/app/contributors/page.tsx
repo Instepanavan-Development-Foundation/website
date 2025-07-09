@@ -1,7 +1,7 @@
 import Link from "next/link";
+import { Tooltip } from "@heroui/tooltip";
 
 import { Avatar } from "@/components/Avatar";
-import { Tooltip } from "@heroui/tooltip";
 import getData from "@/src/helpers/getData";
 
 export default async function Contributors() {
@@ -24,18 +24,18 @@ export default async function Contributors() {
       <div className="grid grid-cols-4 md:grid-cols-4 lg:grid-cols-6 gap-8">
         {trustedByContributors.map((contributor) => (
           <Tooltip
+            key={contributor.id}
             content={contributor.fullName}
             showArrow={true}
-            key={contributor.id}
           >
             <Link
-              href={`/contributor/${contributor.slug}`}
               className="flex flex-col items-center gap-2"
+              href={`/contributor/${contributor.slug}`}
             >
               <Avatar
+                className="object-contain"
                 contributor={contributor}
                 height={100}
-                className="object-contain"
               />
             </Link>
           </Tooltip>

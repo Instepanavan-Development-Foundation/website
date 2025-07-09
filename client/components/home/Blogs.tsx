@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { button as buttonStyles } from "@nextui-org/theme";
+import { ArrowRightIcon } from "lucide-react";
+
+import { BlogPost } from "../BlogPost";
 
 import getData from "@/src/helpers/getData";
 import { IBlog } from "@/src/models/blog";
-import { BlogPost } from "../BlogPost";
 import RSS from "@/components/home/RSS";
-import { ArrowRightIcon } from "lucide-react";
 
 const LIMIT = Number(process.env.NEXT_PUBLIC_QUERY_LIMIT || 8);
 
@@ -37,12 +38,12 @@ export default async function Blogs() {
       </div>
       <div className="col-span-full flex justify-center mt-8">
         <Link
-          href="/blog"
           className={buttonStyles({
             variant: "flat",
             radius: "full",
             size: "lg",
           })}
+          href="/blog"
         >
           Դիտել բոլոր հոդվածները
           <ArrowRightIcon className="w-4 h-4" />

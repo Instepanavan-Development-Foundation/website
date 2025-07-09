@@ -1,10 +1,9 @@
-"use client"
+"use client";
 
 import {
   Navbar as NextUINavbar,
   NavbarContent,
   NavbarMenu,
-  NavbarMenuToggle,
   NavbarBrand,
   NavbarItem,
   NavbarMenuItem,
@@ -15,30 +14,32 @@ import { link as linkStyles } from "@nextui-org/theme";
 import NextLink from "next/link";
 import clsx from "clsx";
 import { Heart, LogIn, LogOut, User } from "lucide-react";
+import { useEffect, useState } from "react";
 
 import { getSiteConfig } from "@/config/site";
-import {
-  Logo,
-} from "@/components/icons";
-import { IMenu, IMenuLink } from "@/src/models/menu";
-import { useEffect, useState } from "react";
+import { Logo } from "@/components/icons";
+import { IMenuLink } from "@/src/models/menu";
 import { ISiteConfig } from "@/src/models/site-config";
-import Login from "./Login";
 
 export const Navbar = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [siteConfig, setSiteConfig] = useState<ISiteConfig | null>(null);
 
   useEffect(() => {
-    setIsLoggedIn(typeof window !== "undefined" && !!localStorage.getItem("jwt"));
+    setIsLoggedIn(
+      typeof window !== "undefined" && !!localStorage.getItem("jwt"),
+    );
     (async () => {
       const config = await getSiteConfig();
+
       setSiteConfig(config);
     })();
 
     // Listen for login state changes
     const handleLoginStateChange = () => {
-      setIsLoggedIn(typeof window !== "undefined" && !!localStorage.getItem("jwt"));
+      setIsLoggedIn(
+        typeof window !== "undefined" && !!localStorage.getItem("jwt"),
+      );
     };
 
     window.addEventListener("loginStateChanged", handleLoginStateChange);
@@ -53,7 +54,7 @@ export const Navbar = () => {
     localStorage.removeItem("email");
     setIsLoggedIn(false);
     // Dispatch custom event to notify other components of logout
-    window.dispatchEvent(new CustomEvent('loginStateChanged'));
+    window.dispatchEvent(new CustomEvent("loginStateChanged"));
     window.location.reload();
   };
 
@@ -66,8 +67,10 @@ export const Navbar = () => {
       <NavbarContent className="basis-1/5 sm:basis-full" justify="start">
         <NavbarBrand as="li" className="gap-3 max-w-fit">
           <NextLink className="flex justify-start items-center gap-1" href="/">
-            <Logo src={siteConfig?.logo?.url} alt={siteConfig.logoTitle} />
-            <p className="font-bold text-inherit text-wrap">{siteConfig.logoTitle}</p>
+            <Logo alt={siteConfig.logoTitle} src={siteConfig?.logo?.url} />
+            <p className="font-bold text-inherit text-wrap">
+              {siteConfig.logoTitle}
+            </p>
           </NextLink>
         </NavbarBrand>
       </NavbarContent>
@@ -81,7 +84,7 @@ export const Navbar = () => {
               <NextLink
                 className={clsx(
                   linkStyles({ color: "foreground" }),
-                  "data-[active=true]:text-primary data-[active=true]:font-medium"
+                  "data-[active=true]:text-primary data-[active=true]:font-medium",
                 )}
                 color="foreground"
                 href={item.href}
@@ -96,7 +99,7 @@ export const Navbar = () => {
             <NextLink
               className={clsx(
                 linkStyles({ color: "foreground" }),
-                "data-[active=true]:text-primary data-[active=true]:font-medium"
+                "data-[active=true]:text-primary data-[active=true]:font-medium",
               )}
               color="foreground"
               href={"/login"}
@@ -111,7 +114,7 @@ export const Navbar = () => {
               <NextLink
                 className={clsx(
                   linkStyles({ color: "foreground" }),
-                  "data-[active=true]:text-primary data-[active=true]:font-medium"
+                  "data-[active=true]:text-primary data-[active=true]:font-medium",
                 )}
                 color="foreground"
                 href={"/profile"}
@@ -121,15 +124,11 @@ export const Navbar = () => {
               </NextLink>
             </NavbarItem>
             <NavbarItem className="hidden md:flex">
-              <Button
-                color="warning"
-                onClick={handleLogout}
-              >
+              <Button color="warning" onClick={handleLogout}>
                 <LogOut size={18} />
                 Դուրս գալ
               </Button>
             </NavbarItem>
-
           </>
         )}
         {/* <NavbarItem className="hidden md:flex">
@@ -163,15 +162,14 @@ export const Navbar = () => {
         <div className="mx-4 mt-2 flex flex-col gap-2">
           {siteConfig.navItems.map((item, index) => (
             <NavbarMenuItem key={`${item}-${index}`}>
-              <Link
-                href={item.href}
-              >
-                {item.title}
-              </Link>
+              <Link href={item.href}>{item.title}</Link>
             </NavbarMenuItem>
           ))}
           <NavbarMenuItem>
-            <Link href="/donate" className="flex items-center gap-2 text-rose-500 font-medium">
+            <Link
+              className="flex items-center gap-2 text-rose-500 font-medium"
+              href="/donate"
+            >
               <Heart size={16} /> Աջակցել մեր առաքելությանը
             </Link>
           </NavbarMenuItem>

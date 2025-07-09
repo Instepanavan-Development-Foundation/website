@@ -1,6 +1,5 @@
 "use client";
 import { useEffect, useState } from "react";
-
 import { useKeenSlider } from "keen-slider/react";
 import "keen-slider/keen-slider.min.css";
 
@@ -59,7 +58,7 @@ export default function Carousel({ slider, image }: ICarouselProps) {
 
   const videoIframe = slider?.videoIframe?.replace(
     "iframe",
-    'iframe class="w-full h-96"'
+    'iframe class="w-full h-96"',
   );
 
   return (
@@ -69,13 +68,13 @@ export default function Carousel({ slider, image }: ICarouselProps) {
           {slider?.videoIframe && (
             <div className="keen-slider__slide">
               <div
-                className="text-container"
                 dangerouslySetInnerHTML={{ __html: videoIframe || "" }}
+                className="text-container"
               />
             </div>
           )}
           {slider?.images?.map((image) => (
-            <div className="keen-slider__slide" key={image.id}>
+            <div key={image.id} className="keen-slider__slide">
               <Image
                 alt={image.name}
                 className="w-full object-cover h-96"
@@ -91,18 +90,18 @@ export default function Carousel({ slider, image }: ICarouselProps) {
           <>
             <Arrow
               left
+              disabled={currentSlide === 0}
               onClick={(e) => {
                 e.stopPropagation();
                 instanceRef.current?.prev();
               }}
-              disabled={currentSlide === 0}
             />
             <Arrow
+              disabled={currentSlide === totalSlides - 1}
               onClick={(e) => {
                 e.stopPropagation();
                 instanceRef.current?.next();
               }}
-              disabled={currentSlide === totalSlides - 1}
             />
           </>
         )}
@@ -112,10 +111,10 @@ export default function Carousel({ slider, image }: ICarouselProps) {
           {[...Array(totalSlides)].map((_, idx) => (
             <button
               key={idx}
+              className={`dot${currentSlide === idx ? " active" : ""}`}
               onClick={() => {
                 instanceRef.current?.moveToIdx(idx);
               }}
-              className={`dot${currentSlide === idx ? " active" : ""}`}
             />
           ))}
         </div>
@@ -131,17 +130,18 @@ function Arrow(props: {
   onClick: (e: React.MouseEvent<SVGSVGElement>) => void;
 }) {
   const disabled = props.disabled ? " arrow--disabled" : "";
+
   return (
     <svg
-      onClick={props.onClick}
       className={`arrow ${
         props.left ? "arrow--left" : "arrow--right"
       } ${disabled}`}
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
       stroke="black"
       strokeOpacity="0.5"
       strokeWidth="1"
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+      onClick={props.onClick}
     >
       {props.left && (
         <path d="M16.67 0l2.83 2.829-9.339 9.175 9.339 9.167-2.83 2.829-12.17-11.996z" />

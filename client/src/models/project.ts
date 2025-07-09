@@ -17,7 +17,8 @@ export interface IProject {
   isFeatured: boolean;
   about: string;
   createdAt: string;
-  isArchived: boolean;contributors?: IContributor[];
+  isArchived: boolean;
+  contributors?: IContributor[];
   slider: {
     images: IMediaFormat[];
     videoIframe: string;

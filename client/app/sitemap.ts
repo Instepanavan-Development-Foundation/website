@@ -1,5 +1,5 @@
-import type { MetadataRoute } from 'next'
- 
+import type { MetadataRoute } from "next";
+
 export default function sitemap(): MetadataRoute.Sitemap {
- return []; // TODO: Implement sitemap
+  return []; // TODO: Implement sitemap
 }

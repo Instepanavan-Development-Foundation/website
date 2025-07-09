@@ -1,4 +1,5 @@
 import qs from "qs";
+
 import { IDataParams, IUrlTypes, TypeMapping } from "../models/getData";
 
 export default async function getData<T extends IUrlTypes>({
@@ -22,18 +23,21 @@ export default async function getData<T extends IUrlTypes>({
     },
     {
       encodeValuesOnly: true,
-    }
+    },
   );
 
   // TODO: move envs to a config file
   const url = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/${type}?${query}`;
+
   try {
     const res = await fetch(url, {
       next: { revalidate: 0 }, // TODO: fix caching
     });
 
     if (!res.ok) {
-      throw new Error(`Failed to fetch data: ${res.statusText}`);
+      throw new Error(
+        `Failed to fetch data: ${res.statusText}, error code: ${res.status} with url: "${url}"`,
+      );
     }
 
     return res.json();

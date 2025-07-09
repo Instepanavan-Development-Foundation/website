@@ -88,6 +88,12 @@
       "relation": "oneToMany",
       "target": "api::project-payment.project-payment",
       "mappedBy": "project"
+    },
+    "donations": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::donation.donation",
+      "mappedBy": "project"
     }
   }
 }

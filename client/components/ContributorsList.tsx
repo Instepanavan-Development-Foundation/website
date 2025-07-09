@@ -1,6 +1,7 @@
+import { Tooltip } from "@heroui/tooltip";
+
 import { IContribution } from "@/src/models/blog";
 import { Avatar } from "@/components/Avatar";
-import { Tooltip } from "@heroui/tooltip";
 
 interface ContributorsListProps {
   contributions: IContribution[];
@@ -12,9 +13,10 @@ export function ContributorsList({
   maxDisplay = 6,
 }: ContributorsListProps) {
   if (!contributions) return null;
-  
+
   const displayedContributors = contributions.slice(0, maxDisplay);
   const remainingCount = contributions.length - maxDisplay;
+
   return (
     <div className="flex items-center gap-2">
       <div className="flex -space-x-2">
@@ -24,8 +26,8 @@ export function ContributorsList({
               <Tooltip content={contribution.text}>
                 <Avatar
                   contributor={contribution.contributor}
-                  width={32}
                   height={32}
+                  width={32}
                 />
               </Tooltip>
             </div>

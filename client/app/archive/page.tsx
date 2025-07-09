@@ -34,11 +34,14 @@ export default async function Home() {
       {/* Projects Section */}
       <div className="w-full container my-8">
         <h2 className="text-3xl font-bold mb-6">Ավարտված նախագծեր</h2>
-        <p className="mb-6"> Այս նագագծերը ավարտված են, և այլևս չեն թարմացվում։</p>
+        <p className="mb-6">
+          {" "}
+          Այս նագագծերը ավարտված են, և այլևս չեն թարմացվում։
+        </p>
         {projects.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
             {projects.map((project, index) => (
-              <Link href={`/project/${project.slug}`} key={index}>
+              <Link key={index} href={`/project/${project.slug}`}>
                 <ProjectCard key={index} {...project} />
               </Link>
             ))}

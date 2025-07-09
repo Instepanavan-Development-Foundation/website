@@ -1,7 +1,6 @@
 import * as React from "react";
 import Image from "next/image";
 
-import { IconSvgProps } from "@/types";
 // TODO change to real logo
 export const Logo = ({
   size = 36,

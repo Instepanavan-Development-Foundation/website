@@ -2,9 +2,9 @@
 const nextConfig = {
   images: {
     domains: [
+      "localhost",
       "images.unsplash.com",
       "i.pravatar.cc",
-      "localhost",
       "instepanavan.am",
       "api.instepanavan.am",
     ],

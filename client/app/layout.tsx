@@ -54,17 +54,25 @@ export default async function RootLayout({
                 {footerMenu.map((link) => (
                   <Link
                     key={link.title}
-                    target="_blank"
-                    href={link.href}
                     className="text-default-600 hover:text-primary"
+                    href={link.href}
+                    target="_blank"
                   >
                     {link.title}
                   </Link>
                 ))}
               </div>
-              <div>
-                Site is open source under AGPL license. 
-                Feel free to view, contribute or redistribute it under the terms of the license <Link href="https://github.com/Instepanavan-Development-Foundation/website" target="_blank" className="text-primary">here</Link>.
+              <div className="container mx-auto max-w-7xl text-center text-sm text-default-500">
+                Site is open source under AGPL license. Feel free to view,
+                contribute or redistribute it under the terms of the license{" "}
+                <Link
+                  className="text-primary"
+                  href="https://github.com/Instepanavan-Development-Foundation/website"
+                  target="_blank"
+                >
+                  here
+                </Link>
+                .
               </div>
             </footer>
           </div>
