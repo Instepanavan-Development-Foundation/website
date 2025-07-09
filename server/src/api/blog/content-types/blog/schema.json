@@ -10,11 +10,20 @@
   "options": {
     "draftAndPublish": false
   },
-  "pluginOptions": {},
+  "pluginOptions": {
+    "i18n": {
+      "localized": true
+    }
+  },
   "attributes": {
     "content": {
       "type": "richtext",
-      "required": true
+      "required": true,
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
     },
     "images": {
       "type": "media",
@@ -22,7 +31,12 @@
       "required": false,
       "allowedTypes": [
         "images"
-      ]
+      ],
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
     },
     "tag": {
       "type": "customField",
@@ -34,7 +48,12 @@
     "contribution": {
       "type": "component",
       "repeatable": true,
-      "component": "contribution.contribution"
+      "component": "contribution.contribution",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
     },
     "project": {
       "type": "relation",
@@ -44,11 +63,21 @@
     },
     "isArchive": {
       "type": "boolean",
-      "default": false
+      "default": false,
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
     },
     "isFeatured": {
       "type": "boolean",
-      "default": false
+      "default": false,
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
     },
     "attachments": {
       "type": "media",
@@ -56,12 +85,22 @@
       "required": false,
       "allowedTypes": [
         "files"
-      ]
+      ],
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
     },
     "slug": {
       "type": "string",
       "unique": true,
-      "regex": "^[A-Za-z0-9-]+$"
+      "regex": "^[A-Za-z0-9-]+$",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
     }
   }
 }
