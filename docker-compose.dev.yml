@@ -25,7 +25,7 @@ services:
     ports:
       - "5435:5432"
     volumes:
-      - hatchet_postgres_data:/var/lib/postgresql/data
+      - ./hatchet-data/hatchet_postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -d hatchet -U hatchet"]
       interval: 10s
@@ -43,8 +43,8 @@ services:
       RABBITMQ_DEFAULT_USER: "user"
       RABBITMQ_DEFAULT_PASS: "password"
     volumes:
-      - "hatchet_rabbitmq_data:/var/lib/rabbitmq"
-      - "hatchet_rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf" # Configuration file mount
+      - ./hatchet-data/hatchet_rabbitmq_data:/var/lib/rabbitmq
+      - ./hatchet-data/hatchet_rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
     healthcheck:
       test: ["CMD", "rabbitmqctl", "status"]
       interval: 10s
@@ -74,8 +74,8 @@ services:
       SERVER_DEFAULT_ENGINE_VERSION: "V1"
       SERVER_INTERNAL_CLIENT_INTERNAL_GRPC_BROADCAST_ADDRESS: hatchet-engine:7077
     volumes:
-      - hatchet_certs:/hatchet/certs
-      - hatchet_config:/hatchet/config
+      - ./hatchet-data/hatchet_certs:/hatchet/certs
+      - ./hatchet-data/hatchet_config:/hatchet/config
     depends_on:
       migration:
         condition: service_completed_successfully
@@ -100,8 +100,10 @@ services:
       SERVER_GRPC_BIND_ADDRESS: "0.0.0.0"
       SERVER_GRPC_INSECURE: "t"
     volumes:
-      - hatchet_certs:/hatchet/certs
-      - hatchet_config:/hatchet/config
+      - ./hatchet-data/hatchet_certs:/hatchet/certs
+      - ./hatchet-data/hatchet_config:/hatchet/config
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   hatchet-dashboard:
     image: ghcr.io/hatchet-dev/hatchet/hatchet-dashboard:latest
@@ -117,12 +119,5 @@ services:
     environment:
       DATABASE_URL: "postgres://hatchet:hatchet@hatchet_postgres:5432/hatchet"
     volumes:
-      - hatchet_certs:/hatchet/certs
-      - hatchet_config:/hatchet/config
-
-volumes:
-  hatchet_postgres_data:
-  hatchet_rabbitmq_data:
-  hatchet_rabbitmq.conf:
-  hatchet_config:
-  hatchet_certs:
+      - ./hatchet-data/hatchet_certs:/hatchet/certs
+      - ./hatchet-data/hatchet_config:/hatchet/config

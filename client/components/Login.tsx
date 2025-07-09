@@ -41,6 +41,8 @@ const Login = () => {
         if (typeof window !== "undefined" && data?.jwt) {
           localStorage.setItem("jwt", data.jwt);
           localStorage.setItem("email", email);
+          // Dispatch custom event to notify navbar of login state change
+          window.dispatchEvent(new CustomEvent('loginStateChanged'));
           router.push("/");
         }
         // Optionally redirect or reset form

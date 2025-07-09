@@ -14,7 +14,7 @@ import Link from "next/link";
 import { link as linkStyles } from "@nextui-org/theme";
 import NextLink from "next/link";
 import clsx from "clsx";
-import { Heart } from "lucide-react";
+import { Heart, LogIn, LogOut, User } from "lucide-react";
 
 import { getSiteConfig } from "@/config/site";
 import {
@@ -23,6 +23,7 @@ import {
 import { IMenu, IMenuLink } from "@/src/models/menu";
 import { useEffect, useState } from "react";
 import { ISiteConfig } from "@/src/models/site-config";
+import Login from "./Login";
 
 export const Navbar = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -34,12 +35,25 @@ export const Navbar = () => {
       const config = await getSiteConfig();
       setSiteConfig(config);
     })();
+
+    // Listen for login state changes
+    const handleLoginStateChange = () => {
+      setIsLoggedIn(typeof window !== "undefined" && !!localStorage.getItem("jwt"));
+    };
+
+    window.addEventListener("loginStateChanged", handleLoginStateChange);
+
+    return () => {
+      window.removeEventListener("loginStateChanged", handleLoginStateChange);
+    };
   }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("jwt");
     localStorage.removeItem("email");
     setIsLoggedIn(false);
+    // Dispatch custom event to notify other components of logout
+    window.dispatchEvent(new CustomEvent('loginStateChanged'));
     window.location.reload();
   };
 
@@ -79,25 +93,46 @@ export const Navbar = () => {
         </ul>
         {!isLoggedIn ? (
           <NavbarItem className="hidden md:flex">
-            <Button as={Link} href="/register" /* ...styles... */>
-              Գրանցվել
-            </Button>
+            <NextLink
+              className={clsx(
+                linkStyles({ color: "foreground" }),
+                "data-[active=true]:text-primary data-[active=true]:font-medium"
+              )}
+              color="foreground"
+              href={"/login"}
+            >
+              <LogIn size={18} />
+              Մուտք գործել
+            </NextLink>
           </NavbarItem>
         ) : (
           <>
             <NavbarItem className="hidden md:flex">
-              <Button onClick={handleLogout} /* ...styles... */>
+              <NextLink
+                className={clsx(
+                  linkStyles({ color: "foreground" }),
+                  "data-[active=true]:text-primary data-[active=true]:font-medium"
+                )}
+                color="foreground"
+                href={"/profile"}
+              >
+                <User size={18} />
+                Իմ պրոֆիլը
+              </NextLink>
+            </NavbarItem>
+            <NavbarItem className="hidden md:flex">
+              <Button
+                color="warning"
+                onClick={handleLogout}
+              >
+                <LogOut size={18} />
                 Դուրս գալ
               </Button>
             </NavbarItem>
-            <NavbarItem className="hidden md:flex">
-              <Button as={Link} href="/profile" /* ...styles... */>
-                Իմ պրոֆիլը
-              </Button>
-            </NavbarItem>
+
           </>
         )}
-        <NavbarItem className="hidden md:flex">
+        {/* <NavbarItem className="hidden md:flex">
           <Button
             as={Link}
             className="text-sm font-normal text-white bg-gradient-to-r from-pink-500 to-rose-500 hover:from-rose-500 hover:to-pink-500 transition-all duration-300 shadow-md hover:shadow-lg"
@@ -108,10 +143,10 @@ export const Navbar = () => {
           >
             Աջակցել հիմա
           </Button>
-        </NavbarItem>
+        </NavbarItem> */}
       </NavbarContent>
 
-      <NavbarContent className="lg:hidden basis-1 pl-4" justify="end">
+      {/* <NavbarContent className="lg:hidden basis-1 pl-4" justify="end">
         <Button
           as={Link}
           className="text-sm font-normal text-white bg-gradient-to-r from-pink-500 to-rose-500 hover:from-rose-500 hover:to-pink-500 transition-all duration-300"
@@ -123,7 +158,7 @@ export const Navbar = () => {
           Աջակցել
         </Button>
         <NavbarMenuToggle />
-      </NavbarContent>
+      </NavbarContent> */}
       <NavbarMenu>
         <div className="mx-4 mt-2 flex flex-col gap-2">
           {siteConfig.navItems.map((item, index) => (
