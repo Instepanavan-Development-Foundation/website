@@ -20,6 +20,7 @@ import "yet-another-react-lightbox/styles.css";
 import "yet-another-react-lightbox/plugins/thumbnails.css";
 import NextJsImage from "./NextJsImage";
 import { prettyDate } from "@/src/helpers/prettyDate";
+import ModifiedMarkdown from "@/src/hok/modifiedMarkdown";
 
 export function BlogPost({
   content,
@@ -87,14 +88,14 @@ export function BlogPost({
             <p className="text-xs text-gray-500">{prettyDate(createdAt)}</p>
             {isLink ? (
               <Link href={`/blog/${slug}`}>
-                <p className="text-default-500 mb-4 line-clamp-[10]">
-                  <Markdown remarkPlugins={[remarkGfm]}>{content}</Markdown>
+                <div className="text-default-500 mb-4 line-clamp-[10]">
+                  <ModifiedMarkdown>{content}</ModifiedMarkdown>
                   {/* TODO: why link is not working in markdown? */}
-                </p>
+                </div>
               </Link>
             ) : (
               <p className="text-default-500 mb-4">
-                <Markdown remarkPlugins={[remarkGfm]}>{content}</Markdown>
+                <ModifiedMarkdown >{content}</ModifiedMarkdown>
               </p>
             )}
             {/* Tags */}

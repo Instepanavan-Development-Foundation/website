@@ -63,10 +63,12 @@
       "type": "text"
     },
     "requiredAmount": {
-      "type": "integer"
+      "type": "integer",
+      "default": 0
     },
     "gatheredAmount": {
-      "type": "integer"
+      "type": "integer",
+      "default": 0
     },
     "fundraisingURL": {
       "type": "string"
@@ -80,6 +82,12 @@
       "type": "boolean",
       "default": false,
       "required": false
+    },
+    "project_payments": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::project-payment.project-payment",
+      "mappedBy": "project"
     }
   }
 }
