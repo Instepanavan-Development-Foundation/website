@@ -17,6 +17,7 @@ import Supporters from "@/components/Supporters";
 import Carousel from "@/components/Carousel";
 import { formatCurrency } from "@/components/home/ProjectCard";
 import getMediaSrc from "@/src/helpers/getMediaUrl";
+import ModifiedMarkdown from "@/src/hok/modifiedMarkdown";
 
 export async function generateMetadata({ params }: IParams) {
   const { slug } = await params;
@@ -220,7 +221,7 @@ export default async function ProjectPage({ params }: IParams) {
         <>
         <h2 className="text-3xl font-bold mb-8">Ծրագրի մանրամասներ</h2>
         <div className="prose prose-lg max-w-none">
-          <Markdown>{project.about}</Markdown>
+          <ModifiedMarkdown>{project.about}</ModifiedMarkdown>
           </div>
         </>
       )}

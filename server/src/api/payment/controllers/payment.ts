@@ -1,18 +1,21 @@
+import { triggerAllPaymentsManually } from "../../../../queue/workflow";
+
 const PAYMENT_API = "api::payment.payment";
 
 export default {
   initPayment: async (ctx, next) => {
     const {
       amount,
-      projectDocumentId,
+      projectDocumentId, // TODO: we have donationType in db, handle it!
       currencyCode = process.env.CURRENCY_AM,
       lang = "am",
       paymentMethod = "ameriabank",
+      email,
     } = ctx.request.body;
 
-    if (!amount || !projectDocumentId) {
+    if (!amount || !projectDocumentId || !email) {
       return ctx.send(
-        { error: "amount and projectDocumentId fields are required" },
+        { error: "email, amount and projectDocumentId fields are required" },
         400
       );
     }
@@ -31,6 +34,7 @@ export default {
       paymentMethod,
       lang,
       orderId,
+      email,
     });
 
     if (errorMessage) {
@@ -40,8 +44,10 @@ export default {
     return ctx.send({ url }, 200);
   },
   getPaymentDetails: async (ctx, next) => {
+    const service = strapi.service(PAYMENT_API);
+
     try {
-      const { paymentId, projectDocumentId, paymentMethod } = ctx.request.body;
+      const { paymentId, projectDocumentId } = ctx.request.body;
 
       if (!paymentId || !projectDocumentId) {
         return ctx.send(
@@ -50,52 +56,98 @@ export default {
         );
       }
 
-      const service = strapi.service(PAYMENT_API);
-
-      const currentProject = await service.getProject(projectDocumentId);
-      if (!currentProject) {
-        return ctx.send({ errorMessage: "Project not found" }, 404);
-      }
-
       const paymentDetails = await service.getPaymentDetails(paymentId);
-      if (paymentDetails.ResponseCode !== process.env.SUCCESS_RESPONSE_CODE) {
-        await service.createPaymentLog({ paymentDetails, amount: 0 });
-
-        return ctx.send({ errorMessage: "Payment failed" }, 500);
-      }
-
-      const projectPaymentMethod =
-        await service.getProjectPaymentMethod(paymentMethod);
-
-      if (!projectPaymentMethod) {
-        return ctx.send({ error: "Payment method not found" }, 404);
-      }
-
-      const paymentLog = await service.createPaymentLog({ paymentDetails });
-      if (!paymentLog) {
-        return ctx.send({ errorMessage: "Failed to create payment log" }, 500);
-      }
-
-      await service.createProjectPayment({
-        paymentDetails,
-        projectPaymentMethod,
-        paymentLog,
-        projectDocumentId,
-      });
-
-      await service.updateProjectData({
-        projectDocumentId,
-        data: {
-          gatheredAmount: currentProject.gatheredAmount + paymentDetails.Amount,
-          isArchived:
-            currentProject.gatheredAmount + paymentDetails.Amount >=
-            currentProject.requiredAmount,
-        },
-      });
+      await service.savePayment({ paymentDetails, projectDocumentId });
 
       return ctx.send(true, 200);
     } catch (error) {
+      await service.createPaymentLog(error.message);
       return ctx.send({ errorMessage: error.message }, 500);
     }
+  },
+  // TODO: make this admin only
+  doRecurringPayment: async (ctx, next) => {
+    const { projectPaymentId } = ctx.request.body;
+    const service = strapi.service(PAYMENT_API);
+
+    try {
+      // TODO, close endpoint from outside
+
+      const projectPayment =
+        await service.getProjectPaymentWithMethod(projectPaymentId);
+      console.log(projectPayment);
+
+      if (!projectPayment.project) {
+        throw new Error("No project found");
+      }
+
+      if (projectPayment.project.donationType !== "recurring") {
+        throw new Error("Project donation type is not recurring");
+      }
+
+      // find payment log for this month with projectPaymentId, success: true,
+      const projectPaymentLogForThisMonth =
+        await service.getProjectPaymentLogForThisMonth(projectPaymentId);
+      if (projectPaymentLogForThisMonth) {
+        return ctx.send(
+          {
+            message: `The payment was already processed this month`,
+          },
+          203
+        );
+      }
+      // if payment is in progress, skipping the payment
+      if (projectPayment.isPaymentInProgress) {
+        throw Error(
+          `Project Payment with projectPaymentId ${projectPaymentId}  is in progress`
+        );
+      }
+
+      await service.updateProjectPaymentIsPaymentInProgress(
+        projectPaymentId,
+        true
+      );
+
+      const orderId = await service.getOrderId();
+      if (!orderId) {
+        return ctx.send({ errorMessage: "Failed to get latest orderId" }, 500);
+      }
+
+      const paymentDetails = await service.makeBindingPayment({
+        projectPayment,
+        orderId,
+      });
+
+      await service.createPaymentLog({
+        paymentDetails,
+        projectPaymentId,
+        success: true,
+      });
+
+      await service.updateProjectPaymentIsPaymentInProgress(
+        projectPaymentId,
+        false
+      );
+
+      return ctx.send(
+        {
+          message: "Payment was successfully processed",
+        },
+        200
+      );
+    } catch (error) {
+      console.log(error);
+      await service.updateProjectPaymentIsPaymentInProgress(
+        projectPaymentId,
+        false
+      );
+      return ctx.send({ errorMessage: error.message }, 500);
+    }
+  },
+  // TODO: make this admin only
+  triggerAllPayments: async (ctx) => {
+    const { projectDocumentId } = ctx.request.body;
+    await triggerAllPaymentsManually(projectDocumentId);
+    return ctx.send({ message: "Processing" }, 200);
   },
 };

@@ -28,6 +28,10 @@
     },
     "details": {
       "type": "json"
+    },
+    "success": {
+      "type": "boolean",
+      "default": false
     }
   }
 }

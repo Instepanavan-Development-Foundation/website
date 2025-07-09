@@ -1,26 +1,55 @@
 import axios from "axios";
+import { v4 as uuidv4 } from "uuid";
+
+type TPaymentMethods = "ameriabank";
+
+interface IPaymentParams {
+  ClientID: string;
+  Amount: number; // 10 for testing
+  OrderID: number;
+  Currency: string; // TODO: change to currencies enum
+  BackURL: string;
+  Username: string;
+  Password: string;
+  Description: string;
+  Timeout: number;
+  CardHolderID: string;
+  PaymentType: number;
+}
+
+interface IPaymentParamsProps {
+  amount: number;
+  projectDocumentId?: string;
+  orderId: number;
+  currencyCode: string; // TODO: change to currencies enum,
+  email?: string;
+  CardHolderID?: string;
+}
 
 const paymentService = {
   getParams: ({
     amount,
     projectDocumentId,
-    paymentMethod,
     orderId,
     currencyCode = process.env.CURRENCY_AM,
-  }) => {
-    return {
+    email,
+    CardHolderID,
+  }: IPaymentParamsProps): IPaymentParams => {
+    const params: IPaymentParams = {
       ClientID: process.env.CLIENT_ID,
-      Amount: amount, // 10 for testing
-      OrderID: orderId,
-      Currency: currencyCode,
-      BackURL: process.env.BACK_URL,
       Username: process.env.PAYMENT_USERNAME,
       Password: process.env.PAYMENT_PASSWORD,
-      Description: `Donate for project ${projectDocumentId}`,
-      CardHolderID: "sample string", // for subscription mode: some unique id
+      Currency: currencyCode,
+      Description: `Donation for project ${projectDocumentId}`, // TODO, replace to projectName
+      OrderID: orderId,
+      Amount: amount, // 10 for testing
+      BackURL: process.env.BACK_URL,
       Timeout: Number(process.env.PAYMENT_TIMEOUT),
-      Opaque: JSON.stringify({ projectDocumentId, paymentMethod }),
+      PaymentType: 6, // move to enum, by ameria support
+      CardHolderID: CardHolderID ?? `${email}_${projectDocumentId}_${uuidv4()}`,
     };
+
+    return params;
   },
   getPaymentUrl: async ({
     amount,
@@ -29,6 +58,7 @@ const paymentService = {
     paymentMethod,
     lang,
     orderId,
+    email,
   }) => {
     try {
       const url = `${process.env.PAYMENT_API_BASE_URL}/InitPayment`;
@@ -38,6 +68,7 @@ const paymentService = {
         currencyCode,
         paymentMethod,
         orderId,
+        email,
       };
 
       const response = await axios.post(url, paymentService.getParams(params), {
@@ -64,6 +95,7 @@ const paymentService = {
         paymentMethod,
         lang,
         orderId: newOrderId,
+        email,
       });
     } catch (e) {
       console.log(
@@ -101,6 +133,22 @@ const paymentService = {
     const maxValue = parseInt(process.env.MAX_ORDER_ID || "3832000", 10);
 
     return Math.trunc(Math.random() * (maxValue - minValue) + minValue);
+  },
+  makeBindingPayment: async ({ projectPayment, orderId }) => {
+    const { Amount, CardHolderID, currency } = projectPayment;
+    const url = `${process.env.PAYMENT_API_BASE_URL}/MakeBindingPayment`;
+
+    const params = {
+      amount: Amount,
+      CardHolderID,
+      currencyCode: currency,
+      orderId,
+    };
+    const response = await axios.post(url, paymentService.getParams(params), {
+      headers: { "Content-Type": "application/json" },
+    });
+
+    return response.data;
   },
 };
 

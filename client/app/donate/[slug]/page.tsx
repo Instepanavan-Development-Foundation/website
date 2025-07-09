@@ -87,7 +87,7 @@ export default async function DonatePage({ params }: IParams) {
       
       {/* Hero Banner */}
       <div className="relative w-full h-64 md:h-40 mb-8 rounded-xl overflow-hidden">
-        <img
+        <Image
           src={getMediaSrc(project.image)}
           alt={project.name}
           className="w-full h-full object-cover"
@@ -132,6 +132,7 @@ import { Progress } from "@heroui/progress";
 import { PlusCircle, CreditCard, Wallet, Heart, Users } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from 'next/navigation'
+import Image from "next/image";
 
 // Mock payment methods data
 const mockPaymentMethods = [
