@@ -1,13 +1,16 @@
-import { IMediaFormat } from "./media";
-
 export interface IPaymentMethod {
   id: number;
-  name: string;
-  description?: string;
-  accountNumber?: string;
-  bankName?: string;
-  icon?: IMediaFormat;
-  isDefault?: boolean;
+  documentId: string;
+  type: string;
+  params: {
+    [key: string]: any;
+  };
+  users_permissions_user?: {
+    id: number;
+    email: string;
+    fullName?: string;
+  };
   createdAt: string;
   updatedAt: string;
+  publishedAt?: string;
 }

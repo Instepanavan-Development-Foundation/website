@@ -9,6 +9,7 @@ import { useState, FormEvent, useEffect } from "react";
 const Register = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [fullName, setFullName] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -25,7 +26,7 @@ const Register = () => {
     setError("");
     setSuccess(false);
     if (!email || !password) {
-      setError("Խնդրում ենք լրացնել բոլոր դաշտերը");
+      setError("Խնդրում ենք լրացնել էլ. հասցեն և գաղտնաբառը");
 
       return;
     }
@@ -36,7 +37,7 @@ const Register = () => {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password, username: email }),
+          body: JSON.stringify({ email, password, username: email, fullName }),
         },
       );
       const data = await res.json();
@@ -66,6 +67,14 @@ const Register = () => {
         onSubmit={handleSubmit}
       >
         <h2 className="text-2xl font-bold text-center">Գրանցվել</h2>
+        <Input
+          autoComplete="name"
+          label="Ամբողջ անուն"
+          placeholder="Ջոն Դո"
+          type="text"
+          value={fullName}
+          onChange={(e) => setFullName(e.target.value)}
+        />
         <Input
           required
           autoComplete="email"

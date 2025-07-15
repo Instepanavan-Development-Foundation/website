@@ -87,7 +87,6 @@ export default function Contributor({
           },
         });
 
-
         const { data: donationsData }: { data: IDonations[] } = await getData({
           type: "donations",
           fields: ["id", "amount", "currency", "createdAt"],
@@ -97,7 +96,7 @@ export default function Contributor({
               populate: ["image"],
             },
           },
-        })
+        });
 
         setDonations(donationsData);
 
@@ -170,7 +169,7 @@ export default function Contributor({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
-        <div >
+        <div>
           <h2 className="text-3xl font-bold mb-8">Աջակցություն</h2>
           <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
             {blogs.map((blog) => (
@@ -212,7 +211,7 @@ export default function Contributor({
             ))}
           </div>
         </div>
-        {donations.length ?
+        {donations.length ? (
           <div>
             <h2 className="text-3xl font-bold mb-8">Նվիրաբերություն</h2>
             <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
@@ -226,7 +225,8 @@ export default function Contributor({
                       <Link href={`/project/${donation.project.slug}`}>
                         <Image
                           alt={
-                            donation.project.image.alternativeText || "project image"
+                            donation.project.image.alternativeText ||
+                            "project image"
                           }
                           className="rounded-lg object-cover"
                           height={80}
@@ -242,7 +242,8 @@ export default function Contributor({
                           <Link
                             className="mb-1"
                             color="secondary"
-                            href={`/project/${donation.project.slug}`}>
+                            href={`/project/${donation.project.slug}`}
+                          >
                             Նվիրաբերություն։ {formatCurrency(donation.amount)}
                           </Link>
                         </p>
@@ -250,13 +251,14 @@ export default function Contributor({
                       </div>
                     </div>
                   </CardBody>
-                </Card>))}
+                </Card>
+              ))}
             </div>
           </div>
-          : ''}
+        ) : (
+          ""
+        )}
       </div>
-
-
     </section>
   );
 }

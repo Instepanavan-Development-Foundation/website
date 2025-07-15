@@ -32,7 +32,7 @@ export interface IDonations {
   amount: number;
   currency: number;
   createdAt: string;
-  project: IProject
+  project: IProject;
 }
 
 export interface IProjectPayment {
@@ -40,9 +40,8 @@ export interface IProjectPayment {
   amount: number;
   currency: number;
   project: IProject;
-  type: 'recurring' | 'one_time';
+  type: "recurring" | "one_time";
 }
-
 
 export type TypeMapping = {
   projects: IProject[];
