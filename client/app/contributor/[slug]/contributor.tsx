@@ -212,46 +212,48 @@ export default function Contributor({
             ))}
           </div>
         </div>
-        <div>
-          <h2 className="text-3xl font-bold mb-8">Նվիրաբերություն</h2>
-          <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
-            {donations.map((donation) => (
-              <Card
-                key={donation.id}
-                className="hover:shadow-lg transition-shadow"
-              >
-                <CardBody>
-                  <div className="flex flex-col md:flex-row gap-4">
-                    <Link href={`/project/${donation.project.slug}`}>
-                      <Image
-                        alt={
-                          donation.project.image.alternativeText || "project image"
-                        }
-                        className="rounded-lg object-cover"
-                        height={80}
-                        src={getMediaSrc(donation.project.image)}
-                        width={80}
-                      />
-                    </Link>
-                    <div>
+        {donations.length ?
+          <div>
+            <h2 className="text-3xl font-bold mb-8">Նվիրաբերություն</h2>
+            <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
+              {donations.map((donation) => (
+                <Card
+                  key={donation.id}
+                  className="hover:shadow-lg transition-shadow"
+                >
+                  <CardBody>
+                    <div className="flex flex-col md:flex-row gap-4">
                       <Link href={`/project/${donation.project.slug}`}>
-                        Նախագիծ։ {donation.project.name}
+                        <Image
+                          alt={
+                            donation.project.image.alternativeText || "project image"
+                          }
+                          className="rounded-lg object-cover"
+                          height={80}
+                          src={getMediaSrc(donation.project.image)}
+                          width={80}
+                        />
                       </Link>
-                      <p>
-                        <Link
-                          className="mb-1"
-                          color="secondary"
-                          href={`/project/${donation.project.slug}`}>
-                          Նվիրաբերություն։ {formatCurrency(donation.amount)}
+                      <div>
+                        <Link href={`/project/${donation.project.slug}`}>
+                          Նախագիծ։ {donation.project.name}
                         </Link>
-                      </p>
-                      <p>{prettyDate(donation.createdAt)}</p>
+                        <p>
+                          <Link
+                            className="mb-1"
+                            color="secondary"
+                            href={`/project/${donation.project.slug}`}>
+                            Նվիրաբերություն։ {formatCurrency(donation.amount)}
+                          </Link>
+                        </p>
+                        <p>{prettyDate(donation.createdAt)}</p>
+                      </div>
                     </div>
-                  </div>
-                </CardBody>
-              </Card>))}
+                  </CardBody>
+                </Card>))}
+            </div>
           </div>
-        </div>
+          : ''}
       </div>
 
 

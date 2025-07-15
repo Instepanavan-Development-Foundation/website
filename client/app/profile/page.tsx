@@ -225,9 +225,10 @@ export default function MyProfile() {
             {contributor && (
                 <>
                     <h3 className="text-3xl">Ձեր Աջակցությունը</h3>
-                    <div className="border rounded-lg p-6 bg-white shadow-md">
+                    <div className="border rounded-lg p-6 shadow-md">
                         <Contributor contributorId={contributor.id} showCopyLink={true} />
-                    </div></>
+                    </div>
+                </>
             )}
 
             {/* Confirmation Modal for Subscription Cancellation */}
