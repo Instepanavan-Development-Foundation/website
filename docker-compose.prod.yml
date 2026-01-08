@@ -25,11 +25,11 @@ services:
 
   client:
     image: client
+    restart: unless-stopped
     environment:
       # TODO: check if this is needed
-      - HOSTNAME=0.0.0.0 
-    volumes:
-      - ./client:/opt/app
+      - HOSTNAME=0.0.0.0
+    # Removed volume mount for security - image contains built app
     depends_on:
       - server
     networks:
