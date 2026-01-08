@@ -218,7 +218,7 @@ const service = {
   ) => {
     return await strapi.documents(PROJECT_PAYMENT_API).update({
       documentId: projectPaymentId,
-      data: { isPaymentInProgress },
+      data: { isPaymentInProgress } as any,
     });
   },
   getProjectPaymentLogForThisMonth: async (projectPaymentId) => {
