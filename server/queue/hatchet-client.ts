@@ -1,7 +1,8 @@
 import { HatchetClient } from "@hatchet-dev/typescript-sdk/v1";
 
-export const hatchet = HatchetClient.init({
-    log_level: 'INFO'
-});
+// Only initialize Hatchet if token is provided
+export const hatchet = process.env.HATCHET_CLIENT_TOKEN
+    ? HatchetClient.init({ log_level: 'INFO' })
+    : null;
 
 

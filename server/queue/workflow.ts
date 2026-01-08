@@ -18,14 +18,14 @@ const PROJECT_PAYMENT_CREATE_EVENT = "project-payment:create";
 
 // Single payment processing task
 
-const upper = hatchet.workflow({
+const upper = hatchet?.workflow({
   name: "upper",
   on: {
     event: PROJECT_PAYMENT_CREATE_EVENT,
   },
 });
 
-upper.task({
+upper?.task({
   name: "upper",
   fn: async (input, ctx) => {
     const { amount, documentId, email } = input as ProcessPaymentInput;
@@ -50,7 +50,7 @@ upper.task({
 });
 
 // Main recurring payments task for day X
-const recurringPaymentsTask = hatchet.task({
+const recurringPaymentsTask = hatchet?.task({
   name: "recurring-payments-monthly",
   fn: async ({ projectDocumentId }: { projectDocumentId?: string }) => {
     console.log(`Running monthly recurring payments`);
@@ -110,6 +110,11 @@ const recurringPaymentsTask = hatchet.task({
 
 // Setup cron schedule and start system
 export async function startRecurringPaymentSystem(strapi: Core.Strapi) {
+  if (!hatchet) {
+    console.log("⚠️ Hatchet client not initialized (missing HATCHET_CLIENT_TOKEN). Recurring payments system disabled.");
+    return;
+  }
+
   await hatchet.admin.putRateLimit("limit", 10, RateLimitDuration.SECOND);
 
   strapiGlobal = strapi;
@@ -155,6 +160,9 @@ export async function startRecurringPaymentSystem(strapi: Core.Strapi) {
 
 // For manual Running
 export async function triggerAllPaymentsManually(projectDocumentId?) {
+  if (!hatchet || !recurringPaymentsTask) {
+    throw new Error("Hatchet client not initialized. Recurring payments system is disabled.");
+  }
   return await recurringPaymentsTask.runNoWait({ projectDocumentId });
 }
 
