@@ -14,6 +14,7 @@
 		"@heroui/image": "^2.2.6",
 		"@heroui/modal": "^2.2.8",
 		"@heroui/progress": "^2.2.12",
+		"@heroui/theme": "^2.4.25",
 		"@heroui/tooltip": "^2.2.8",
 		"@internationalized/date": "^3.6.0",
 		"@nextui-org/button": "2.2.3",
