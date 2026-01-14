@@ -1,7 +1,18 @@
+# Database volumes
 postgres/
+hatchet-data/
+
+# Uploaded files
+server-data/
+
+# SSL certificates
 letsencrypt/
+
+# VPN private keys
+wireguard-config/
+
+# Environment secrets
 .env
 
-server-data/
-hatchet-data/
+# Local documentation (per-developer customization)
 CLAUDE.md

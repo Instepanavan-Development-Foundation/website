@@ -1,13 +1,18 @@
 services:
   postgres:
-    image: postgres:15
-    container_name: strapi_postgres_dev
+    image: postgres:17
+    container_name: strapi_postgres_prod
     env_file:
       - .env
     volumes:
       - ./postgres:/var/lib/postgresql/data
     networks:
       - postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
 
   server:
     image: server
@@ -22,6 +27,7 @@ services:
     networks:
       - postgres
       - nginx
+      - hatchet
 
   client:
     image: client
@@ -34,6 +40,64 @@ services:
       - server
     networks:
       - nginx
+
+  hatchet:
+    image: ghcr.io/hatchet-dev/hatchet/hatchet-lite:latest
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: "postgresql://hatchet:hatchet@hatchet_postgres:5432/hatchet"
+    volumes:
+      - ./hatchet-data:/data
+    depends_on:
+      hatchet_postgres:
+        condition: service_healthy
+    networks:
+      - hatchet
+
+  hatchet_postgres:
+    image: postgres:17
+    restart: unless-stopped
+    hostname: "hatchet_postgres"
+    environment:
+      POSTGRES_USER: hatchet
+      POSTGRES_PASSWORD: hatchet
+      POSTGRES_DB: hatchet
+    volumes:
+      - ./hatchet-data/postgres:/var/lib/postgresql/data
+    networks:
+      - hatchet
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d hatchet -U hatchet"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+
+  wireguard:
+    image: linuxserver/wireguard:latest
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    environment:
+      - PUID=${UID}
+      - PGID=${GID}
+      - TZ=Asia/Yerevan
+      - SERVERURL=instepanavan.am
+      - SERVERPORT=51820
+      - PEERS=1
+      - PEERDNS=auto
+      - INTERNAL_SUBNET=10.13.13.0
+    volumes:
+      - ./wireguard-config:/config
+      - /lib/modules:/lib/modules:ro
+    ports:
+      - 51820:51820/udp
+    sysctls:
+      - net.ipv4.conf.all.src_valid_mark=1
+    networks:
+      - postgres
+      - hatchet
 
   nginx:
     image: jonasal/nginx-certbot
@@ -57,3 +121,4 @@ networks:
     name: saint-nginx
     external: true
   postgres:
+  hatchet:

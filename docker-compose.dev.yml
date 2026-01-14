@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   postgres:
-    image: postgres:15
+    image: postgres:17
     container_name: strapi_postgres_dev
     environment:
       POSTGRES_USER: strapi
@@ -13,111 +13,35 @@ services:
     volumes:
       - ./postgres:/var/lib/postgresql/data
 
-  hatchet_postgres:
-    image: postgres:15.6
-    command: postgres -c 'max_connections=1000'
-    restart: always
-    hostname: "postgres"
+  hatchet:
+    image: ghcr.io/hatchet-dev/hatchet/hatchet-lite:latest
+    ports:
+      - "8080:8080"
+      - "7077:7077"
     environment:
-      - POSTGRES_USER=hatchet
-      - POSTGRES_PASSWORD=hatchet
-      - POSTGRES_DB=hatchet
+      DATABASE_URL: "postgresql://hatchet:hatchet@hatchet_postgres:5432/hatchet"
+    volumes:
+      - ./hatchet-data:/data
+    depends_on:
+      hatchet_postgres:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  hatchet_postgres:
+    image: postgres:17
+    hostname: "hatchet_postgres"
+    environment:
+      POSTGRES_USER: hatchet
+      POSTGRES_PASSWORD: hatchet
+      POSTGRES_DB: hatchet
     ports:
       - "5435:5432"
     volumes:
-      - ./hatchet-data/hatchet_postgres_data:/var/lib/postgresql/data
+      - ./hatchet-data/postgres:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -d hatchet -U hatchet"]
       interval: 10s
       timeout: 10s
       retries: 5
       start_period: 10s
-
-  rabbitmq:
-    image: "rabbitmq:3-management"
-    hostname: "rabbitmq"
-    ports:
-      - "5673:5672" # RabbitMQ
-      - "15673:15672" # Management UI
-    environment:
-      RABBITMQ_DEFAULT_USER: "user"
-      RABBITMQ_DEFAULT_PASS: "password"
-    volumes:
-      - ./hatchet-data/hatchet_rabbitmq_data:/var/lib/rabbitmq
-      - ./hatchet-data/hatchet_rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
-    healthcheck:
-      test: ["CMD", "rabbitmqctl", "status"]
-      interval: 10s
-      timeout: 10s
-      retries: 5
-
-  migration:
-    image: ghcr.io/hatchet-dev/hatchet/hatchet-migrate:latest
-    command: /hatchet/hatchet-migrate
-    environment:
-      DATABASE_URL: "postgres://hatchet:hatchet@hatchet_postgres:5432/hatchet"
-    depends_on:
-      hatchet_postgres:
-        condition: service_healthy
-
-  setup-config:
-    image: ghcr.io/hatchet-dev/hatchet/hatchet-admin:latest
-    command: /hatchet/hatchet-admin quickstart --skip certs --generated-config-dir /hatchet/config --overwrite=false
-    environment:
-      DATABASE_URL: "postgres://hatchet:hatchet@hatchet_postgres:5432/hatchet"
-      SERVER_TASKQUEUE_RABBITMQ_URL: amqp://user:password@rabbitmq:5672/
-      SERVER_AUTH_COOKIE_DOMAIN: localhost:8080
-      SERVER_AUTH_COOKIE_INSECURE: "t"
-      SERVER_GRPC_BIND_ADDRESS: "0.0.0.0"
-      SERVER_GRPC_INSECURE: "t"
-      SERVER_GRPC_BROADCAST_ADDRESS: host.docker.internal:7077
-      SERVER_DEFAULT_ENGINE_VERSION: "V1"
-      SERVER_INTERNAL_CLIENT_INTERNAL_GRPC_BROADCAST_ADDRESS: hatchet-engine:7077
-    volumes:
-      - ./hatchet-data/hatchet_certs:/hatchet/certs
-      - ./hatchet-data/hatchet_config:/hatchet/config
-    depends_on:
-      migration:
-        condition: service_completed_successfully
-      rabbitmq:
-        condition: service_healthy
-      hatchet_postgres:
-        condition: service_healthy
-
-  hatchet-engine:
-    image: ghcr.io/hatchet-dev/hatchet/hatchet-engine:latest
-    command: /hatchet/hatchet-engine --config /hatchet/config
-    restart: on-failure
-    depends_on:
-      setup-config:
-        condition: service_completed_successfully
-      migration:
-        condition: service_completed_successfully
-    ports:
-      - "7077:7070"
-    environment:
-      DATABASE_URL: "postgres://hatchet:hatchet@hatchet_postgres:5432/hatchet"
-      SERVER_GRPC_BIND_ADDRESS: "0.0.0.0"
-      SERVER_GRPC_INSECURE: "t"
-    volumes:
-      - ./hatchet-data/hatchet_certs:/hatchet/certs
-      - ./hatchet-data/hatchet_config:/hatchet/config
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-
-  hatchet-dashboard:
-    image: ghcr.io/hatchet-dev/hatchet/hatchet-dashboard:latest
-    command: sh ./entrypoint.sh --config /hatchet/config
-    ports:
-      - 8080:80
-    restart: on-failure
-    depends_on:
-      setup-config:
-        condition: service_completed_successfully
-      migration:
-        condition: service_completed_successfully
-    environment:
-      DATABASE_URL: "postgres://hatchet:hatchet@hatchet_postgres:5432/hatchet"
-    volumes:
-      - ./hatchet-data/hatchet_certs:/hatchet/certs
-      - ./hatchet-data/hatchet_config:/hatchet/config

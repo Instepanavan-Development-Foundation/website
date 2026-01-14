@@ -1,31 +1,45 @@
-When first deploying to prod, strapi may take a while to start. Like 10 minutes.
+# Instepanavan Website
 
-# How to run project locally?
+Donation website for Instepanavan Development Foundation.
 
-Run DB and Hatchet in docker
+**Stack:** Next.js 15 + Strapi 5 + PostgreSQL 17 + Hatchet + Ameriabank
 
+## Local Development
+
+```bash
+# Start PostgreSQL + Hatchet
+docker compose -f docker-compose.dev.yml up
+
+# Get Hatchet token at http://localhost:8080 (admin@example.com / Admin123!!)
+# Add HATCHET_CLIENT_TOKEN to server/.env
+
+# Run backend
+cd server && npm install && npm run dev
+
+# Run frontend
+cd client && npm install && npm run dev
 ```
-    docker compose -f docker-compose.dev.yml up
+
+## Deploy
+
+```bash
+make deploy          # Pull, build, and deploy
+make deploy-prod     # SSH to server and deploy
 ```
 
-add to /etc/hosts
-```
-# Added by Docker Desktop
-192.168.10.18 host.docker.internal
-192.168.10.18 gateway.docker.internal
-# To allow the same kube context to work on the host and the container:
-127.0.0.1 kubernetes.docker.internal
-# End of section
+First deployment takes ~10 minutes.
+
+## VPN Access (Superadmin)
+
+Connect via WireGuard to access internal services (Hatchet UI, databases, APIs).
+
+```bash
+# Get VPN config after deployment
+ssh instepanavan "cd ./website && docker compose -f docker-compose.prod.yml logs wireguard"
 ```
 
-Login to hatchet and get a token to put in /server/.env
-![hatchet dashboard](./documentation-meta/image.png)
+**Services accessible:** `hatchet:8080` • `postgres:5432` • `hatchet_postgres:5432` • `server:1337`
 
+---
 
-Run strapi server 
-
-```
-    cd server
-    npm i
-    npm run dev
-```
+See [CLAUDE.md.template](CLAUDE.md.template) for detailed documentation.
