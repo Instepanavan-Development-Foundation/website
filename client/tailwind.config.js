@@ -1,4 +1,4 @@
-import { nextui } from '@heroui/theme'
+import { heroui } from '@heroui/theme'
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
@@ -17,7 +17,7 @@ module.exports = {
   },
   darkMode: "class",
   plugins: [
-    nextui(),
+    heroui(),
     require('@tailwindcss/typography'),
   ],
 }
