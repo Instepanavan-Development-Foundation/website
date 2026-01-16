@@ -14,8 +14,8 @@
   },
   "dependencies": {
     "@hatchet-dev/typescript-sdk": "^1.5.1",
-    "@strapi/plugin-users-permissions": "5.7.0",
-    "@strapi/strapi": "5.7.0",
+    "@strapi/plugin-users-permissions": "^5.33.0",
+    "@strapi/strapi": "^5.33.0",
     "markdown-to-txt": "^2.0.1",
     "pg": "8.8.0",
     "react": "^18.0.0",
@@ -34,7 +34,7 @@
     "typescript": "^5.8.3"
   },
   "engines": {
-    "node": ">=18.0.0 <=22.x.x",
+    "node": ">=18.0.0 <=24.x.x",
     "npm": ">=6.0.0"
   },
   "strapi": {

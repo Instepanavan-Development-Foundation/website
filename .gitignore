@@ -16,3 +16,6 @@ wireguard-config/
 
 # Local documentation (per-developer customization)
 CLAUDE.md
+
+# Database backups
+backups/

@@ -7,8 +7,8 @@ Donation website for Instepanavan Development Foundation.
 ## Local Development
 
 ```bash
-# Start PostgreSQL + Hatchet
-docker compose -f docker-compose.dev.yml up
+# Start PostgreSQL 17 + Hatchet
+docker compose -f docker-compose.dev.yml up -d
 
 # Get Hatchet token at http://localhost:8080 (admin@example.com / Admin123!!)
 # Add HATCHET_CLIENT_TOKEN to server/.env
@@ -19,6 +19,18 @@ cd server && npm install && npm run dev
 # Run frontend
 cd client && npm install && npm run dev
 ```
+
+### Restore Production Data Locally
+
+```bash
+# Backup production database (PostgreSQL 15) and download
+./scripts/backup-prod-db.sh
+
+# Restore to local PostgreSQL 17 (tests migration)
+./scripts/restore-backup.sh
+```
+
+**Note:** Production currently runs PostgreSQL 15. Local dev uses PostgreSQL 17. The restore script automatically migrates data during import.
 
 ## Deploy
 

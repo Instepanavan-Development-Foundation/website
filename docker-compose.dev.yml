@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   postgres:
     image: postgres:17
@@ -20,6 +18,8 @@ services:
       - "7077:7077"
     environment:
       DATABASE_URL: "postgresql://hatchet:hatchet@hatchet_postgres:5432/hatchet"
+      SERVER_AUTH_COOKIE_DOMAIN: "localhost"
+      SERVER_AUTH_COOKIE_INSECURE: "t"
     volumes:
       - ./hatchet-data:/data
     depends_on:
