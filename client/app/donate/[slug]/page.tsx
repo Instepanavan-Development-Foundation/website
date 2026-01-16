@@ -1,6 +1,6 @@
 "use client";
 
-import { Chip } from "@nextui-org/chip";
+import { Chip } from "@heroui/chip";
 
 // TODO: Add metadata
 // export async function generateMetadata({ params }: IParams): Promise<Metadata> {
@@ -125,10 +125,10 @@ function ErrorMessage() {
 
 // Client-side donation form component
 import { useState, useEffect } from "react";
-import { Button } from "@nextui-org/button";
-import { Input } from "@nextui-org/input";
-import { Card, CardBody, CardHeader, CardFooter } from "@nextui-org/card";
-import { Divider } from "@nextui-org/divider";
+import { Button } from "@heroui/button";
+import { Input } from "@heroui/input";
+import { Card, CardBody, CardHeader, CardFooter } from "@heroui/card";
+import { Divider } from "@heroui/divider";
 import { Progress } from "@heroui/progress";
 import { PlusCircle, CreditCard, Wallet, Heart, Users } from "lucide-react";
 import Link from "next/link";

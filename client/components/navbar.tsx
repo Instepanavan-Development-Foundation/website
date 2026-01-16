@@ -7,10 +7,10 @@ import {
   NavbarBrand,
   NavbarItem,
   NavbarMenuItem,
-} from "@nextui-org/navbar";
-import { Button } from "@nextui-org/button";
+} from "@heroui/navbar";
+import { Button } from "@heroui/button";
 import Link from "next/link";
-import { link as linkStyles } from "@nextui-org/theme";
+import { link as linkStyles } from "@heroui/theme";
 import NextLink from "next/link";
 import clsx from "clsx";
 import { Heart, LogIn, LogOut, User } from "lucide-react";

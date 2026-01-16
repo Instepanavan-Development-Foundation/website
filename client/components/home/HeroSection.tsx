@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { button as buttonStyles } from "@nextui-org/theme";
+import { button as buttonStyles } from "@heroui/theme";
 
 interface HeroSectionProps {
   imageUrl: string;

@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { button as buttonStyles } from "@nextui-org/theme";
+import { button as buttonStyles } from "@heroui/theme";
 import { MoveRight, Rss } from "lucide-react";
-import { Chip } from "@nextui-org/chip";
-import { Button } from "@nextui-org/button";
+import { Chip } from "@heroui/chip";
+import { Button } from "@heroui/button";
 import { Progress } from "@heroui/progress";
 
 import { BlogPost } from "@/components/BlogPost";

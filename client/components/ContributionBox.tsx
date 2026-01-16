@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { button as buttonStyles } from "@nextui-org/theme";
-import { Button } from "@nextui-org/button";
+import { button as buttonStyles } from "@heroui/theme";
+import { Button } from "@heroui/button";
 import {
   Modal,
   ModalContent,

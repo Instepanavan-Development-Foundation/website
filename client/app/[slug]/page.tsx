@@ -1,5 +1,5 @@
-import { Card, CardBody, CardFooter } from "@nextui-org/card";
-import { Button } from "@nextui-org/button";
+import { Card, CardBody, CardFooter } from "@heroui/card";
+import { Button } from "@heroui/button";
 import { Paperclip } from "lucide-react";
 
 import getData from "@/src/helpers/getData";

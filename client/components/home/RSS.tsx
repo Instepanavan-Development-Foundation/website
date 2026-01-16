@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Button } from "@nextui-org/button";
+import { Button } from "@heroui/button";
 import { Rss } from "lucide-react";
 
 export default function RSS() {

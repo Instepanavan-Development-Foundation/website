@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { button as buttonStyles } from "@nextui-org/theme";
+import { button as buttonStyles } from "@heroui/theme";
 import { useEffect, useState } from "react";
-import { Card } from "@nextui-org/card";
+import { Card } from "@heroui/card";
 
 import getData from "@/src/helpers/getData";
 import { IProject } from "@/src/models/project";

@@ -1,4 +1,4 @@
-import { Card, CardBody } from "@nextui-org/card";
+import { Card, CardBody } from "@heroui/card";
 import { Image } from "@heroui/image";
 import { HeartHandshake } from "lucide-react";
 

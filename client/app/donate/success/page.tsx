@@ -2,10 +2,10 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useSearchParams } from "next/navigation";
-import { Button } from "@nextui-org/button";
-import { Card } from "@nextui-org/card";
-import { Image } from "@nextui-org/image";
-import { Divider } from "@nextui-org/divider";
+import { Button } from "@heroui/button";
+import { Card } from "@heroui/card";
+import { Image } from "@heroui/image";
+import { Divider } from "@heroui/divider";
 import { Progress } from "@heroui/progress";
 import {
   Heart,

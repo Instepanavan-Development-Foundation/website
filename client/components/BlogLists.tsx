@@ -1,11 +1,11 @@
 "use client";
-import { Input } from "@nextui-org/input";
-import { Select, SelectItem } from "@nextui-org/select";
+import { Input } from "@heroui/input";
+import { Select, SelectItem } from "@heroui/select";
 import { useEffect, useState } from "react";
-import { Button } from "@nextui-org/button";
-import { DateRangePicker } from "@nextui-org/date-picker";
+import { Button } from "@heroui/button";
+import { DateRangePicker } from "@heroui/date-picker";
 import { DateValue, parseDate } from "@internationalized/date";
-import { Chip } from "@nextui-org/chip";
+import { Chip } from "@heroui/chip";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { RangeValue } from "@react-types/shared";

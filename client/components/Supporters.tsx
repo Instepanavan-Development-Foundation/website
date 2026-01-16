@@ -2,9 +2,9 @@
 
 import { EllipsisVertical, Star } from "lucide-react";
 import Link from "next/link";
-import { button as buttonStyles } from "@nextui-org/theme";
+import { button as buttonStyles } from "@heroui/theme";
 import { useState } from "react";
-import { Button } from "@nextui-org/button";
+import { Button } from "@heroui/button";
 import { Tooltip } from "@heroui/tooltip";
 
 import { IContribution } from "@/src/models/blog";

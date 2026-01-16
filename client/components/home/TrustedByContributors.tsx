@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { button as buttonStyles } from "@nextui-org/theme";
+import { button as buttonStyles } from "@heroui/theme";
 import { Tooltip } from "@heroui/tooltip";
 import { ArrowRightIcon, Heart } from "lucide-react";
 

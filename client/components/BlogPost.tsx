@@ -1,7 +1,7 @@
 "use client";
 
-import { Card, CardBody } from "@nextui-org/card";
-import { Chip } from "@nextui-org/chip";
+import { Card, CardBody } from "@heroui/card";
+import { Chip } from "@heroui/chip";
 import { Paperclip, Bookmark } from "lucide-react";
 import { useState } from "react";
 import { Image } from "@heroui/image";
