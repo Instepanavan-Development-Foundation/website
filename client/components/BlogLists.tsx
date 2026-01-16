@@ -185,7 +185,7 @@ function BlogListUnwrapped() {
                 self.findIndex((p) => p?.name === project?.name) === index,
             )
             .map((project) => (
-              <SelectItem key={project?.name} value={project?.name || ""}>
+              <SelectItem key={project?.name || ""}>
                 {project?.name}
               </SelectItem>
             ))}
@@ -208,7 +208,7 @@ function BlogListUnwrapped() {
             .map((tag) => tag.name)
             .filter((tagName, index, self) => self.indexOf(tagName) === index)
             .map((tagName) => (
-              <SelectItem key={tagName} value={tagName}>
+              <SelectItem key={tagName}>
                 {tagName}
               </SelectItem>
             ))}
