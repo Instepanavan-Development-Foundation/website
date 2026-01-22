@@ -30,7 +30,7 @@ upper?.task({
   fn: async (input, ctx) => {
     const { amount, documentId, email } = input as ProcessPaymentInput;
 
-    console.log(`Processing payment: ${documentId}`);
+    console.log(`🔄 Processing payment ${documentId}...`);
 
     const url = `/api/payment/do-recurring-payment`;
     const data = { projectPaymentId: documentId };
@@ -39,21 +39,23 @@ upper?.task({
       headers: { "Content-Type": "application/json" },
     });
 
-    // Update record (abstract call)
-
-    console.log("response data: ", response.data);
-
-    const message = `Processing payment ${documentId} with message: ${response.data.message} for amount ${amount}, with status ${response.status}`;
-    console.log(message);
-    return { message };
+    console.log(`✅ Payment ${documentId}: ${response.data.message}`);
+    return { message: response.data.message };
   },
 });
 
-// Main recurring payments task for day X
-const recurringPaymentsTask = hatchet?.task({
+// Main recurring payments workflow
+const recurringPaymentsTask = hatchet?.workflow({
   name: "recurring-payments-monthly",
-  fn: async ({ projectDocumentId }: { projectDocumentId?: string }) => {
-    console.log(`Running monthly recurring payments`);
+  onCrons: ["0 0 4 * *"], // Run at midnight on the 4th of every month (UTC)
+});
+
+recurringPaymentsTask?.task({
+  name: "process-recurring-payments",
+  fn: async (input: { projectDocumentId?: string }) => {
+    const { projectDocumentId } = input;
+
+    console.log("🔄 Running monthly recurring payments...");
 
     const filters: any = {
       donationType: "recurring",
@@ -79,13 +81,6 @@ const recurringPaymentsTask = hatchet?.task({
     const results = [];
 
     for (const project of projects) {
-      console.log(
-        "Processing project payment for:" +
-          project.name +
-          ":" +
-          project.documentId
-      );
-
       for (const projectPayment of project.project_payments) {
         const { amount, documentId } = projectPayment;
 
@@ -100,10 +95,7 @@ const recurringPaymentsTask = hatchet?.task({
       }
     }
 
-    console.log(`Found ${results.length} payments to process`);
-
-    // Process each payment one by one (sequential processing)
-    console.log(`Processed ${results.length} payments for day ${new Date()}`);
+    console.log(`✅ Queued ${results.length} recurring payments for processing`);
     return { processed: results.length };
   },
 });
@@ -111,70 +103,39 @@ const recurringPaymentsTask = hatchet?.task({
 // Setup cron schedule and start system
 export async function startRecurringPaymentSystem(strapi: Core.Strapi) {
   if (!hatchet) {
-    console.log("⚠️ Hatchet client not initialized (missing HATCHET_CLIENT_TOKEN). Recurring payments system disabled.");
+    console.log("⚠️ Hatchet not initialized (missing HATCHET_CLIENT_TOKEN)");
     return;
   }
 
-  console.log("🔄 Connecting to Hatchet...");
-  console.log(`   gRPC: ${process.env.HATCHET_CLIENT_HOST_PORT}`);
-  console.log(`   API: ${process.env.HATCHET_CLIENT_API_URL}`);
+  console.log(`🔄 Connecting to Hatchet (${process.env.HATCHET_CLIENT_HOST_PORT})...`);
 
   try {
     await hatchet.admin.putRateLimit("limit", 10, RateLimitDuration.SECOND);
-    console.log("✅ Hatchet gRPC connection established");
+    console.log("✅ Hatchet gRPC connected");
   } catch (error) {
-    console.error("❌ Failed to connect to Hatchet gRPC server");
-    console.error(`   Tried: ${process.env.HATCHET_CLIENT_HOST_PORT}`);
-    console.error("\n💡 Troubleshooting:");
-    console.error("   1. Go to http://localhost:8888");
-    console.error("   2. Login: admin@example.com / Admin123!!");
-    console.error("   3. Create a NEW API token (Settings → API Tokens)");
-    console.error("   4. Update HATCHET_CLIENT_TOKEN in server/.env");
-    console.error("   5. Restart Strapi");
-    console.error("\n   The token must have grpc_broadcast_address: localhost:7077");
-    console.error(`\n   Error: ${error.message}\n`);
+    console.error("❌ Hatchet connection failed");
+    console.error("💡 Get token at http://localhost:8888 → Settings → API Tokens");
     throw error;
   }
 
   strapiGlobal = strapi;
-  const cronSchedule = "* * * * *";
-  // Create worker with tasks
+
   const worker = await hatchet.worker("recurring-payments-worker", {
     workflows: [recurringPaymentsTask, upper],
   });
 
-  // Try to delete existing cron first (if it exists)
+  worker.start();
+
   try {
-    // TODO: make sure that we don't delete logs from hatchet otherwise we will need to register just those we didn't register before
-    const cronList = await hatchet.crons.list({
-      offset: 0,
-      limit: 100,
-    });
-
-    if (!cronList.rows.length) {
-      console.log(`ℹ️ No existing cron to delete`);
-    }
-
-    for (const row of cronList.rows) {
-      await hatchet.crons.delete(row);
-      console.log(`🗑️ Deleted existing cron: ${row.name}`);
-    }
+    await recurringPaymentsTask.cron('monthly-payments', '0 0 4 * *', {});
+    console.log("✅ Recurring payments: Monthly cron registered (0 0 4 * *)");
   } catch (error) {
-    // Ignore if cron doesn't exist
-    console.log(`Can't delete a cron`, error);
+    if (error.message.includes("already exists")) {
+      console.log("✅ Recurring payments: Monthly cron active (4th of month)");
+    } else {
+      console.error("⚠️ Cron registration failed (manual trigger only)");
+    }
   }
-
-  await recurringPaymentsTask.cron(
-    `monthly-payments ${cronSchedule}`,
-    cronSchedule,
-    {} // Empty input since the task doesn't need input
-  );
-
-  // Start the worker
-  await worker.start();
-
-  console.log("Hatchet recurring payment system started");
-  console.log(`Scheduled cron job: ${cronSchedule}`);
 }
 
 // For manual Running
