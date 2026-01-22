@@ -13,9 +13,9 @@
     "test": "jest"
   },
   "dependencies": {
-    "@hatchet-dev/typescript-sdk": "^1.5.1",
-    "@strapi/plugin-users-permissions": "^5.33.0",
-    "@strapi/strapi": "^5.33.0",
+    "@hatchet-dev/typescript-sdk": "^1.10.5",
+    "@strapi/plugin-users-permissions": "^5.33.4",
+    "@strapi/strapi": "^5.33.4",
     "markdown-to-txt": "^2.0.1",
     "pg": "8.8.0",
     "react": "^18.0.0",

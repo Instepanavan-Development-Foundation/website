@@ -16,10 +16,15 @@ services:
     ports:
       - "8080:8080"
       - "7077:7077"
+      - "8888:8888"
     environment:
       DATABASE_URL: "postgresql://hatchet:hatchet@hatchet_postgres:5432/hatchet"
       SERVER_AUTH_COOKIE_DOMAIN: "localhost"
       SERVER_AUTH_COOKIE_INSECURE: "t"
+      SERVER_GRPC_PORT: "7077"
+      SERVER_GRPC_BIND_ADDRESS: "0.0.0.0"
+      SERVER_GRPC_BROADCAST_ADDRESS: "localhost:7077"
+      SERVER_GRPC_INSECURE: "t"
     volumes:
       - ./hatchet-data:/data
     depends_on:

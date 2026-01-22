@@ -115,7 +115,26 @@ export async function startRecurringPaymentSystem(strapi: Core.Strapi) {
     return;
   }
 
-  await hatchet.admin.putRateLimit("limit", 10, RateLimitDuration.SECOND);
+  console.log("🔄 Connecting to Hatchet...");
+  console.log(`   gRPC: ${process.env.HATCHET_CLIENT_HOST_PORT}`);
+  console.log(`   API: ${process.env.HATCHET_CLIENT_API_URL}`);
+
+  try {
+    await hatchet.admin.putRateLimit("limit", 10, RateLimitDuration.SECOND);
+    console.log("✅ Hatchet gRPC connection established");
+  } catch (error) {
+    console.error("❌ Failed to connect to Hatchet gRPC server");
+    console.error(`   Tried: ${process.env.HATCHET_CLIENT_HOST_PORT}`);
+    console.error("\n💡 Troubleshooting:");
+    console.error("   1. Go to http://localhost:8888");
+    console.error("   2. Login: admin@example.com / Admin123!!");
+    console.error("   3. Create a NEW API token (Settings → API Tokens)");
+    console.error("   4. Update HATCHET_CLIENT_TOKEN in server/.env");
+    console.error("   5. Restart Strapi");
+    console.error("\n   The token must have grpc_broadcast_address: localhost:7077");
+    console.error(`\n   Error: ${error.message}\n`);
+    throw error;
+  }
 
   strapiGlobal = strapi;
   const cronSchedule = "* * * * *";
