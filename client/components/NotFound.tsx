@@ -9,114 +9,72 @@ import getData from "@/src/helpers/getData";
 
 export default function NotFound() {
   const [projects, setProjects] = useState<IProject[]>([]);
-  const [loading, setLoading] = useState(true);
   const [isShaking, setIsShaking] = useState(false);
   const [showProjects, setShowProjects] = useState(false);
-  const [shakeCount, setShakeCount] = useState(0);
+  const [isFirstShake, setIsFirstShake] = useState(true);
 
   useEffect(() => {
-    // Fetch projects (any active projects)
-    const fetchProjects = async () => {
-      try {
-        const result = await getData({
-          type: "projects",
-          filters: {
-            isArchived: false,
-          },
-          populate: {
-            image: { fields: ["url"] },
-            blogs: {
-              sort: ["isFeatured:desc", "createdAt:desc"],
-              populate: ["contribution.contributor.avatar"],
-              filters: {
-                contribution: {
-                  $null: false,
-                },
-              },
-            },
-          },
-          sort: "isFeatured:desc,createdAt:desc",
-          limit: 3,
-        });
-        console.log("Projects response:", result);
-        setProjects(result.data || []);
-      } catch (error) {
-        console.error("Failed to fetch projects:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProjects();
+    getData({
+      type: "projects",
+      filters: { isArchived: false },
+      populate: {
+        image: { fields: ["url"] },
+        blogs: {
+          sort: ["isFeatured:desc", "createdAt:desc"],
+          populate: ["contribution.contributor.avatar"],
+          filters: { contribution: { $null: false } },
+        },
+      },
+      sort: "isFeatured:desc,createdAt:desc",
+      limit: 3,
+    })
+      .then((result) => setProjects(result.data || []))
+      .catch((error) => console.error("Failed to fetch projects:", error));
   }, []);
 
   const handleShake = () => {
-    if (isShaking) return; // Prevent multiple shakes at once
-
+    if (isShaking) return;
     setIsShaking(true);
-    setShakeCount((prev) => prev + 1);
-
-    // After shake animation, show projects with falling animation
     setTimeout(() => {
       setIsShaking(false);
       setShowProjects(true);
+      setIsFirstShake(false);
     }, 800);
   };
 
+  const hasProjects = projects.length > 0;
+
   return (
-    <div
-      className={`flex flex-col items-center justify-center mt-10 gap-8 px-4 ${
-        isShaking ? "shake-page" : ""
-      }`}
-    >
-      {/* 404 Message */}
-      <div className="text-center max-w-2xl">
-        <h1 className="text-4xl md:text-5xl font-bold mb-4">
-          404: Էջը չի գտնվել
-        </h1>
-      </div>
+    <div className={`flex flex-col items-center justify-center mt-10 gap-8 px-4 ${isShaking ? "shake-page" : ""}`}>
+      <h1 className="text-4xl md:text-5xl font-bold">404: Էջը չի գտնվել</h1>
 
-      {/* Action Buttons */}
-      <div className="flex gap-4 flex-wrap justify-center">
-        {!showProjects && !loading && projects.length > 0 && (
-          <Button
-            size="lg"
-            color="secondary"
-            variant="flat"
-            onClick={handleShake}
-            disabled={isShaking}
-            className="relative"
-          >
-            {isShaking ? "Թափահարում է... 🌪️" : "Թափահարեք էջը՝ գտնելու համար! 🔍"}
-          </Button>
-        )}
-      </div>
+      {!showProjects && hasProjects && (
+        <Button
+          size="lg"
+          color="secondary"
+          variant="flat"
+          onClick={handleShake}
+          disabled={isShaking}
+        >
+          {isShaking ? "Թափահարում է... 🌪️" : "Թափահարեք էջը՝ գտնելու համար! 🔍"}
+        </Button>
+      )}
 
-      {/* Featured Projects */}
-      {!loading && projects.length > 0 && showProjects && (
+      {showProjects && hasProjects && (
         <div className="w-full max-w-6xl mt-8">
           <div className="text-center mb-6">
             <h2 className="text-2xl md:text-3xl font-bold mb-2 shake-reveal">
-              {shakeCount === 1
-                ? "Օ՜ֆ! Էջը չգտանք, բայց ահա մի քանի ծրագիր, որոնք կարող եք աջակցել! 🎉"
-                : "Ահա մի քանի ծրագիր, որոնք կարող եք աջակցել!"}
+              {isFirstShake ? "Օ՜ֆ! Էջը չգտանք, բայց ահա մի քանի ծրագիր, որոնք կարող եք աջակցել! 🎉" : "Ահա մի քանի ծրագիր, որոնք կարող եք աջակցել!"}
             </h2>
             <p className="text-gray-600 dark:text-gray-400 shake-reveal">
-              {shakeCount === 1
-                ? "Սարսելու մեջ չենք գտել էջը, բայց գտանք ավելի լավ բան!"
-                : "Ընտրեք ծրագիր և օգնեք փոփոխություն ստեղծել"}
+              {isFirstShake ? "Թափահարելու մեջ չենք գտել էջը, բայց գտանք ավելի լավ բան!" : "Ընտրեք ծրագիր և օգնեք փոփոխություն ստեղծել"}
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {projects.map((project, index) => (
               <Link key={project.documentId} href={`/project/${project.slug}`}>
-                <div
-                  className="fall-from-top"
-                  style={{
-                    animationDelay: `${index * 200}ms`,
-                  }}
-                >
+                <div className="fall-from-top" style={{ animationDelay: `${index * 200}ms` }}>
                   <ProjectCard {...project} />
                 </div>
               </Link>
