@@ -1,12 +1,13 @@
 import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
+import { parseAmeriabankError } from "../utils/ameriabank-error-parser";
 
 type TPaymentMethods = "ameriabank";
 
 interface IPaymentParams {
   ClientID: string;
   Amount: number; // 10 for testing
-  OrderID: number;
+  OrderID: string;
   Currency: string; // TODO: change to currencies enum
   BackURL: string;
   Username: string;
@@ -20,6 +21,7 @@ interface IPaymentParams {
 interface IPaymentParamsProps {
   amount: number;
   projectDocumentId?: string;
+  projectSlug?: string;
   orderId: number;
   currencyCode: string; // TODO: change to currencies enum,
   email?: string;
@@ -30,6 +32,7 @@ const paymentService = {
   getParams: ({
     amount,
     projectDocumentId,
+    projectSlug,
     orderId,
     currencyCode = process.env.CURRENCY_AM,
     email,
@@ -41,9 +44,9 @@ const paymentService = {
       Password: process.env.PAYMENT_PASSWORD,
       Currency: currencyCode,
       Description: `Donation for project ${projectDocumentId}`, // TODO, replace to projectName
-      OrderID: orderId,
+      OrderID: String(orderId),
       Amount: amount, // 10 for testing
-      BackURL: process.env.BACK_URL,
+      BackURL: `${process.env.BACK_URL}/payment-callback?project=${projectSlug}`,
       Timeout: Number(process.env.PAYMENT_TIMEOUT),
       PaymentType: 6, // move to enum, by ameria support
       CardHolderID: CardHolderID ?? `${email}_${projectDocumentId}_${uuidv4()}`,
@@ -51,9 +54,40 @@ const paymentService = {
 
     return params;
   },
+
+  // Params for MakeBindingPayment - includes BackURL as required by API spec
+  getBindingPaymentParams: ({
+    amount,
+    orderId,
+    currencyCode = process.env.CURRENCY_AM,
+    CardHolderID,
+    BindingID,
+    projectSlug,
+  }) => {
+    const params: any = {
+      ClientID: process.env.CLIENT_ID,
+      Username: process.env.PAYMENT_USERNAME,
+      Password: process.env.PAYMENT_PASSWORD,
+      Amount: amount,
+      OrderID: String(orderId),
+      Currency: currencyCode,
+      Description: "Recurring donation",
+      BackURL: `${process.env.BACK_URL}/payment-callback?project=${projectSlug}`,
+      Timeout: Number(process.env.PAYMENT_TIMEOUT),
+      PaymentType: 6,
+    };
+
+    // Only use CardHolderID for MakeBindingPayment (BindingID is not needed)
+    if (CardHolderID) {
+      params.CardHolderID = CardHolderID;
+    }
+
+    return params;
+  },
   getPaymentUrl: async ({
     amount,
     projectDocumentId,
+    projectSlug,
     currencyCode,
     paymentMethod,
     lang,
@@ -65,6 +99,7 @@ const paymentService = {
       const params = {
         amount,
         projectDocumentId,
+        projectSlug,
         currencyCode,
         paymentMethod,
         orderId,
@@ -82,21 +117,35 @@ const paymentService = {
         };
       }
 
+      // Retry only on OrderID collision, return error for other cases
       console.log(
-        "something went wrong in /init-payment",
+        "Payment initialization failed:",
         JSON.stringify(response.data, null, 2)
       );
 
-      const newOrderId = paymentService.getOrderId();
-      return await paymentService.getPaymentUrl({
-        amount,
-        projectDocumentId,
-        currencyCode,
-        paymentMethod,
-        lang,
-        orderId: newOrderId,
-        email,
-      });
+      // Check if error is OrderID collision (you may need to adjust the error code)
+      // For now, only retry on specific error codes that indicate OrderID collision
+      const isOrderIdCollision = response.data.ResponseCode === 110; // TODO: verify correct error code from Ameriabank docs
+
+      if (isOrderIdCollision) {
+        const newOrderId = paymentService.getOrderId();
+        return await paymentService.getPaymentUrl({
+          amount,
+          projectDocumentId,
+          projectSlug,
+          currencyCode,
+          paymentMethod,
+          lang,
+          orderId: newOrderId,
+          email,
+        });
+      }
+
+      // Return error for all other cases
+      return {
+        url: null,
+        errorMessage: parseAmeriabankError(response.data.ResponseCode, response.data.ResponseMessage),
+      };
     } catch (e) {
       console.log(
         "something went wrong in /init-payment",
@@ -134,21 +183,33 @@ const paymentService = {
 
     return Math.trunc(Math.random() * (maxValue - minValue) + minValue);
   },
-  makeBindingPayment: async ({ projectPayment, orderId }) => {
-    const { Amount, CardHolderID, currency } = projectPayment;
+  makeBindingPayment: async ({ projectPayment, orderId, projectDocumentId, projectSlug }) => {
+    const { Amount, CardHolderID, BindingID, currency } = projectPayment;
     const url = `${process.env.PAYMENT_API_BASE_URL}/MakeBindingPayment`;
 
-    const params = {
-      amount: Amount,
-      CardHolderID,
-      currencyCode: currency,
-      orderId,
-    };
-    const response = await axios.post(url, paymentService.getParams(params), {
-      headers: { "Content-Type": "application/json" },
-    });
+    try {
+      const requestParams = paymentService.getBindingPaymentParams({
+        amount: Amount,
+        CardHolderID,
+        BindingID: projectPayment.BindingID,
+        currencyCode: currency,
+        orderId,
+        projectSlug,
+      });
 
-    return response.data;
+      const response = await axios.post(url, requestParams, {
+        headers: { "Content-Type": "application/json" },
+        timeout: 30000, // 30 second timeout
+      });
+
+      return response.data;
+    } catch (e) {
+      console.error("MakeBindingPayment error:", e.response?.status, e.response?.data || e.message);
+      if (e.response) {
+        return e.response.data;
+      }
+      throw new Error(`Ameriabank API error: ${e.message}`);
+    }
   },
 };
 

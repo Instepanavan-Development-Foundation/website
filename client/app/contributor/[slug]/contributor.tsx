@@ -33,16 +33,23 @@ export default function Contributor({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
+  const [userData, setUserData] = useState<any>(null);
 
   useEffect(() => {
     const fetchContributor = async () => {
       try {
         let filters = {};
+        let isUserDocumentId = false;
 
         if (contributorId) {
           filters = { id: contributorId };
         } else if (contributorSlug) {
-          filters = { slug: contributorSlug };
+          // Check if slug looks like a documentId (long alphanumeric string)
+          if (contributorSlug.length > 20 && /^[a-z0-9]+$/.test(contributorSlug)) {
+            isUserDocumentId = true;
+          } else {
+            filters = { slug: contributorSlug };
+          }
         } else {
           setError(true);
           setLoading(false);
@@ -50,22 +57,43 @@ export default function Contributor({
           return;
         }
 
-        const { data: contributors } = await getData({
-          type: "contributors",
-          populate: { avatar: { fields: ["url"] } },
-          filters,
-        });
+        // Try to fetch contributor profile first (unless it's definitely a user documentId)
+        if (!isUserDocumentId) {
+          const { data: contributors } = await getData({
+            type: "contributors",
+            populate: { avatar: { fields: ["url"] } },
+            filters,
+          });
 
-        if (!contributors.length) {
-          setError(true);
-          setLoading(false);
-
-          return;
+          if (contributors.length > 0) {
+            const contributorData = contributors[0];
+            setContributor(contributorData);
+          } else {
+            // No contributor found, treat as user documentId
+            isUserDocumentId = true;
+          }
         }
 
-        const contributorData = contributors[0];
-
-        setContributor(contributorData);
+        // If it's a user documentId, fetch user data via custom endpoint
+        if (isUserDocumentId && contributorSlug) {
+          try {
+            const response = await fetch(
+              `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/contributor/by-user/${contributorSlug}`
+            );
+            if (response.ok) {
+              const userData = await response.json();
+              setUserData(userData);
+            } else {
+              setError(true);
+              setLoading(false);
+              return;
+            }
+          } catch (e) {
+            setError(true);
+            setLoading(false);
+            return;
+          }
+        }
 
         // Fetch blogs for this contributor (simplified to avoid TypeScript issues)
         const { data: blogsData }: { data: IBlog[] } = await getData({
@@ -87,16 +115,66 @@ export default function Contributor({
           },
         });
 
-        const { data: donationsData }: { data: IDonations[] } = await getData({
-          type: "donations",
-          fields: ["id", "amount", "currency", "createdAt"],
-          populate: {
-            project: {
-              fields: ["id", "slug", "name"],
-              populate: ["image"],
+        // Fetch donations based on whether we have a contributor or user
+        let donationsData: IDonations[] = [];
+
+        if (contributor) {
+          // Fetch donations linked to contributor
+          const { data } = await getData({
+            type: "donations",
+            fields: ["id", "amount", "currency", "createdAt"],
+            populate: {
+              project: {
+                fields: ["id", "slug", "name"],
+                populate: ["image"],
+              },
+              contributor: {
+                fields: ["id"],
+              },
             },
-          },
-        });
+          });
+          // Filter donations for this contributor (TODO: do on backend)
+          donationsData = data.filter((d: any) =>
+            d.contributor?.some((c: any) => c.id === contributor.id)
+          );
+        } else if (userData && contributorSlug) {
+          // For users without contributor profile, fetch their project-payments by userDocumentId
+          try {
+            console.log("Fetching project-payments for user documentId:", contributorSlug);
+            const url = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/project-payments?` +
+              `populate[project][fields][0]=name&` +
+              `populate[project][fields][1]=slug&` +
+              `populate[project][populate][image][fields][0]=url&` +
+              `populate[payment_method][fields][0]=userDocumentId&` +
+              `filters[payment_method][userDocumentId][$eq]=${contributorSlug}&` +
+              `fields[0]=amount&` +
+              `fields[1]=currency&` +
+              `fields[2]=type&` +
+              `fields[3]=createdAt`;
+
+            console.log("Fetching URL:", url);
+            const response = await fetch(url);
+            console.log("Response status:", response.status);
+
+            if (response.ok) {
+              const result = await response.json();
+              console.log("Project-payments result:", result);
+              // Map project-payments to donations format
+              donationsData = result.data.map((pp: any) => ({
+                id: pp.id,
+                amount: pp.amount,
+                currency: pp.currency,
+                createdAt: pp.createdAt,
+                project: pp.project,
+              }));
+              console.log("Mapped donations:", donationsData);
+            } else {
+              console.error("Failed to fetch project-payments, status:", response.status);
+            }
+          } catch (e) {
+            console.error("Failed to fetch project-payments:", e);
+          }
+        }
 
         setDonations(donationsData);
 
@@ -141,21 +219,32 @@ export default function Contributor({
     return <div className="text-center py-8">Բեռնվում է...</div>;
   }
 
-  if (error || !contributor) {
+  if (error || (!contributor && !userData)) {
     return <NotFound />;
   }
+
+  const displayName = contributor?.fullName || (userData as any)?.fullName || userData?.username || "Օգտատեր";
+  const displayAbout = contributor?.about || "";
 
   return (
     <section className="container mx-auto px-4 py-8">
       <div className="flex flex-col md:flex-row items-center md:items-start gap-8 mb-16">
         <div className="relative">
-          <Avatar contributor={contributor} height={200} width={200} />
-          <div className="absolute inset-0 rounded-full ring-4 ring-primary ring-offset-4 ring-offset-background" />
+          {contributor ? (
+            <>
+              <Avatar contributor={contributor} height={200} width={200} />
+              <div className="absolute inset-0 rounded-full ring-4 ring-primary ring-offset-4 ring-offset-background" />
+            </>
+          ) : (
+            <div className="w-[200px] h-[200px] rounded-full bg-primary-100 flex items-center justify-center text-6xl font-bold text-primary">
+              {displayName.charAt(0).toUpperCase()}
+            </div>
+          )}
         </div>
         <div className="text-center md:text-left">
-          <h1 className="text-4xl font-bold mb-2">{contributor.fullName}</h1>
-          <p className="text-default-500 max-w-2xl mb-4">{contributor.about}</p>
-          {showCopyLink && (
+          <h1 className="text-4xl font-bold mb-2">{displayName}</h1>
+          {displayAbout && <p className="text-default-500 max-w-2xl mb-4">{displayAbout}</p>}
+          {showCopyLink && contributor && (
             <Button
               className="mb-4"
               color="primary"
@@ -169,10 +258,11 @@ export default function Contributor({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
-        <div>
-          <h2 className="text-3xl font-bold mb-8">Աջակցություն</h2>
-          <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
-            {blogs.map((blog) => (
+        {blogs.length > 0 && (
+          <div>
+            <h2 className="text-3xl font-bold mb-8">Աջակցություն</h2>
+            <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
+              {blogs.map((blog) => (
               <Card
                 key={blog.slug}
                 className="hover:shadow-lg transition-shadow"
@@ -208,10 +298,11 @@ export default function Contributor({
                   </div>
                 </CardBody>
               </Card>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-        {donations.length ? (
+        )}
+        {donations.length > 0 && (
           <div>
             <h2 className="text-3xl font-bold mb-8">Նվիրաբերություն</h2>
             <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
@@ -244,7 +335,7 @@ export default function Contributor({
                             color="secondary"
                             href={`/project/${donation.project.slug}`}
                           >
-                            Նվիրաբերություն։ {formatCurrency(donation.amount)}
+                            {formatCurrency(donation.amount)} ընդհանուր
                           </Link>
                         </p>
                         <p>{prettyDate(donation.createdAt)}</p>
@@ -255,8 +346,6 @@ export default function Contributor({
               ))}
             </div>
           </div>
-        ) : (
-          ""
         )}
       </div>
     </section>

@@ -1,6 +1,10 @@
 "use client";
 
 import { Chip } from "@heroui/chip";
+import { RadioGroup, Radio } from "@heroui/radio";
+import { Spacer } from "@heroui/spacer";
+import { Skeleton } from "@heroui/skeleton";
+import { useAuth } from "@/src/hooks/useAuth";
 
 // TODO: Add metadata
 // export async function generateMetadata({ params }: IParams): Promise<Metadata> {
@@ -33,21 +37,45 @@ import { Chip } from "@heroui/chip";
 //   };
 // }
 
-export default async function DonatePage({ params }: IParams) {
-  const { slug } = await params;
-  const { data }: { data: IProject[] } = await getData({
-    type: "projects",
-    populate: {
-      image: {
-        fields: ["url", "alternativeText", "name"],
-      },
-    },
-    filters: {
-      slug,
-    },
-  });
+export default function DonatePage({ params }: IParams) {
+  const { isLoading: authLoading } = useAuth("/login");
+  const [slug, setSlug] = useState<string>("");
+  const [project, setProject] = useState<IProject | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const project = data[0];
+  useEffect(() => {
+    async function loadData() {
+      const resolvedParams = await params;
+      setSlug(resolvedParams.slug);
+
+      const { data }: { data: IProject[] } = await getData({
+        type: "projects",
+        populate: {
+          image: {
+            fields: ["url", "alternativeText", "name"],
+          },
+        },
+        filters: {
+          slug: resolvedParams.slug,
+        },
+      });
+
+      setProject(data[0] || null);
+      setLoading(false);
+    }
+
+    if (!authLoading) {
+      loadData();
+    }
+  }, [params, authLoading]);
+
+  if (authLoading || loading) {
+    return (
+      <section className="flex flex-col px-4 max-w-5xl mx-auto py-16">
+        <div className="text-center">Բեռնում...</div>
+      </section>
+    );
+  }
 
   if (!project) {
     return <NotFound />;
@@ -62,12 +90,12 @@ export default async function DonatePage({ params }: IParams) {
           radius="sm"
           variant="shadow"
         >
-          Այս նախագիծը արխիվում է և այլևս չի ընդունում նվիրատվություններ։
+          Այս նախագիծը արխիվում է և այլևս չի ընդունում աջակցություններ։
         </Chip>
         <div className="container mt-8 text-center">
           <h1 className="text-4xl font-bold mb-4">Արխիվացված նախագիծ</h1>
           <p className="text-xl mb-8">
-            Այս նախագիծն այլևս չի ընդունում նվիրատվություններ։ Խնդրում ենք
+            Այս նախագիծն այլևս չի ընդունում աջակցություններ։ Խնդրում ենք
             ստուգել մեր այլ ակտիվ նախագծերը։
           </p>
         </div>
@@ -77,15 +105,14 @@ export default async function DonatePage({ params }: IParams) {
 
   return (
     <section className="flex flex-col px-4 max-w-5xl mx-auto">
-      {/* Error Message Component */}
-      <ErrorMessage />
-
       {/* Hero Banner */}
       <div className="relative w-full h-64 md:h-40 mb-8 rounded-xl overflow-hidden">
         <Image
           alt={project.name}
           className="w-full h-full object-cover"
           src={getMediaSrc(project.image)}
+          width={1200}
+          height={400}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end p-6">
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
@@ -103,24 +130,40 @@ export default async function DonatePage({ params }: IParams) {
   );
 }
 
-// Error Message Component
+// Error/Success Message Component
 import { useSearchParams } from "next/navigation";
 
 function ErrorMessage() {
   const searchParams = useSearchParams();
   const error = searchParams.get("error");
+  const success = searchParams.get("success");
 
-  if (!error) return null;
+  if (success) {
+    return (
+      <div className="px-6 mb-6">
+        <div className="w-full bg-green-50 border border-green-300 text-green-700 p-4 rounded-lg">
+          <h3 className="font-bold text-lg mb-1">✓ Հաջողություն</h3>
+          <p>{decodeURIComponent(success)}</p>
+        </div>
+      </div>
+    );
+  }
 
-  return (
-    <div className="w-full mb-6 bg-red-50 border border-red-300 text-red-700 p-4 rounded-lg">
-      <h3 className="font-bold text-lg mb-1">Վճարման սխալ</h3>
-      <p>{decodeURIComponent(error)}</p>
-      <p className="mt-2 text-sm">
-        Խնդրում ենք փորձել կրկին կամ ընտրել վճարման այլ եղանակ։
-      </p>
-    </div>
-  );
+  if (error) {
+    return (
+      <div className="px-6 mb-6">
+        <div className="w-full bg-red-50 border border-red-300 text-red-700 p-4 rounded-lg">
+          <h3 className="font-bold text-lg mb-1">Վճարման սխալ</h3>
+          <p>{decodeURIComponent(error)}</p>
+          <p className="mt-2 text-sm">
+            Խնդրում ենք փորձել կրկին կամ ընտրել վճարման այլ եղանակ։
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
 }
 
 // Client-side donation form component
@@ -130,7 +173,7 @@ import { Input } from "@heroui/input";
 import { Card, CardBody, CardHeader, CardFooter } from "@heroui/card";
 import { Divider } from "@heroui/divider";
 import { Progress } from "@heroui/progress";
-import { PlusCircle, CreditCard, Wallet, Heart, Users } from "lucide-react";
+import { PlusCircle, CreditCard, Heart, Users } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -140,55 +183,60 @@ import NotFound from "@/components/NotFound";
 import { IParams } from "@/src/models/params";
 import { IProject } from "@/src/models/project";
 import getData from "@/src/helpers/getData";
-
-// Mock payment methods data
-const mockPaymentMethods = [
-  { id: 1, name: "Visa քարտ՝ ավարտվող 4242", isDefault: true },
-  { id: 2, name: "MasterCard քարտ՝ ավարտվող 5555" },
-  { id: 3, name: "American Express քարտ՝ ավարտվող 0001" },
-];
+import getPaymentMethods, { IPaymentMethod } from "@/src/helpers/getPaymentMethods";
+import { initPayment } from "@/src/helpers/initPayment";
 
 // Preset donation amounts
 const presetAmounts = [1000, 5000, 10000, 20000, 50000];
+const MIN_DONATION_AMOUNT = 10;
 
 function DonationFormClient({ project }: { project: IProject }) {
   const router = useRouter();
-  const [amount, setAmount] = useState<number>(5000);
-  const [customAmount, setCustomAmount] = useState<string>("5000");
-  const [isAnonymous, setIsAnonymous] = useState<boolean>(false);
-  const [subscribeToNewsletter, setSubscribeToNewsletter] =
-    useState<boolean>(true);
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<number>(1);
-  const [activeTab, setActiveTab] = useState<"card" | "bank">("card");
+  const searchParams = useSearchParams();
+  const urlAmount = searchParams.get("amount");
+  const defaultAmount = urlAmount ? parseInt(urlAmount) : 10000;
+
+  const [amount, setAmount] = useState<number>(defaultAmount);
+  const [customAmount, setCustomAmount] = useState<string>(defaultAmount.toString());
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>("");
   const [donorCount, setDonorCount] = useState<number>(0);
-  const [recentDonation, setRecentDonation] = useState<{
-    name: string;
-    amount: number;
-  } | null>(null);
+  const [paymentMethods, setPaymentMethods] = useState<IPaymentMethod[]>([]);
+  const [loadingPaymentMethods, setLoadingPaymentMethods] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Simulate donor count and recent donations
+  // Load payment methods
   useEffect(() => {
-    setDonorCount(Math.floor(Math.random() * 150) + 50);
+    async function loadPaymentMethods() {
+      const methods = await getPaymentMethods();
+      setPaymentMethods(methods);
+      setLoadingPaymentMethods(false);
 
-    const names = ["Անի", "Արամ", "Լիլիթ", "Դավիթ", "Մարիամ"];
-    const randomName = names[Math.floor(Math.random() * names.length)];
-    const randomAmount = [1000, 2000, 5000, 10000][
-      Math.floor(Math.random() * 4)
-    ];
+      // Select first option by default - existing card or "new" if no cards
+      if (methods.length > 0) {
+        setSelectedPaymentMethod(methods[0].documentId);
+      } else {
+        setSelectedPaymentMethod("new");
+      }
+    }
 
-    setRecentDonation({ name: randomName, amount: randomAmount });
+    async function loadDonorCount() {
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/projects/${project.documentId}/donor-count`
+        );
+        if (response.ok) {
+          const result = await response.json();
+          setDonorCount(result.data);
+        }
+      } catch (error) {
+        console.error("Failed to load donor count:", error);
+        setDonorCount(0);
+      }
+    }
 
-    const interval = setInterval(() => {
-      const newName = names[Math.floor(Math.random() * names.length)];
-      const newAmount = [1000, 2000, 5000, 10000][
-        Math.floor(Math.random() * 4)
-      ];
-
-      setRecentDonation({ name: newName, amount: newAmount });
-    }, 15000);
-
-    return () => clearInterval(interval);
-  }, []);
+    loadPaymentMethods();
+    loadDonorCount();
+  }, [project.documentId]);
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -206,46 +254,111 @@ function DonationFormClient({ project }: { project: IProject }) {
     setCustomAmount(presetAmount.toString());
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Simulate random payment errors (for demonstration)
-    if (Math.random() < 0.3) {
-      // 30% chance of error for demo purposes
-      const errorMessages = [
-        "Վճարման ընթացքում սխալ է տեղի ունեցել։ Խնդրում ենք փորձել կրկին։",
-        "Ձեր քարտը մերժվել է։ Խնդրում ենք օգտագործել այլ քարտ։",
-        "Անբավարար միջոցներ։ Խնդրում ենք ստուգել ձեր հաշվեկշիռը և փորձել կրկին։",
-      ];
-
-      const randomError =
-        errorMessages[Math.floor(Math.random() * errorMessages.length)];
-
+    // Validate minimum amount
+    if (amount < MIN_DONATION_AMOUNT) {
       router.push(
-        `/donate/${project.slug}?error=${encodeURIComponent(randomError)}`,
+        `/donate/${project.slug}?error=${encodeURIComponent(`Նվազագույն գումարը պետք է լինի ${MIN_DONATION_AMOUNT} դրամ`)}`,
       );
-
       return;
     }
 
-    console.log({
-      project: project.name,
-      amount,
-      paymentMethodId: selectedPaymentMethod,
-      isAnonymous,
-      subscribeToNewsletter,
-    });
+    setIsSubmitting(true);
 
-    // Navigate to success page
-    router.push(`/donate/success`);
+    // If "new card" is selected, redirect to Ameriabank payment page
+    if (selectedPaymentMethod === "new") {
+      const jwt = typeof window !== "undefined" ? localStorage.getItem("jwt") : null;
+      if (!jwt) {
+        router.push("/login");
+        return;
+      }
+
+      // Get user email
+      const userResponse = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/users/me`,
+        {
+          headers: { Authorization: `Bearer ${jwt}` },
+        }
+      );
+      const user = await userResponse.json();
+
+      // Initialize payment with Ameriabank
+      const { url, errorMessage } = await initPayment({
+        amount,
+        projectDocumentId: project.documentId,
+        projectSlug: project.slug,
+        email: user.email,
+      });
+
+      if (errorMessage) {
+        setIsSubmitting(false);
+        router.push(
+          `/donate/${project.slug}?error=${encodeURIComponent(errorMessage)}`,
+        );
+        return;
+      }
+
+      if (url) {
+        // Keep loading state while redirecting
+        window.location.href = url;
+        return;
+      }
+    }
+
+    // Existing card flow - pay with saved card
+    const jwt = typeof window !== "undefined" ? localStorage.getItem("jwt") : null;
+    if (!jwt) {
+      setIsSubmitting(false);
+      router.push("/login");
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/payment/pay-with-saved-card`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${jwt}`,
+          },
+          body: JSON.stringify({
+            amount,
+            projectDocumentId: project.documentId,
+            paymentMethodId: selectedPaymentMethod,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        setIsSubmitting(false);
+        router.push(
+          `/donate/${project.slug}?error=${encodeURIComponent(errorData.error || errorData.details || "Վճարումը ձախողվեց")}`,
+        );
+        return;
+      }
+
+      const result = await response.json();
+      // Keep loading state while redirecting to success page
+      router.push(`/donate/success?amount=${result.amount}&project=${encodeURIComponent(project.name)}&slug=${project.slug}`);
+    } catch (error) {
+      console.error("Payment error:", error);
+      setIsSubmitting(false);
+      router.push(
+        `/donate/${project.slug}?error=${encodeURIComponent("Սերվերի հետ կապի սխալ")}`,
+      );
+    }
   };
 
   // Calculate progress percentage
   const progressPercentage = project.requiredAmount
     ? Math.min(
-        100,
-        Math.round((project.gatheredAmount / project.requiredAmount) * 100),
-      )
+      100,
+      Math.round((project.gatheredAmount / project.requiredAmount) * 100),
+    )
     : 0;
 
   return (
@@ -256,12 +369,12 @@ function DonationFormClient({ project }: { project: IProject }) {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Heart className="w-5 h-5 text-white" />
-              <h2 className="text-2xl font-bold text-white">Նվիրաբերել հիմա</h2>
+              <h2 className="text-2xl font-bold text-white">Աջակցել հիմա</h2>
             </div>
             <div className="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full">
               <Users className="w-4 h-4 text-white" />
               <span className="text-sm font-medium text-white">
-                {donorCount}+ նվիրատուներ
+                {donorCount} աջակիցներ
               </span>
             </div>
           </div>
@@ -290,53 +403,35 @@ function DonationFormClient({ project }: { project: IProject }) {
             </div>
           )}
         </div>
-
-        {/* Recent donation notification */}
-        {recentDonation && (
-          <div className="px-6 py-3 bg-amber-50 border-b border-amber-100 text-sm flex items-center">
-            <span className="font-medium text-amber-800 mr-1">
-              {recentDonation.name}
-            </span>
-            <span className="text-amber-700">
-              նվիրաբերել է {recentDonation.amount.toLocaleString()} ֏ հենց նոր
-            </span>
-            <div className="ml-auto px-2 py-0.5 bg-amber-100 rounded-full text-xs text-amber-800 animate-pulse">
-              Նոր
-            </div>
-          </div>
-        )}
       </CardHeader>
 
       <CardBody className="px-6 py-6">
         <form onSubmit={handleSubmit}>
           {/* Amount Input */}
-          <div className="mb-6">
+          <div>
             <h3 className="text-lg font-semibold mb-3">Ընտրեք գումարը</h3>
 
             {/* Preset amount buttons */}
-            <div className="grid grid-cols-3 md:grid-cols-5 gap-2 mb-4">
+            <div className="flex flex-wrap gap-2 mb-4">
               {presetAmounts.map((presetAmount) => (
-                <button
+                <Button
                   key={presetAmount}
-                  className={`py-3 px-3 rounded-lg ${
-                    amount === presetAmount
-                      ? "bg-primary text-white font-medium shadow-md scale-105 transform"
-                      : "bg-default-100 hover:bg-default-200"
-                  } transition-all duration-200`}
-                  type="button"
-                  onClick={() => handlePresetAmountClick(presetAmount)}
+                  variant={amount === presetAmount ? "solid" : "bordered"}
+                  color={amount === presetAmount ? "primary" : "default"}
+                  size="lg"
+                  className={amount === presetAmount ? "font-semibold" : ""}
+                  onPress={() => handlePresetAmountClick(presetAmount)}
                 >
                   {presetAmount.toLocaleString()} ֏
-                </button>
+                </Button>
               ))}
             </div>
 
             {/* Custom amount input */}
             <Input
               required
-              className="bg-white"
               id="custom-amount"
-              min={100}
+              min={MIN_DONATION_AMOUNT}
               placeholder="Կամ մուտքագրեք ձեր գումարը"
               size="lg"
               startContent={
@@ -350,132 +445,92 @@ function DonationFormClient({ project }: { project: IProject }) {
             />
           </div>
 
+          <Spacer y={6} />
+
+          <Divider />
+
+          <Spacer y={6} />
+
           {/* Payment Method Selection */}
-          <div className="mb-6">
-            <div className="flex gap-2 border-b mb-4">
-              <button
-                className={`px-4 py-3 flex items-center gap-2 transition-all ${
-                  activeTab === "card"
-                    ? "border-b-2 border-primary text-primary font-medium"
-                    : "text-default-600 hover:text-primary"
-                }`}
-                type="button"
-                onClick={() => setActiveTab("card")}
-              >
-                <CreditCard size={18} />
-                <span>Քարտ</span>
-              </button>
-              <button
-                className={`px-4 py-3 flex items-center gap-2 transition-all ${
-                  activeTab === "bank"
-                    ? "border-b-2 border-primary text-primary font-medium"
-                    : "text-default-600 hover:text-primary"
-                }`}
-                type="button"
-                onClick={() => setActiveTab("bank")}
-              >
-                <Wallet size={18} />
-                <span>Բանկային փոխանցում</span>
-              </button>
-            </div>
+          <div>
+            <h3 className="text-lg font-semibold mb-4">Վճարման եղանակ</h3>
 
-            {activeTab === "card" ? (
-              <div>
-                <div className="space-y-3 mb-4">
-                  {mockPaymentMethods.map((method) => (
-                    <div
-                      key={method.id}
-                      className={`p-4 border rounded-lg cursor-pointer flex items-center ${
-                        selectedPaymentMethod === method.id
-                          ? "border-primary bg-primary-50 shadow-sm"
-                          : "border-default-200 hover:border-primary-200 hover:bg-default-50"
-                      } transition-all duration-200`}
-                      onClick={() => setSelectedPaymentMethod(method.id)}
-                    >
-                      <div className="flex-1">
-                        <p className="font-medium">{method.name}</p>
-                        {method.isDefault && (
-                          <p className="text-xs text-default-500">
-                            Հիմնական վճարման եղանակ
-                          </p>
-                        )}
-                      </div>
-                      <div className="w-5 h-5 rounded-full border border-current flex items-center justify-center">
-                        {selectedPaymentMethod === method.id && (
-                          <div className="w-3 h-3 rounded-full bg-primary" />
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <Link
-                  className="flex items-center gap-2 text-primary hover:underline"
-                  href="#"
-                >
-                  <PlusCircle size={18} />
-                  <span>Ավելացնել նոր վճարման եղանակ</span>
-                </Link>
+            {loadingPaymentMethods ? (
+              <div className="space-y-3">
+                <Skeleton className="rounded-lg">
+                  <div className="h-20 rounded-lg bg-default-200"></div>
+                </Skeleton>
+                <Skeleton className="rounded-lg">
+                  <div className="h-20 rounded-lg bg-default-200"></div>
+                </Skeleton>
               </div>
             ) : (
-              <div>
-                <div className="bg-default-50 p-5 rounded-lg border border-default-200">
-                  <p className="mb-2">
-                    <strong className="text-primary">Բանկ:</strong> HSBC
-                    Հայաստան
-                  </p>
-                  <p className="mb-2">
-                    <strong className="text-primary">Հաշվեհամար:</strong>{" "}
-                    1234567890
-                  </p>
-                  <p className="mb-2">
-                    <strong className="text-primary">Շահառու:</strong> In Step
-                    Anavan հիմնադրամ
-                  </p>
-                  <p className="mb-2">
-                    <strong className="text-primary">SWIFT:</strong> HSBCYUHBXXX
-                  </p>
-                  <div className="mt-4 p-3 bg-amber-50 border border-amber-100 rounded text-sm">
-                    <p className="font-medium text-amber-800">Կարևոր է!</p>
-                    <p className="text-amber-700">
-                      Խնդրում ենք փոխանցման նկարագրության մեջ նշել նախագծի
-                      անունը՝ "Հանգանակություն {project.name}"։
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
+              <RadioGroup
+                label={paymentMethods.length > 0 ? "Ընտրել վճարման եղանակ" : undefined}
+                value={selectedPaymentMethod}
+                onValueChange={setSelectedPaymentMethod}
+                classNames={{
+                  base: "w-full",
+                  wrapper: "gap-3"
+                }}
+              >
+                {paymentMethods.map((method, index) => {
+                  const cardNumber = method.params?.CardNumber || method.params?.cardNumber || "****";
 
-          {/* Preferences */}
-          <div className="flex flex-wrap gap-4 mb-6">
-            <div className="flex items-center gap-2">
-              <input
-                checked={isAnonymous}
-                className="w-4 h-4 accent-primary rounded"
-                id="anonymous"
-                type="checkbox"
-                onChange={(e) => setIsAnonymous(e.target.checked)}
-              />
-              <label className="text-default-700" htmlFor="anonymous">
-                Նվիրաբերել անանուն
-              </label>
-            </div>
-            <div className="flex items-center gap-2">
-              <input
-                checked={subscribeToNewsletter}
-                className="w-4 h-4 accent-primary rounded"
-                id="newsletter"
-                type="checkbox"
-                onChange={(e) => setSubscribeToNewsletter(e.target.checked)}
-              />
-              <label className="text-default-700" htmlFor="newsletter">
-                Բաժանորդագրվել նորություններին
-              </label>
-            </div>
+                  // Detect card type from card number
+                  const getCardType = (num: string) => {
+                    const firstDigits = num.replace(/\*/g, '').substring(0, 6);
+                    if (firstDigits.startsWith('4')) return 'Visa';
+                    if (firstDigits.startsWith('5') || firstDigits.startsWith('2')) return 'Mastercard';
+                    if (firstDigits.startsWith('34') || firstDigits.startsWith('37')) return 'American Express';
+                    if (firstDigits.startsWith('6')) return 'Discover';
+                    return 'Քարտ';
+                  };
+
+                  const cardType = getCardType(cardNumber);
+
+                  return (
+                    <Radio
+                      key={method.documentId}
+                      value={method.documentId}
+                      classNames={{
+                        base: "inline-flex m-0 items-center hover:bg-content2 max-w-full cursor-pointer rounded-lg gap-4 p-4 border-2 border-transparent data-[selected=true]:border-primary",
+                        label: "w-full",
+                        wrapper: "group-data-[selected=true]:border-primary"
+                      }}
+                      description={index === 0 ? "Հիմնական վճարման եղանակ" : undefined}
+                    >
+                      <div className="flex items-center gap-3 w-full">
+                        <CreditCard className="w-8 h-8 text-default-400" />
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-default-600">{cardType}</p>
+                          <p className="font-mono font-semibold text-base">{cardNumber}</p>
+                        </div>
+                      </div>
+                    </Radio>
+                  );
+                })}
+
+                <Radio
+                  value="new"
+                  classNames={{
+                    base: "inline-flex m-0 items-center hover:bg-content2 max-w-full cursor-pointer rounded-lg gap-4 p-4 border-2 border-transparent data-[selected=true]:border-primary",
+                    wrapper: "group-data-[selected=true]:border-primary"
+                  }}
+                >
+                  <div className="flex items-center gap-2">
+                    <PlusCircle size={18} className="text-primary" />
+                    <p className="font-medium">Կապել նոր քարտ</p>
+                  </div>
+                </Radio>
+              </RadioGroup>
+            )}
           </div>
         </form>
       </CardBody>
+
+      {/* Error Message */}
+      <ErrorMessage />
 
       <Divider />
 
@@ -488,12 +543,14 @@ function DonationFormClient({ project }: { project: IProject }) {
             </span>
           </div>
           <Button
-            className="w-full py-7 text-lg font-medium shadow-lg hover:scale-[1.02] transition-transform"
+            className="w-full py-7 text-lg font-medium shadow-lg"
             color="primary"
             size="lg"
+            isLoading={isSubmitting}
+            isDisabled={isSubmitting}
             onClick={handleSubmit}
           >
-            Նվիրաբերել հիմա
+            {isSubmitting ? "Մշակվում է..." : "Աջակցել հիմա"}
           </Button>
           <p className="text-center text-xs text-default-500 mt-3">
             {/* TODO: Add terms and conditions link */}

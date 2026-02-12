@@ -19,6 +19,10 @@
     "params": {
       "type": "json"
     },
+    "userDocumentId": {
+      "type": "string",
+      "required": true
+    },
     "project_payments": {
       "type": "relation",
       "relation": "oneToMany",

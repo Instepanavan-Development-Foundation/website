@@ -3,8 +3,9 @@
 import { Button } from "@heroui/button";
 import { Input } from "@heroui/input";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState, FormEvent, useEffect } from "react";
+import { isAuthenticated, login } from "@/src/services/userService";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -12,9 +13,10 @@ const Login = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
-    if (typeof window !== "undefined" && localStorage.getItem("jwt")) {
+    if (isAuthenticated()) {
       router.replace("/");
     }
   }, [router]);
@@ -24,36 +26,24 @@ const Login = () => {
     setError("");
     if (!email || !password) {
       setError("Խնդրում ենք լրացնել բոլոր դաշտերը");
-
       return;
     }
     setLoading(true);
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/local`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ identifier: email, password }),
-        },
-      );
-      const data = await res.json();
+      await login(email, password);
 
-      if (!res.ok) {
-        setError(data?.error?.message || "Մուտքը ձախողվեց");
+      // Dispatch custom event to notify navbar of login state change
+      window.dispatchEvent(new CustomEvent("loginStateChanged"));
+
+      // Redirect to saved URL from query parameter or home
+      const returnUrl = searchParams.get("returnUrl");
+      if (returnUrl) {
+        router.push(decodeURIComponent(returnUrl));
       } else {
-        // Store JWT and email in localStorage
-        if (typeof window !== "undefined" && data?.jwt) {
-          localStorage.setItem("jwt", data.jwt);
-          localStorage.setItem("email", email);
-          // Dispatch custom event to notify navbar of login state change
-          window.dispatchEvent(new CustomEvent("loginStateChanged"));
-          router.push("/");
-        }
-        // Optionally redirect or reset form
+        router.push("/");
       }
-    } catch (err) {
-      setError("Մուտքագրեք վավեր տվյալներ");
+    } catch (err: any) {
+      setError(err.message || "Մուտքագրեք վավեր տվյալներ");
     } finally {
       setLoading(false);
     }

@@ -43,6 +43,23 @@ export interface IProjectPayment {
   type: "recurring" | "one_time";
 }
 
+export interface IPaymentLog {
+  id: number;
+  documentId: string;
+  amount: number;
+  currency: string;
+  success: boolean;
+  createdAt: string;
+  updatedAt: string;
+  project_payment?: {
+    name?: string;
+    project?: IProject;
+  };
+  donation?: {
+    project?: IProject;
+  };
+}
+
 export type TypeMapping = {
   projects: IProject[];
   blogs: IBlog[];
@@ -50,6 +67,7 @@ export type TypeMapping = {
   menus: IMenu[];
   donations: IDonations[];
   "project-payments": IProjectPayment[];
+  "payment-logs": IPaymentLog[];
   "static-pages": IStaticPage[];
   "site-config": ISiteConfig;
 };

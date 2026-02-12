@@ -3,6 +3,7 @@ import { IContributor } from "./contributor";
 import { IImage, IMediaFormat } from "./media";
 
 export interface IProject {
+  documentId: string;
   gatheredAmount: number;
   requiredAmount: number;
   defaultContact: string;
@@ -15,6 +16,7 @@ export interface IProject {
   donationType: "recurring" | "one time";
   image: IImage;
   isFeatured: boolean;
+  isMain: boolean;
   about: string;
   createdAt: string;
   isArchived: boolean;

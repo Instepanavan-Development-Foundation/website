@@ -39,7 +39,12 @@ export default {
           " " +
           (blog as any).createdBy.lastName;
 
-        feed.item({
+        const firstImage = (blog as any).images?.[0];
+        const imageUrl = firstImage
+          ? `${process.env.BASE_URL}${firstImage.url}`
+          : process.env.RSS_ITUNES_IMAGE;
+
+        const itemData: any = {
           title,
           description: content,
           url: `${process.env.FRONTEND_URL}/blog/${blog.slug}`,
@@ -53,9 +58,7 @@ export default {
             {
               "itunes:image": {
                 _attr: {
-                  href:
-                    `${process.env.BASE_URL}${(blog as any).images?.[0]?.url}` ||
-                    process.env.RSS_ITUNES_IMAGE,
+                  href: imageUrl,
                 },
               },
             },
@@ -64,7 +67,18 @@ export default {
                 Math.ceil(content.length / minute) + " minutes",
             },
           ],
-        });
+        };
+
+        // Add enclosure for images (standard RSS image support)
+        if (firstImage) {
+          itemData.enclosure = {
+            url: imageUrl,
+            type: firstImage.mime || 'image/jpeg',
+            size: firstImage.size || 0,
+          };
+        }
+
+        feed.item(itemData);
       });
 
       const xml = feed.xml();

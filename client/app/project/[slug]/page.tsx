@@ -17,6 +17,8 @@ import Carousel from "@/components/Carousel";
 import { formatCurrency } from "@/components/home/ProjectCard";
 import getMediaSrc from "@/src/helpers/getMediaUrl";
 import ModifiedMarkdown from "@/src/hok/modifiedMarkdown";
+import { ProjectFunding } from "@/components/ProjectFunding";
+import getProjectFunding from "@/src/helpers/getProjectFunding";
 
 export async function generateMetadata({ params }: IParams) {
   const { slug } = await params;
@@ -82,6 +84,9 @@ export default async function ProjectPage({ params }: IParams) {
     return <NotFound />;
   }
 
+  // Fetch project funding data
+  const funding = await getProjectFunding(project.documentId);
+
   const percentComplete = project.requiredAmount
     ? Math.round((project.gatheredAmount / project.requiredAmount) * 100)
     : 100;
@@ -142,7 +147,7 @@ export default async function ProjectPage({ params }: IParams) {
             </h2>
             <div className="flex justify-between items-center mb-2">
               <span className="text-xl text-default-600">
-                {formatCurrency(project.gatheredAmount)} հավաքված է
+                {formatCurrency(project.gatheredAmount)} {project.donationType === "recurring" ? "ամսական" : "ընդհանուր"}
               </span>
               <span className="text-lg text-default-500">
                 Նպատակ: {formatCurrency(project.requiredAmount)}

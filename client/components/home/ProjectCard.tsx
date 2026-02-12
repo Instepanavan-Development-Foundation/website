@@ -34,19 +34,38 @@ export function ProjectCard({
     : 100;
   const isUrgent = percentComplete < 30;
 
+  const gradients = [
+    "bg-gradient-to-br from-pink-500 via-purple-500 to-indigo-500",
+    "bg-gradient-to-br from-blue-500 via-cyan-500 to-teal-500",
+    "bg-gradient-to-br from-orange-500 via-red-500 to-pink-500",
+    "bg-gradient-to-br from-green-500 via-emerald-500 to-teal-500",
+    "bg-gradient-to-br from-violet-500 via-purple-500 to-fuchsia-500",
+  ];
+
+  const gradientIndex = name ? name.charCodeAt(0) % gradients.length : 0;
+  const hasImage = image?.url;
+
   return (
     <div className="relative w-full">
       <Card className="group bg-gradient-to-br from-background to-default-50 w-full hover:shadow-lg transition-all duration-300">
         <CardBody className="overflow-visible p-0">
           <div className="relative">
-            <Image
-              alt={name}
-              className="w-full object-cover h-[200px] z-10"
-              radius="lg"
-              shadow="sm"
-              src={getMediaUrl(image)}
-              width="100%"
-            />
+            {hasImage ? (
+              <Image
+                alt={name}
+                className="w-full object-cover h-[200px] z-10"
+                radius="lg"
+                shadow="sm"
+                src={getMediaUrl(image)}
+                width="100%"
+              />
+            ) : (
+              <div className={`w-full h-[200px] ${gradients[gradientIndex]} rounded-lg flex items-center justify-center z-10 p-6`}>
+                <span className="text-white text-2xl font-bold opacity-90 text-center line-clamp-3">
+                  {name || "..."}
+                </span>
+              </div>
+            )}
             {isUrgent && (
               <div className="absolute top-3 left-3 bg-danger text-white text-xs font-bold px-2 py-1 rounded-full animate-pulse z-20">
                 Հրատապ օգնության կարիք

@@ -73,7 +73,7 @@ export default async function TrustedByContributors() {
                 radius: "full",
                 size: "md",
               })}
-              href="/donate"
+              href="/project/instepanavan"
             >
               <Heart className="w-4 h-4 mr-1" /> Դառնալ աջակից
             </Link>

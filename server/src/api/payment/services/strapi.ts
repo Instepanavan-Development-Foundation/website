@@ -7,17 +7,23 @@ import {
 import { CURRENCIES } from "../constants/currencies";
 
 const service = {
-  savePayment: async ({ paymentDetails, projectDocumentId, projectPaymentId }) => {
+  savePayment: async ({ paymentDetails, projectDocumentId, projectPaymentId, userId, userDocumentId, existingPaymentMethodId }) => {
     if (paymentDetails.ResponseCode !== process.env.SUCCESS_RESPONSE_CODE) {
-      JSON.stringify({
-        paymentDetails,
-        success: false,
-      });
       throw new Error(JSON.stringify({ paymentDetails, success: false }));
     }
 
-    const projectPaymentMethod =
-      await service.createProjectPaymentMethod(paymentDetails);
+    let projectPaymentMethod;
+
+    // If paying with existing payment method, reuse it instead of creating a new one
+    if (existingPaymentMethodId) {
+      projectPaymentMethod = await strapi.documents(PAYMENT_METHOD_API).findOne({
+        documentId: existingPaymentMethodId,
+      });
+    } else {
+      // Create new payment method only for new cards
+      projectPaymentMethod =
+        await service.createProjectPaymentMethod(paymentDetails, userId, userDocumentId);
+    }
 
     if (!projectPaymentMethod) {
       throw new Error(
@@ -51,6 +57,8 @@ const service = {
       );
     }
 
+    const newGatheredAmount = currentProject.gatheredAmount + paymentDetails.Amount;
+
     await service.createProjectPayment({
       paymentDetails,
       projectPaymentMethod,
@@ -61,10 +69,9 @@ const service = {
     await service.updateProjectData({
       projectDocumentId,
       data: {
-        gatheredAmount: currentProject.gatheredAmount + paymentDetails.Amount,
+        gatheredAmount: newGatheredAmount,
         isArchived:
-          currentProject.gatheredAmount + paymentDetails.Amount >=
-          currentProject.requiredAmount,
+          newGatheredAmount >= currentProject.requiredAmount,
       },
     });
   },
@@ -75,6 +82,10 @@ const service = {
     projectDocumentId,
   }) => {
     try {
+      // Get project name to store it
+      const project = await service.getProject(projectDocumentId);
+      const projectName = project?.name || paymentDetails.Description;
+
       const projectPayment = await strapi
         .documents(PROJECT_PAYMENT_API)
         .create({
@@ -82,9 +93,9 @@ const service = {
             amount: paymentDetails.Amount,
             currency: paymentDetails.Currency,
             type: "recurring", // TODO add dynamic value after adding subscription
-            name: paymentDetails.Description,
+            name: projectName,
             payment_method: projectPaymentMethod.documentId,
-            payment_logs: [paymentLog.documentId], // TODO: check if this is correct and doesn't rewrite previous values
+            payment_logs: [paymentLog.documentId],
             project: projectDocumentId,
           },
         });
@@ -98,25 +109,27 @@ const service = {
       return projectPayment;
     } catch (e) {
       console.log(
-        "something went wrong in createProjectPayment",
+        "ERROR in createProjectPayment:",
         JSON.stringify(e, null, 2)
       );
+      throw e;
     }
   },
   updateProjectData: async ({ projectDocumentId, data }) => {
     try {
-      await strapi.documents(PROJECT_API).update({
+      return await strapi.documents(PROJECT_API).update({
         documentId: projectDocumentId,
         data: data,
       });
     } catch (e) {
       console.log(
-        "something went wrong in updateProjectData",
+        "ERROR in updateProjectData:",
         JSON.stringify(e, null, 2)
       );
+      throw e;
     }
   },
-  createProjectPaymentMethod: async (paymentDetails: any) => {
+  createProjectPaymentMethod: async (paymentDetails: any, userId?: number, userDocumentId?: string) => {
     const { BindingID, CardNumber, CardHolderID, ExpDate } = paymentDetails;
     try {
       return await strapi.documents(PAYMENT_METHOD_API).create({
@@ -128,12 +141,13 @@ const service = {
             ExpDate,
           }),
           type: "ameriabank",
-          // users_permissions_user: 1 // TODO, remove hardcode
+          userDocumentId: userDocumentId,
+          users_permissions_user: userId,
         },
       });
     } catch (e) {
       console.log(
-        "something went wrong in getProjectPaymentMethod",
+        "ERROR in createProjectPaymentMethod:",
         JSON.stringify(e, null, 2)
       );
       return null;
@@ -201,7 +215,7 @@ const service = {
             fields: ["params"],
           },
           project: {
-            fields: ["id", "donationType", "name"],
+            fields: ["documentId", "donationType", "name"],
           },
         },
       });
@@ -228,14 +242,14 @@ const service = {
       currentDate.getMonth(),
       1
     );
-
     const endOfMonth = new Date(
       currentDate.getFullYear(),
       currentDate.getMonth() + 1,
       0
     );
 
-    const logs = await strapi.documents(PAYMENT_LOG_API).findMany({
+    // First check: Has this payment succeeded THIS MONTH?
+    const successLogs = await strapi.documents(PAYMENT_LOG_API).findMany({
       filters: {
         project_payment: {
           documentId: projectPaymentId,
@@ -248,7 +262,34 @@ const service = {
       },
     });
 
-    return logs[0];
+    // If successful payment this month, don't retry
+    if (successLogs.length > 0) {
+      return successLogs[0];
+    }
+
+    // Second check: Has this payment FAILED in the last 10 days?
+    const tenDaysAgo = new Date(currentDate);
+    tenDaysAgo.setDate(tenDaysAgo.getDate() - 10);
+
+    const recentFailedLogs = await strapi.documents(PAYMENT_LOG_API).findMany({
+      filters: {
+        project_payment: {
+          documentId: projectPaymentId,
+        },
+        success: false,
+        createdAt: {
+          $gte: tenDaysAgo.toISOString(),
+        },
+      },
+    });
+
+    // If failed in last 10 days, skip (don't spam failed attempts)
+    if (recentFailedLogs.length > 0) {
+      return recentFailedLogs[0];
+    }
+
+    // No successful payment this month AND no failed attempt in last 10 days = OK to process
+    return null;
   },
 };
 

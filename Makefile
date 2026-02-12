@@ -21,3 +21,13 @@ commit-and-deploy:
 	git commit
 	git push origin main
 	make deploy-prod
+
+backup:
+	@echo "🔄 Starting full backup of production server..."
+	@./scripts/backup-prod-db.sh
+	@echo ""
+	@./scripts/backup-prod-db-volume.sh
+	@echo ""
+	@./scripts/backup-prod-files.sh
+	@echo ""
+	@echo "✅ All backups completed successfully!"

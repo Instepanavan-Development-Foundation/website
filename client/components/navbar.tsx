@@ -4,6 +4,7 @@ import {
   Navbar as NextUINavbar,
   NavbarContent,
   NavbarMenu,
+  NavbarMenuToggle,
   NavbarBrand,
   NavbarItem,
   NavbarMenuItem,
@@ -20,15 +21,15 @@ import { getSiteConfig } from "@/config/site";
 import { Logo } from "@/components/icons";
 import { IMenuLink } from "@/src/models/menu";
 import { ISiteConfig } from "@/src/models/site-config";
+import { isAuthenticated, logout } from "@/src/services/userService";
 
 export const Navbar = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [siteConfig, setSiteConfig] = useState<ISiteConfig | null>(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
-    setIsLoggedIn(
-      typeof window !== "undefined" && !!localStorage.getItem("jwt"),
-    );
+    setIsLoggedIn(isAuthenticated());
     (async () => {
       const config = await getSiteConfig();
 
@@ -37,9 +38,7 @@ export const Navbar = () => {
 
     // Listen for login state changes
     const handleLoginStateChange = () => {
-      setIsLoggedIn(
-        typeof window !== "undefined" && !!localStorage.getItem("jwt"),
-      );
+      setIsLoggedIn(isAuthenticated());
     };
 
     window.addEventListener("loginStateChanged", handleLoginStateChange);
@@ -50,12 +49,10 @@ export const Navbar = () => {
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("jwt");
-    localStorage.removeItem("email");
+    logout();
     setIsLoggedIn(false);
     // Dispatch custom event to notify other components of logout
     window.dispatchEvent(new CustomEvent("loginStateChanged"));
-    window.location.reload();
   };
 
   if (!siteConfig) {
@@ -63,8 +60,13 @@ export const Navbar = () => {
   }
 
   return (
-    <NextUINavbar maxWidth="xl" position="sticky">
-      <NavbarContent className="basis-1/5 sm:basis-full" justify="start">
+    <NextUINavbar
+      maxWidth="xl"
+      position="sticky"
+      isMenuOpen={isMenuOpen}
+      onMenuOpenChange={setIsMenuOpen}
+    >
+      <NavbarContent justify="start">
         <NavbarBrand as="li" className="gap-3 max-w-fit">
           <NextLink className="flex justify-start items-center gap-1" href="/">
             <Logo alt={siteConfig.logoTitle} src={siteConfig?.logo?.url} />
@@ -74,11 +76,16 @@ export const Navbar = () => {
           </NextLink>
         </NavbarBrand>
       </NavbarContent>
+      <NavbarContent className="sm:hidden" justify="end">
+        <NavbarMenuToggle
+          aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+        />
+      </NavbarContent>
       <NavbarContent
-        className="hidden sm:flex basis-1/5 sm:basis-full"
+        className="hidden sm:flex gap-4"
         justify="end"
       >
-        <ul className="hidden lg:flex gap-4 justify-start ml-2">
+        <ul className="flex gap-4">
           {siteConfig.navItems.map((item: IMenuLink) => (
             <NavbarItem key={item.href}>
               <NextLink
@@ -145,34 +152,49 @@ export const Navbar = () => {
         </NavbarItem> */}
       </NavbarContent>
 
-      {/* <NavbarContent className="lg:hidden basis-1 pl-4" justify="end">
-        <Button
-          as={Link}
-          className="text-sm font-normal text-white bg-gradient-to-r from-pink-500 to-rose-500 hover:from-rose-500 hover:to-pink-500 transition-all duration-300"
-          href="/donate"
-          size="sm"
-          startContent={<Heart className="text-white" size={16} />}
-          variant="flat"
-        >
-          Աջակցել
-        </Button>
-        <NavbarMenuToggle />
-      </NavbarContent> */}
       <NavbarMenu>
         <div className="mx-4 mt-2 flex flex-col gap-2">
           {siteConfig.navItems.map((item, index) => (
             <NavbarMenuItem key={`${item}-${index}`}>
-              <Link href={item.href}>{item.title}</Link>
+              <Link href={item.href} onClick={() => setIsMenuOpen(false)}>
+                {item.title}
+              </Link>
             </NavbarMenuItem>
           ))}
-          <NavbarMenuItem>
-            <Link
-              className="flex items-center gap-2 text-rose-500 font-medium"
-              href="/donate"
-            >
-              <Heart size={16} /> Աջակցել մեր առաքելությանը
-            </Link>
-          </NavbarMenuItem>
+          {!isLoggedIn ? (
+            <NavbarMenuItem>
+              <Link
+                className="flex items-center gap-2"
+                href="/login"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <LogIn size={16} /> Մուտք գործել
+              </Link>
+            </NavbarMenuItem>
+          ) : (
+            <>
+              <NavbarMenuItem>
+                <Link
+                  className="flex items-center gap-2"
+                  href="/profile"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <User size={16} /> Իմ պրոֆիլը
+                </Link>
+              </NavbarMenuItem>
+              <NavbarMenuItem>
+                <button
+                  className="flex items-center gap-2 text-warning"
+                  onClick={() => {
+                    handleLogout();
+                    setIsMenuOpen(false);
+                  }}
+                >
+                  <LogOut size={16} /> Դուրս գալ
+                </button>
+              </NavbarMenuItem>
+            </>
+          )}
         </div>
       </NavbarMenu>
     </NextUINavbar>

@@ -7,6 +7,7 @@ export default {
       config: {
         policies: [],
         middlewares: [],
+        auth: false,
       },
     },
     {
@@ -25,12 +26,23 @@ export default {
       config: {
         policies: [],
         middlewares: [],
+        auth: false, // Admin auth via ADMIN_API_KEY header in controller
       },
     },
     {
       method: "POST",
       path: "/payment/trigger-all-payments",
       handler: "payment.triggerAllPayments",
+      config: {
+        policies: [],
+        middlewares: [],
+        auth: false, // Admin auth via ADMIN_API_KEY header in controller
+      },
+    },
+    {
+      method: "POST",
+      path: "/payment/pay-with-saved-card",
+      handler: "payment.payWithSavedCard",
       config: {
         policies: [],
         middlewares: [],

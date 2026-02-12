@@ -44,7 +44,7 @@ export default function Donation() {
 
           <p className="text-default-600 text-xl mb-8 max-w-2xl mx-auto">
             Ձեր ներդրումն օգնում է մեզ շարունակել կառուցել ուժեղ համայնք:
-            Յուրաքանչյուր նվիրատվություն փոփոխություն է բերում:
+            Յուրաքանչյուր աջակցություն փոփոխություն է բերում:
           </p>
 
           {/* Impact cards */}
@@ -52,7 +52,7 @@ export default function Donation() {
             <Card className="p-4 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
               <div className="text-3xl font-bold text-primary mb-2">100%</div>
               <p className="text-default-600">
-                Ձեր նվիրատվությունն ուղղվում է ուղղակիորեն ծրագրերին
+                Ձեր աջակցությունն ուղղվում է ուղղակիորեն ծրագրերին
               </p>
             </Card>
             <Card className="p-4 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
@@ -91,7 +91,7 @@ export default function Donation() {
               featuredProject ? `/donate/${featuredProject.slug}` : "/projects"
             }
           >
-            <span className="text-xl px-8 py-2">Նվիրաբերել հիմա</span>
+            <span className="text-xl px-8 py-2">Աջակցել հիմա</span>
           </Link>
         </div>
       </div>

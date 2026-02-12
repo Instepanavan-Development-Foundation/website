@@ -36,7 +36,7 @@ export function Avatar({
       <Image
         alt={"contributor.name"}
         className={
-          className || "rounded-full  border-2 border-background object-contain"
+          className || "rounded-full border-2 border-gray-200 object-contain bg-white"
         }
         height={height}
         src={avatarUrl}
