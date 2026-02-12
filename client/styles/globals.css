@@ -47,58 +47,75 @@ body {
     background-color: var(--almost-black) !important;
 }
 
-/* TODO: Slider styles, move to carousel.tsx */
-  .navigation-wrapper {
-    position: relative;
-  }
-  
-  .dots {
-    display: flex;
-    padding: 10px 0;
-    justify-content: center;
-  }
-  
-  .dot {
-    border: none;
-    width: 10px;
-    height: 10px;
-    background: #c5c5c5;
-    border-radius: 50%;
-    margin: 0 5px;
-    padding: 5px;
-    cursor: pointer;
-  }
-  
-  .dot:focus {
-    outline: none;
-  }
-  
-  .dot.active {
-    background: #000;
-  }
-  
-  .arrow {
-    width: 30px;
-    height: 30px;
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    -webkit-transform: translateY(-50%);
-    fill: #fff;
-    cursor: pointer;
-  }
-  
-  .arrow--left {
-    left: 5px;
-  }
-  
-  .arrow--right {
-    left: auto;
-    right: 5px;
-  }
-  
-  .arrow--disabled {
-    fill: rgba(255, 255, 255, 0.5);
-  }
+/* Embla Carousel styles */
+.embla {
+  position: relative;
+  width: 100%;
+}
+
+.embla__viewport {
+  overflow: hidden;
+  width: 100%;
+}
+
+.embla__container {
+  display: flex;
+  touch-action: pan-y pinch-zoom;
+}
+
+.embla__slide {
+  flex: 0 0 100%;
+  min-width: 0;
+}
+
+.navigation-wrapper {
+  position: relative;
+}
+
+.dots {
+  display: flex;
+  padding: 10px 0;
+  justify-content: center;
+}
+
+.dot {
+  border: none;
+  width: 10px;
+  height: 10px;
+  background: #c5c5c5;
+  border-radius: 50%;
+  margin: 0 5px;
+  padding: 5px;
+  cursor: pointer;
+}
+
+.dot:focus {
+  outline: none;
+}
+
+.dot.active {
+  background: #000;
+}
+
+.arrow {
+  width: 30px;
+  height: 30px;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  -webkit-transform: translateY(-50%);
+  fill: #fff;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.arrow--left {
+  left: 5px;
+}
+
+.arrow--right {
+  left: auto;
+  right: 5px;
+}
   
   

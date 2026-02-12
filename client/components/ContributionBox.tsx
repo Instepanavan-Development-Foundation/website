@@ -38,43 +38,8 @@ export const ContributionBox = ({ project }: { project: IProject }) => {
     return null;
   }
 
-  if (!project.fundraisingURL) {
-    return (
-      <>
-        <Button color="success" size="lg" onPress={onOpen}>
-          Կապնվել աջակցելու համար
-        </Button>
-        <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
-          <ModalContent>
-            {(onClose) => (
-              <>
-                <ModalHeader className="flex flex-col gap-1">
-                  Մանրամասներ
-                </ModalHeader>
-                <ModalBody>
-                  <div
-                    dangerouslySetInnerHTML={{
-                      __html: siteConfig.defaultContact,
-                    }}
-                    className="text-container"
-                  />
-                </ModalBody>
-                <ModalFooter>
-                  <Button color="primary" onPress={onClose}>
-                    Փակել
-                  </Button>
-                </ModalFooter>
-              </>
-            )}
-          </ModalContent>
-        </Modal>
-      </>
-    );
-  }
-
-  const isExternalLink = project.fundraisingURL.startsWith("http");
-
-  if (isExternalLink) {
+  // External fundraiser
+  if (project.fundraisingURL) {
     return (
       <Link
         className={buttonStyles({
@@ -91,17 +56,53 @@ export const ContributionBox = ({ project }: { project: IProject }) => {
     );
   }
 
+  // Internal fundraiser (has goal)
+  if (project.requiredAmount) {
+    return (
+      <Link
+        className={buttonStyles({
+          color: "success",
+          radius: "full",
+          variant: "shadow",
+          size: "lg",
+        })}
+        href={`/donate/${project.slug}?amount=10000`}
+      >
+        <span className="text-xl px-8 py-2">Աջակցել հիմա</span>
+      </Link>
+    );
+  }
+
+  // No fundraising setup - show contact modal
   return (
-    <Link
-      className={buttonStyles({
-        color: "success",
-        radius: "full",
-        variant: "shadow",
-        size: "lg",
-      })}
-      href={`/donate/${project.slug}`}
-    >
-      <span className="text-xl px-8 py-2">Աջակցել նախագծին</span>
-    </Link>
+    <>
+      <Button color="success" size="lg" onPress={onOpen}>
+        Կապնվել աջակցելու համար
+      </Button>
+      <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex flex-col gap-1">
+                Մանրամասներ
+              </ModalHeader>
+              <ModalBody>
+                <div
+                  dangerouslySetInnerHTML={{
+                    __html: siteConfig.defaultContact,
+                  }}
+                  className="text-container"
+                />
+              </ModalBody>
+              <ModalFooter>
+                <Button color="primary" onPress={onClose}>
+                  Փակել
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
+    </>
   );
 };

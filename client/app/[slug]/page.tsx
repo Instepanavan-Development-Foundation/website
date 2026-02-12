@@ -42,7 +42,7 @@ export default async function StaticPage({ params }: IParams) {
   const [staticPage] = data;
 
   if (!staticPage) {
-    NotFound();
+    return <NotFound />;
   }
 
   return (
@@ -59,6 +59,7 @@ export default async function StaticPage({ params }: IParams) {
         <CardFooter className="flex flex-row flex-wrap gap-2">
           {staticPage.attachments?.map((attachment) => (
             <Button
+              key={attachment.id || attachment.documentId}
               as="a"
               className="btn btn-success"
               href={getMediaSrc(attachment)}

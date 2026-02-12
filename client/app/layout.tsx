@@ -25,6 +25,11 @@ export async function generateMetadata(): Promise<Metadata> {
       template: `%s - ${title}`,
       default: title,
     },
+    icons: {
+      icon: logo.url,
+      shortcut: logo.url,
+      apple: logo.url,
+    },
     openGraph: {
       type: "website",
       images: { url: logo.url },
@@ -42,11 +47,11 @@ export default async function RootLayout({
   return (
     <html suppressHydrationWarning lang="en">
       <head />
-      <body className={clsx("min-h-screen bg-background antialiased")}>
+      <body suppressHydrationWarning className={clsx("min-h-screen bg-background antialiased")}>
         <Providers themeProps={{ attribute: "class", defaultTheme: "light" }}>
           <div className="relative flex flex-col h-screen">
             <Navbar />
-            <main className="container mx-auto max-w-7xl pt-16 px-6 flex-grow">
+            <main className="container mx-auto max-w-7xl pt-2 flex-grow">
               {children}
             </main>
             <footer className="w-full flex flex-col items-center justify-center py-3 gap-2">
@@ -63,16 +68,23 @@ export default async function RootLayout({
                 ))}
               </div>
               <div className="container mx-auto max-w-7xl text-center text-sm text-default-500">
-                Site is open source under AGPL license. Feel free to view,
-                contribute or redistribute it under the terms of the license{" "}
+                Կայքը բաց կոդով է՝{" "}
+                <Link
+                  className="text-primary"
+                  href="https://en.wikipedia.org/wiki/GNU_Affero_General_Public_License"
+                  target="_blank"
+                >
+                  AGPL արտոնագրով
+                </Link>
+                ։ Կարող եք դիտել, ներդրում ունենալ կամ վերաբաշխել այն արտոնագրի պայմաններով{" "}
                 <Link
                   className="text-primary"
                   href="https://github.com/Instepanavan-Development-Foundation/website"
                   target="_blank"
                 >
-                  here
+                  այստեղ
                 </Link>
-                .
+                ։
               </div>
             </footer>
           </div>

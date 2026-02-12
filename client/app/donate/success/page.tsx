@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@heroui/button";
 import { Card } from "@heroui/card";
-import { Image } from "@heroui/image";
+import { Avatar } from "@heroui/avatar";
 import { Divider } from "@heroui/divider";
 import { Progress } from "@heroui/progress";
 import {
@@ -22,6 +22,11 @@ import {
 import Link from "next/link";
 import Confetti from "react-confetti";
 import { motion, AnimatePresence } from "framer-motion";
+import { getUserAvatarUrl } from "@/src/services/userService";
+import getData from "@/src/helpers/getData";
+import { IProject } from "@/src/models/project";
+import getProjectFunding from "@/src/helpers/getProjectFunding";
+import { IProjectFunding } from "@/src/models/project-funding";
 
 export default function DonationSuccessPage() {
   const searchParams = useSearchParams();
@@ -31,13 +36,14 @@ export default function DonationSuccessPage() {
 
   const [showConfetti, setShowConfetti] = useState(true);
   const [copied, setCopied] = useState(false);
-  const [shareCount, setShareCount] = useState(
-    Math.floor(Math.random() * 50) + 20,
-  );
   const [impactBadge, setImpactBadge] = useState("");
   const [showBadgeAnimation, setShowBadgeAnimation] = useState(false);
   const [showThankYouMessage, setShowThankYouMessage] = useState(false);
   const [donationRank, setDonationRank] = useState(0);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [project, setProject] = useState<IProject | null>(null);
+  const [funding, setFunding] = useState<IProjectFunding | null>(null);
+  const [animatedRaised, setAnimatedRaised] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // Fix for confetti positioning
@@ -63,6 +69,34 @@ export default function DonationSuccessPage() {
 
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  // Fetch user avatar and project data
+  useEffect(() => {
+    async function loadData() {
+      const url = await getUserAvatarUrl();
+      setAvatarUrl(url);
+
+      // Fetch project data if slug is available
+      if (projectSlug) {
+        const { data }: { data: IProject[] } = await getData({
+          type: "projects",
+          filters: { slug: projectSlug },
+          fields: ["name", "documentId", "donationType"],
+        });
+        if (data && data.length > 0) {
+          const projectData = data[0];
+          setProject(projectData);
+
+          // Fetch dynamic funding data
+          if (projectData.documentId) {
+            const fundingData = await getProjectFunding(projectData.documentId);
+            setFunding(fundingData);
+          }
+        }
+      }
+    }
+    loadData();
+  }, [projectSlug]);
 
   // Determine impact badge based on donation amount
   useEffect(() => {
@@ -116,14 +150,33 @@ export default function DonationSuccessPage() {
     };
   }, []);
 
-  // Simulate share count increasing
+  // Animate progress bar when funding data loads
   useEffect(() => {
-    const interval = setInterval(() => {
-      setShareCount((prev) => prev + 1);
-    }, 30000);
+    if (funding) {
+      // Get gathered amount based on project type
+      const gatheredAmount = funding.donationType === "recurring"
+        ? funding.currentMonth.recurring.amount
+        : funding.allTime.oneTime.amount;
 
-    return () => clearInterval(interval);
-  }, []);
+      if (gatheredAmount > 0) {
+        const duration = 2000; // 2 seconds
+        const steps = 60;
+        const increment = gatheredAmount / steps;
+        let currentStep = 0;
+
+        const interval = setInterval(() => {
+          currentStep++;
+          setAnimatedRaised(Math.min(increment * currentStep, gatheredAmount));
+
+          if (currentStep >= steps) {
+            clearInterval(interval);
+          }
+        }, duration / steps);
+
+        return () => clearInterval(interval);
+      }
+    }
+  }, [funding]);
 
   const handleCopyLink = () => {
     const url = window.location.href;
@@ -134,7 +187,7 @@ export default function DonationSuccessPage() {
   };
 
   const shareUrl = typeof window !== "undefined" ? window.location.href : "";
-  const shareText = `Ես նվիրաբերեցի ${amount} ֏ ${projectName}! Միացեք ինձ և աջակցեք այս կարևոր նախաձեռնությանը:`;
+  const shareText = `Ես աջակցեցի ${amount} ֏ ${projectName}! Միացեք ինձ և աջակցեք այս կարևոր նախաձեռնությանը:`;
 
   // Get badge icon based on impact level
   const getBadgeIcon = () => {
@@ -255,7 +308,7 @@ export default function DonationSuccessPage() {
                 initial={{ y: 20, opacity: 0 }}
                 transition={{ delay: 0.2, duration: 0.5 }}
               >
-                Շնորհակալություն Ձեր նվիրատվության համար!
+                Շնորհակալություն Ձեր աջակցության համար!
               </motion.h1>
               <motion.p
                 animate={{ y: 0, opacity: 1 }}
@@ -263,7 +316,7 @@ export default function DonationSuccessPage() {
                 initial={{ y: 20, opacity: 0 }}
                 transition={{ delay: 0.4, duration: 0.5 }}
               >
-                Դուք նվիրաբերել եք{" "}
+                Դուք աջակցել եք{" "}
                 <span className="font-bold text-primary">
                   {parseInt(amount).toLocaleString()} ֏
                 </span>{" "}
@@ -278,16 +331,19 @@ export default function DonationSuccessPage() {
                 <Card className="p-6 shadow-lg mb-8 bg-white border-none">
                   <div className="flex flex-col items-center">
                     <div className="relative mb-6">
-                      <div className="w-24 h-24 bg-primary-100 rounded-full flex items-center justify-center">
-                        <Image
-                          alt="Success"
-                          className="object-cover"
-                          fallbackSrc="https://via.placeholder.com/150/4338ca/ffffff?text=✓"
-                          height={80}
-                          src="/donation-success.png"
-                          width={80}
+                      {avatarUrl ? (
+                        <Avatar
+                          className="w-24 h-24"
+                          src={avatarUrl}
+                          size="lg"
+                          isBordered
+                          color="primary"
                         />
-                      </div>
+                      ) : (
+                        <div className="w-24 h-24 bg-primary-100 rounded-full flex items-center justify-center">
+                          <Heart className="w-12 h-12 text-primary" />
+                        </div>
+                      )}
                       <motion.div
                         animate={{ scale: 1 }}
                         className="absolute -top-2 -right-2 bg-gradient-to-r from-yellow-400 to-yellow-600 text-white text-xs font-bold px-2 py-1 rounded-full shadow-md"
@@ -298,68 +354,41 @@ export default function DonationSuccessPage() {
                       </motion.div>
                     </div>
 
-                    <h2 className="text-2xl font-bold mb-2">
+                    <h2 className="text-2xl font-bold mb-6">
                       Ձեր ազդեցությունը
                     </h2>
-                    <p className="text-default-600 mb-4 text-center">
-                      Ձեր նվիրատվությունը օգնում է մեզ հասնել մեր նպատակին և
-                      ստեղծել դրական փոփոխություն:
-                    </p>
 
-                    <div className="w-full mb-6">
-                      <div className="flex justify-between text-sm mb-1">
-                        <span>Հավաքված</span>
-                        <span>Նպատակ</span>
-                      </div>
-                      <motion.div
-                        animate={{ width: "100%" }}
-                        initial={{ width: 0 }}
-                        transition={{ duration: 1, delay: 0.8 }}
-                      >
-                        <Progress
-                          aria-label="Funding progress"
-                          className="h-3 mb-1"
-                          color="primary"
-                          value={65}
-                        />
-                      </motion.div>
-                      <div className="flex justify-between text-sm">
-                        <motion.span
-                          animate={{ opacity: 1 }}
-                          className="font-medium text-primary"
-                          initial={{ opacity: 0 }}
-                          transition={{ delay: 1.2 }}
-                        >
-                          2,450,000 ֏
-                        </motion.span>
-                        <span>3,500,000 ֏</span>
-                      </div>
-                    </div>
-
-                    <motion.div
-                      animate={{ x: 0, opacity: 1 }}
-                      className="bg-amber-50 p-4 rounded-lg border border-amber-100 w-full mb-6"
-                      initial={{ x: -20, opacity: 0 }}
-                      transition={{ delay: 1, duration: 0.5 }}
-                    >
-                      <p className="text-amber-800 font-medium text-center">
-                        Ձեր նվիրատվության հաստատումը ուղարկվել է Ձեր էլ. փոստին
-                      </p>
-                    </motion.div>
+                    {funding && funding.requiredAmount > 0 && (
+                      <>
+                        <div className="w-full mb-6">
+                          <div className="flex justify-between mb-2 text-sm">
+                            <span className="font-semibold">
+                              {funding.donationType === "recurring" ? "Այս ամիս հավաքված՝" : "Հավաքված՝"}
+                            </span>
+                            <span className="font-bold text-primary">
+                              {Math.round(animatedRaised).toLocaleString()} ֏ / {funding.requiredAmount.toLocaleString()} ֏
+                            </span>
+                          </div>
+                          <Progress
+                            aria-label="Նախագծի առաջընթաց"
+                            className="w-full"
+                            color="primary"
+                            size="md"
+                            value={(animatedRaised / funding.requiredAmount) * 100}
+                          />
+                          <p className="text-xs text-default-500 mt-2 text-center">
+                            {((animatedRaised / funding.requiredAmount) * 100).toFixed(1)}% նպատակից
+                          </p>
+                        </div>
+                      </>
+                    )}
 
                     <Divider className="my-4 w-full" />
 
                     <div className="w-full">
-                      <h3 className="text-lg font-semibold mb-3 text-center">
+                      <h3 className="text-lg font-semibold mb-4 text-center">
                         Կիսվեք Ձեր ազդեցությամբ
                       </h3>
-                      <motion.p
-                        animate={{ scale: [1, 1.05, 1] }}
-                        className="text-sm text-default-500 mb-4 text-center"
-                        transition={{ repeat: Infinity, duration: 3 }}
-                      >
-                        {shareCount} մարդ արդեն կիսվել է
-                      </motion.p>
 
                       <div className="flex flex-wrap gap-2 justify-center mb-4">
                         <motion.div

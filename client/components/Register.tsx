@@ -3,8 +3,9 @@
 import { Button } from "@heroui/button";
 import { Input } from "@heroui/input";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState, FormEvent, useEffect } from "react";
+import { isAuthenticated, register } from "@/src/services/userService";
 
 const Register = () => {
   const [email, setEmail] = useState("");
@@ -14,9 +15,10 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
-    if (typeof window !== "undefined" && localStorage.getItem("jwt")) {
+    if (isAuthenticated()) {
       router.replace("/");
     }
   }, [router]);
@@ -27,34 +29,22 @@ const Register = () => {
     setSuccess(false);
     if (!email || !password) {
       setError("Խնդրում ենք լրացնել էլ. հասցեն և գաղտնաբառը");
-
       return;
     }
     setLoading(true);
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/local/register`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password, username: email, fullName }),
-        },
-      );
-      const data = await res.json();
+      await register(email, password, fullName);
+      setSuccess(true);
 
-      if (!res.ok) {
-        setError(data?.error?.message || "Գրանցումը ձախողվեց");
+      // Redirect to saved URL from query parameter or home
+      const returnUrl = searchParams.get("returnUrl");
+      if (returnUrl) {
+        router.push(decodeURIComponent(returnUrl));
       } else {
-        if (typeof window !== "undefined" && data?.jwt) {
-          localStorage.setItem("jwt", data.jwt);
-          localStorage.setItem("email", email);
-          router.push("/");
-        }
-        setSuccess(true);
-        // Optionally redirect or clear form
+        router.push("/");
       }
-    } catch (err) {
-      setError("Սերվերի սխալ");
+    } catch (err: any) {
+      setError(err.message || "Սերվերի սխալ");
     } finally {
       setLoading(false);
     }

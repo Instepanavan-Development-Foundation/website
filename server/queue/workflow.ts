@@ -34,26 +34,47 @@ upper?.task({
 
     const url = `/api/payment/do-recurring-payment`;
     const data = { projectPaymentId: documentId };
-    //TODO: make sure that the request is authenticated and can be run by the admin only
-    const response = await axiosClient.post(url, data, {
-      headers: { "Content-Type": "application/json" },
-    });
 
-    console.log(`✅ Payment ${documentId}: ${response.data.message}`);
-    return { message: response.data.message };
+    try {
+      const response = await axiosClient.post(url, data, {
+        headers: {
+          "Content-Type": "application/json",
+          "x-admin-api-key": process.env.ADMIN_API_KEY,
+        },
+      });
+
+      if (response.status === 203) {
+        console.log(`⏭️  Payment ${documentId}: Already processed this month`);
+      } else {
+        console.log(`✅ Payment ${documentId}: ${response.data.message}`);
+      }
+
+      return { message: response.data.message };
+    } catch (error) {
+      const errorMessage = error.response?.data?.errorMessage || error.message;
+      console.error(`❌ Payment ${documentId} failed: ${errorMessage}`);
+
+      // Don't throw - we want to continue processing other payments
+      // Failed payment will be retried next month
+      return { error: errorMessage };
+    }
   },
 });
 
 // Main recurring payments workflow
 const recurringPaymentsTask = hatchet?.workflow({
   name: "recurring-payments-monthly",
-  onCrons: ["0 0 4 * *"], // Run at midnight on the 4th of every month (UTC)
+  onCrons: [
+    "0 0 4 * *",  // Run at midnight UTC on the 4th (4:00 AM Armenia)
+    "0 0 14 * *", // Run at midnight UTC on the 14th (4:00 AM Armenia)
+    "0 0 24 * *", // Run at midnight UTC on the 24th (4:00 AM Armenia)
+  ],
 });
 
 recurringPaymentsTask?.task({
   name: "process-recurring-payments",
-  fn: async (input: { projectDocumentId?: string }) => {
-    const { projectDocumentId } = input;
+  fn: async (input: { projectDocumentId?: string } = {}) => {
+    const { projectDocumentId } = input || {};
 
     console.log("🔄 Running monthly recurring payments...");
 
@@ -73,7 +94,7 @@ recurringPaymentsTask?.task({
         filters,
         populate: {
           project_payments: {
-            fields: ["id", "amount"],
+            fields: ["documentId", "amount"],
           },
         },
       });
@@ -127,11 +148,13 @@ export async function startRecurringPaymentSystem(strapi: Core.Strapi) {
   worker.start();
 
   try {
-    await recurringPaymentsTask.cron('monthly-payments', '0 0 4 * *', {});
-    console.log("✅ Recurring payments: Monthly cron registered (0 0 4 * *)");
+    await recurringPaymentsTask.cron('monthly-payments-4th', '0 0 4 * *', {});
+    await recurringPaymentsTask.cron('monthly-payments-14th', '0 0 14 * *', {});
+    await recurringPaymentsTask.cron('monthly-payments-24th', '0 0 24 * *', {});
+    console.log("✅ Recurring payments: Crons registered (4th, 14th, 24th at 00:00 UTC = 04:00 AM Armenia)");
   } catch (error) {
     if (error.message.includes("already exists")) {
-      console.log("✅ Recurring payments: Monthly cron active (4th of month)");
+      console.log("✅ Recurring payments: Crons active (4th, 14th, 24th)");
     } else {
       console.error("⚠️ Cron registration failed (manual trigger only)");
     }

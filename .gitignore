@@ -1,3 +1,4 @@
+.claude
 # Database volumes
 postgres/
 hatchet-data/
@@ -16,6 +17,9 @@ wireguard-config/
 
 # Local documentation (per-developer customization)
 CLAUDE.md
+
+# MCP server configuration (per-developer customization)
+.mcp.json
 
 # Database backups
 backups/

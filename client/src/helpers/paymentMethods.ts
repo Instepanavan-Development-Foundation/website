@@ -1,15 +1,17 @@
 import { IPaymentMethod } from "@/src/models/payment-method";
+import { getToken, getCurrentUser } from "@/src/services/userService";
 
 export async function getUserPaymentMethods(): Promise<IPaymentMethod[]> {
-  const jwt = typeof window !== "undefined" ? localStorage.getItem("jwt") : null;
-  
+  const jwt = getToken();
+
   if (!jwt) {
     throw new Error("No authentication token found");
   }
 
   try {
+    const userDocumentId = await getUserDocumentId();
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/payment-methods?populate=*&filters[users_permissions_user][$eq]=${await getUserId()}`,
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/payment-methods?populate=*&filters[userDocumentId][$eq]=${userDocumentId}`,
       {
         headers: {
           Authorization: `Bearer ${jwt}`,
@@ -30,16 +32,16 @@ export async function getUserPaymentMethods(): Promise<IPaymentMethod[]> {
   }
 }
 
-export async function deletePaymentMethod(paymentMethodId: number): Promise<void> {
-  const jwt = typeof window !== "undefined" ? localStorage.getItem("jwt") : null;
-  
+export async function deletePaymentMethod(documentId: string): Promise<void> {
+  const jwt = getToken();
+
   if (!jwt) {
     throw new Error("No authentication token found");
   }
 
   try {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/payment-methods/${paymentMethodId}`,
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/payment-methods/${documentId}`,
       {
         method: "DELETE",
         headers: {
@@ -58,37 +60,30 @@ export async function deletePaymentMethod(paymentMethodId: number): Promise<void
   }
 }
 
-async function getUserId(): Promise<number> {
-  const jwt = typeof window !== "undefined" ? localStorage.getItem("jwt") : null;
-  
-  if (!jwt) {
-    throw new Error("No authentication token found");
+async function getUserDocumentId(): Promise<string> {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    throw new Error("No user found");
   }
 
-  try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/users/me`,
-      {
-        headers: {
-          Authorization: `Bearer ${jwt}`,
-        },
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch user: ${response.status}`);
-    }
-
-    const user = await response.json();
-    return user.id;
-  } catch (error) {
-    console.error("Error fetching user ID:", error);
-    throw error;
+  const documentId = (user as any).documentId;
+  if (!documentId) {
+    throw new Error("User documentId not found");
   }
+
+  return documentId;
 }
 
 export function getPaymentMethodDisplayName(paymentMethod: IPaymentMethod): string {
-  if (paymentMethod.type === "ameriabank") {
+  if (paymentMethod.type === "ameriabank" && paymentMethod.params) {
+    const cardNumber = paymentMethod.params.CardNumber || paymentMethod.params.cardNumber || "";
+    // Detect card type from card number
+    const firstDigits = cardNumber.replace(/\*/g, '').substring(0, 6);
+    if (firstDigits.startsWith('4')) return 'Visa';
+    if (firstDigits.startsWith('5') || firstDigits.startsWith('2')) return 'Mastercard';
+    if (firstDigits.startsWith('34') || firstDigits.startsWith('37')) return 'American Express';
+    if (firstDigits.startsWith('6')) return 'Discover';
     return "Ameriabank";
   }
   return paymentMethod.type;
@@ -96,8 +91,9 @@ export function getPaymentMethodDisplayName(paymentMethod: IPaymentMethod): stri
 
 export function getPaymentMethodDetails(paymentMethod: IPaymentMethod): string {
   if (paymentMethod.type === "ameriabank" && paymentMethod.params) {
-    if (paymentMethod.params.cardNumber) {
-      return `**** **** **** ${paymentMethod.params.cardNumber.slice(-4)}`;
+    const cardNumber = paymentMethod.params.CardNumber || paymentMethod.params.cardNumber;
+    if (cardNumber) {
+      return cardNumber; // Already masked like 408306**1818
     }
     if (paymentMethod.params.bankAccount) {
       return `Account: ${paymentMethod.params.bankAccount}`;
