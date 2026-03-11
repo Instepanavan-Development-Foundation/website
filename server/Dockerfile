@@ -16,8 +16,8 @@ COPY . .
 
 RUN chown -R node:node /opt/app
 
-# Rebuild sharp specifically
-RUN npm rebuild sharp
+# Build sharp from source against system vips (prebuilt binaries require SSE4.2/AVX)
+RUN npm install node-addon-api && npm rebuild --build-from-source sharp
 
 
 USER node
