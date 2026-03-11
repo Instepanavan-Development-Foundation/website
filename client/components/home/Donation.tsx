@@ -72,8 +72,8 @@ export default function Donation() {
           {/* Testimonial */}
           <div className="bg-white/60 dark:bg-gray-800/60 p-4 rounded-lg mb-8 backdrop-blur-sm max-w-2xl mx-auto">
             <p className="italic text-default-600 mb-2">
-              "Ինստեփանավանի ծրագրերը փոխեցին մեր համայնքի կյանքը: Նրանց
-              աջակցությունը թույլ տվեց մեզ կառուցել ավելի պայծառ ապագա:"
+              &ldquo;Ինստեփանավանի ծրագրերը փոխեցին մեր համայնքի կյանքը: Նրանց
+              աջակցությունը թույլ տվեց մեզ կառուցել ավելի պայծառ ապագա:&rdquo;
             </p>
             <p className="text-right text-sm font-semibold">
               — Մարիամ Սարգսյան, Շահառու
