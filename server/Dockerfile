@@ -1,4 +1,4 @@
-FROM node:22-alpine3.18
+FROM node:22-alpine3.21
 # Installing libvips-dev for sharp Compatibility
 RUN apk update && apk add --no-cache build-base gcc autoconf automake zlib-dev libpng-dev nasm bash vips-dev glib-dev pkgconfig python3 git
 ARG NODE_ENV=production
