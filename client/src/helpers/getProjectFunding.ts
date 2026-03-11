@@ -1,4 +1,4 @@
-import { IProjectFunding } from "@/models/project-funding";
+import { IProjectFunding } from "@/src/models/project-funding";
 
 /**
  * Fetch dynamic project funding data from the API

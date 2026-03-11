@@ -37,6 +37,7 @@ export interface IDonations {
 
 export interface IProjectPayment {
   id: number;
+  documentId: string;
   amount: number;
   currency: number;
   project: IProject;

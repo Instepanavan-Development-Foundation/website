@@ -1,5 +1,6 @@
 export interface IMediaFormat {
   id: number;
+  documentId: string;
   name: string;
   hash: string;
   ext: string;
