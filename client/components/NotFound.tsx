@@ -83,6 +83,7 @@ export default function NotFound() {
         </div>
       )}
 
+      {/* eslint-disable-next-line react/no-unknown-property */}
       <style jsx>{`
         @keyframes shake {
           0%,

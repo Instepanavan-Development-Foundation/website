@@ -8,9 +8,7 @@ set -e  # Exit on error
 # Configuration
 TIMESTAMP=$(date +%Y-%m-%d_%H-%M-%S)
 BACKUP_FILENAME="prod-files-${TIMESTAMP}.tar.gz"
-SSH_HOST="instepanavan"
-REMOTE_PATH="./website"
-LOCAL_BACKUP_DIR="./backups"
+source "$(dirname "$0")/backup-config.sh"
 
 echo "🔄 Starting production files backup..."
 
