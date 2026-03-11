@@ -47,7 +47,10 @@ export default async function RootLayout({
   return (
     <html suppressHydrationWarning lang="en">
       <head />
-      <body suppressHydrationWarning className={clsx("min-h-screen bg-background antialiased")}>
+      <body
+        suppressHydrationWarning
+        className={clsx("min-h-screen bg-background antialiased")}
+      >
         <Providers themeProps={{ attribute: "class", defaultTheme: "light" }}>
           <div className="relative flex flex-col h-screen">
             <Navbar />
@@ -76,7 +79,8 @@ export default async function RootLayout({
                 >
                   AGPL արտոնագրով
                 </Link>
-                ։ Կարող եք դիտել, ներդրում ունենալ կամ վերաբաշխել այն արտոնագրի պայմաններով{" "}
+                ։ Կարող եք դիտել, ներդրում ունենալ կամ վերաբաշխել այն արտոնագրի
+                պայմաններով{" "}
                 <Link
                   className="text-primary"
                   href="https://github.com/Instepanavan-Development-Foundation/website"

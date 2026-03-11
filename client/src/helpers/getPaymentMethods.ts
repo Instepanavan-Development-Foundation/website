@@ -23,6 +23,7 @@ export default async function getPaymentMethods(): Promise<IPaymentMethod[]> {
 
   if (!user || !(user as any).documentId) {
     console.error("User documentId not found");
+
     return [];
   }
 
@@ -39,6 +40,7 @@ export default async function getPaymentMethods(): Promise<IPaymentMethod[]> {
 
     if (!res.ok) {
       console.error("Failed to fetch payment methods:", res.statusText);
+
       return [];
     }
 
@@ -48,10 +50,14 @@ export default async function getPaymentMethods(): Promise<IPaymentMethod[]> {
     // Parse params from JSON string to object
     return methods.map((method: any) => ({
       ...method,
-      params: typeof method.params === 'string' ? JSON.parse(method.params) : method.params
+      params:
+        typeof method.params === "string"
+          ? JSON.parse(method.params)
+          : method.params,
     }));
   } catch (e) {
     console.error("Error fetching payment methods:", e);
+
     return [];
   }
 }

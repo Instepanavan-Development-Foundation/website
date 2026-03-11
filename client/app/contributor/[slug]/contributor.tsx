@@ -45,7 +45,10 @@ export default function Contributor({
           filters = { id: contributorId };
         } else if (contributorSlug) {
           // Check if slug looks like a documentId (long alphanumeric string)
-          if (contributorSlug.length > 20 && /^[a-z0-9]+$/.test(contributorSlug)) {
+          if (
+            contributorSlug.length > 20 &&
+            /^[a-z0-9]+$/.test(contributorSlug)
+          ) {
             isUserDocumentId = true;
           } else {
             filters = { slug: contributorSlug };
@@ -67,6 +70,7 @@ export default function Contributor({
 
           if (contributors.length > 0) {
             const contributorData = contributors[0];
+
             setContributor(contributorData);
           } else {
             // No contributor found, treat as user documentId
@@ -78,19 +82,23 @@ export default function Contributor({
         if (isUserDocumentId && contributorSlug) {
           try {
             const response = await fetch(
-              `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/contributor/by-user/${contributorSlug}`
+              `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/contributor/by-user/${contributorSlug}`,
             );
+
             if (response.ok) {
               const userData = await response.json();
+
               setUserData(userData);
             } else {
               setError(true);
               setLoading(false);
+
               return;
             }
           } catch (e) {
             setError(true);
             setLoading(false);
+
             return;
           }
         }
@@ -133,15 +141,20 @@ export default function Contributor({
               },
             },
           });
+
           // Filter donations for this contributor (TODO: do on backend)
           donationsData = data.filter((d: any) =>
-            d.contributor?.some((c: any) => c.id === contributor.id)
+            d.contributor?.some((c: any) => c.id === contributor.id),
           );
         } else if (userData && contributorSlug) {
           // For users without contributor profile, fetch their project-payments by userDocumentId
           try {
-            console.log("Fetching project-payments for user documentId:", contributorSlug);
-            const url = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/project-payments?` +
+            console.log(
+              "Fetching project-payments for user documentId:",
+              contributorSlug,
+            );
+            const url =
+              `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/project-payments?` +
               `populate[project][fields][0]=name&` +
               `populate[project][fields][1]=slug&` +
               `populate[project][populate][image][fields][0]=url&` +
@@ -154,10 +167,12 @@ export default function Contributor({
 
             console.log("Fetching URL:", url);
             const response = await fetch(url);
+
             console.log("Response status:", response.status);
 
             if (response.ok) {
               const result = await response.json();
+
               console.log("Project-payments result:", result);
               // Map project-payments to donations format
               donationsData = result.data.map((pp: any) => ({
@@ -169,7 +184,10 @@ export default function Contributor({
               }));
               console.log("Mapped donations:", donationsData);
             } else {
-              console.error("Failed to fetch project-payments, status:", response.status);
+              console.error(
+                "Failed to fetch project-payments, status:",
+                response.status,
+              );
             }
           } catch (e) {
             console.error("Failed to fetch project-payments:", e);
@@ -223,7 +241,11 @@ export default function Contributor({
     return <NotFound />;
   }
 
-  const displayName = contributor?.fullName || (userData as any)?.fullName || userData?.username || "Օգտատեր";
+  const displayName =
+    contributor?.fullName ||
+    (userData as any)?.fullName ||
+    userData?.username ||
+    "Օգտատեր";
   const displayAbout = contributor?.about || "";
 
   return (
@@ -243,7 +265,9 @@ export default function Contributor({
         </div>
         <div className="text-center md:text-left">
           <h1 className="text-4xl font-bold mb-2">{displayName}</h1>
-          {displayAbout && <p className="text-default-500 max-w-2xl mb-4">{displayAbout}</p>}
+          {displayAbout && (
+            <p className="text-default-500 max-w-2xl mb-4">{displayAbout}</p>
+          )}
           {showCopyLink && contributor && (
             <Button
               className="mb-4"
@@ -263,41 +287,42 @@ export default function Contributor({
             <h2 className="text-3xl font-bold mb-8">Աջակցություն</h2>
             <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
               {blogs.map((blog) => (
-              <Card
-                key={blog.slug}
-                className="hover:shadow-lg transition-shadow"
-              >
-                <CardBody>
-                  <div className="flex flex-col md:flex-row gap-4">
-                    <Link href={`/project/${blog.project.slug}`}>
-                      <Image
-                        alt={
-                          blog.project.image.alternativeText || "project image"
-                        }
-                        className="rounded-lg object-cover"
-                        height={80}
-                        src={getMediaSrc(blog.project.image)}
-                        width={80}
-                      />
-                    </Link>
-                    <div>
+                <Card
+                  key={blog.slug}
+                  className="hover:shadow-lg transition-shadow"
+                >
+                  <CardBody>
+                    <div className="flex flex-col md:flex-row gap-4">
                       <Link href={`/project/${blog.project.slug}`}>
-                        Նախագիծ։ {blog.project.name}
+                        <Image
+                          alt={
+                            blog.project.image.alternativeText ||
+                            "project image"
+                          }
+                          className="rounded-lg object-cover"
+                          height={80}
+                          src={getMediaSrc(blog.project.image)}
+                          width={80}
+                        />
                       </Link>
-                      <p>
-                        <Link
-                          className="mb-1"
-                          color="secondary"
-                          href={`/blog/${blog.slug}`}
-                        >
-                          {blog.contribution[0].text}
+                      <div>
+                        <Link href={`/project/${blog.project.slug}`}>
+                          Նախագիծ։ {blog.project.name}
                         </Link>
-                      </p>
-                      <p>{prettyDate(blog.createdAt)}</p>
+                        <p>
+                          <Link
+                            className="mb-1"
+                            color="secondary"
+                            href={`/blog/${blog.slug}`}
+                          >
+                            {blog.contribution[0].text}
+                          </Link>
+                        </p>
+                        <p>{prettyDate(blog.createdAt)}</p>
+                      </div>
                     </div>
-                  </div>
-                </CardBody>
-              </Card>
+                  </CardBody>
+                </Card>
               ))}
             </div>
           </div>

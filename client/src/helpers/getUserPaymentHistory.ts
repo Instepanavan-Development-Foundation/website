@@ -16,7 +16,7 @@ import { IPaymentLog } from "../models/getData";
  * @returns Array of payment logs with populated project data
  */
 export async function getUserPaymentHistory(
-  userDocumentId: string
+  userDocumentId: string,
 ): Promise<IPaymentLog[]> {
   const baseUrl =
     process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:1337";
@@ -29,6 +29,7 @@ export async function getUserPaymentHistory(
 
     if (!jwt) {
       console.error("No authentication token found");
+
       return [];
     }
 
@@ -41,13 +42,16 @@ export async function getUserPaymentHistory(
 
     if (!response.ok) {
       console.error("Failed to fetch payment history:", response.statusText);
+
       return [];
     }
 
     const json = await response.json();
+
     return json.data || [];
   } catch (error) {
     console.error("Error fetching payment history:", error);
+
     return [];
   }
 }

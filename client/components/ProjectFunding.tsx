@@ -1,8 +1,9 @@
 "use client";
 
+import { Card, CardBody } from "@heroui/card";
+
 import { IProjectFunding } from "@/src/models/project-funding";
 import { formatMonthArmenian } from "@/src/helpers/armenianMonths";
-import { Card, CardBody } from "@heroui/card";
 
 interface ProjectFundingProps {
   funding: IProjectFunding;
@@ -20,9 +21,10 @@ export function ProjectFunding({ funding }: ProjectFundingProps) {
   const gatheredAmount = isRecurring
     ? funding.currentMonth.recurring.amount
     : funding.allTime.oneTime.amount;
-  const progressPercent = funding.requiredAmount > 0
-    ? Math.min((gatheredAmount / funding.requiredAmount) * 100, 100)
-    : 0;
+  const progressPercent =
+    funding.requiredAmount > 0
+      ? Math.min((gatheredAmount / funding.requiredAmount) * 100, 100)
+      : 0;
 
   return (
     <div className="max-w-md">
@@ -52,7 +54,8 @@ export function ProjectFunding({ funding }: ProjectFundingProps) {
                   />
                 </div>
                 <p className="text-xs text-gray-500">
-                  Ամսական նպատակ՝ {formatCurrency(funding.requiredAmount)} AMD ({progressPercent.toFixed(0)}%)
+                  Ամսական նպատակ՝ {formatCurrency(funding.requiredAmount)} AMD (
+                  {progressPercent.toFixed(0)}%)
                 </p>
               </>
             )}
@@ -72,8 +75,7 @@ export function ProjectFunding({ funding }: ProjectFundingProps) {
               <span className="text-lg text-gray-600">AMD</span>
             </div>
             <p className="text-sm text-gray-500 mb-3">
-              Միանվագ աջակցություններ ▪️ {funding.allTime.oneTime.count}{" "}
-              աջակից
+              Միանվագ աջակցություններ ▪️ {funding.allTime.oneTime.count} աջակից
             </p>
             {funding.requiredAmount > 0 && (
               <>
@@ -84,7 +86,8 @@ export function ProjectFunding({ funding }: ProjectFundingProps) {
                   />
                 </div>
                 <p className="text-xs text-gray-500">
-                  Ընդհանուր նպատակ՝ {formatCurrency(funding.requiredAmount)} AMD ({progressPercent.toFixed(0)}%)
+                  Ընդհանուր նպատակ՝ {formatCurrency(funding.requiredAmount)} AMD
+                  ({progressPercent.toFixed(0)}%)
                 </p>
               </>
             )}

@@ -16,6 +16,7 @@ export interface User {
  */
 export function getToken(): string | null {
   if (typeof window === "undefined") return null;
+
   return localStorage.getItem("jwt");
 }
 
@@ -47,6 +48,7 @@ export function isAuthenticated(): boolean {
  */
 export async function getCurrentUser(): Promise<User | null> {
   const token = getToken();
+
   if (!token) return null;
 
   try {
@@ -54,7 +56,7 @@ export async function getCurrentUser(): Promise<User | null> {
       `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/users/me`,
       {
         headers: { Authorization: `Bearer ${token}` },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -62,13 +64,16 @@ export async function getCurrentUser(): Promise<User | null> {
         // Token is invalid, remove it
         removeToken();
       }
+
       return null;
     }
 
     const user = await response.json();
+
     return user;
   } catch (error) {
     console.error("Failed to fetch user:", error);
+
     return null;
   }
 }
@@ -79,6 +84,7 @@ export async function getCurrentUser(): Promise<User | null> {
 export function getGravatarUrl(email: string, size = 200): string {
   const trimmedEmail = email.trim().toLowerCase();
   const hash = crypto.createHash("sha256").update(trimmedEmail).digest("hex");
+
   return `https://www.gravatar.com/avatar/${hash}?s=${size}&d=identicon`;
 }
 
@@ -87,7 +93,9 @@ export function getGravatarUrl(email: string, size = 200): string {
  */
 export async function getUserAvatarUrl(size = 200): Promise<string | null> {
   const user = await getCurrentUser();
+
   if (!user?.email) return null;
+
   return getGravatarUrl(user.email, size);
 }
 
@@ -96,7 +104,7 @@ export async function getUserAvatarUrl(size = 200): Promise<string | null> {
  */
 export async function login(
   identifier: string,
-  password: string
+  password: string,
 ): Promise<{ user: User; jwt: string }> {
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/local`,
@@ -104,7 +112,7 @@ export async function login(
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ identifier, password }),
-    }
+    },
   );
 
   const data = await response.json();
@@ -125,7 +133,7 @@ export async function login(
 export async function register(
   email: string,
   password: string,
-  fullName?: string
+  fullName?: string,
 ): Promise<{ user: User; jwt: string }> {
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/local/register`,
@@ -133,7 +141,7 @@ export async function register(
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username: email, email, password, fullName }),
-    }
+    },
   );
 
   const data = await response.json();

@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAuth } from "@/src/hooks/useAuth";
 import { Card, CardBody } from "@heroui/card";
 import { Button } from "@heroui/button";
 import { Input } from "@heroui/input";
@@ -19,33 +18,44 @@ import { Tabs, Tab } from "@heroui/tabs";
 import { Skeleton } from "@heroui/skeleton";
 import { Chip } from "@heroui/chip";
 import { Divider } from "@heroui/divider";
-import { Avatar as HeroAvatar } from "@heroui/avatar";
-import { ScrollShadow } from "@heroui/scroll-shadow";
 import { Listbox, ListboxItem } from "@heroui/listbox";
 import Link from "next/link";
-import { CreditCard, DollarSign, Calendar, TrendingUp, Mail, User as UserIcon, Trash2, Receipt, CheckCircle, XCircle } from "lucide-react";
+import {
+  CreditCard,
+  TrendingUp,
+  Mail,
+  User as UserIcon,
+  Trash2,
+  Receipt,
+  CheckCircle,
+  XCircle,
+} from "lucide-react";
 
-import Contributor from "../contributor/[slug]/contributor";
-
+import { useAuth } from "@/src/hooks/useAuth";
 import { getUserContributor } from "@/src/helpers/getUserContributor";
 import { IContributor } from "@/src/models/contributor";
 import { IProjectPayment, IPaymentLog } from "@/src/models/getData";
-import getData from "@/src/helpers/getData";
 import getMediaSrc from "@/src/helpers/getMediaUrl";
 import { formatCurrency } from "@/components/home/ProjectCard";
 import { IPaymentMethod } from "@/src/models/payment-method";
-import { getUserPaymentMethods, getPaymentMethodDisplayName, getPaymentMethodDetails, deletePaymentMethod } from "@/src/helpers/paymentMethods";
+import {
+  getUserPaymentMethods,
+  getPaymentMethodDisplayName,
+  getPaymentMethodDetails,
+  deletePaymentMethod,
+} from "@/src/helpers/paymentMethods";
 import { getUserPaymentHistory } from "@/src/helpers/getUserPaymentHistory";
 import { getUserSubscriptions } from "@/src/helpers/getUserSubscriptions";
 
 // Helper function to get user avatar URL
 const getUserAvatarUrl = (email: string) => {
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     // Server-side: use a default avatar
     return `https://ui-avatars.com/api/?name=${encodeURIComponent(email)}&background=random`;
   }
   // Client-side: use Gravatar with email hash
   const hash = email.trim().toLowerCase();
+
   return `https://www.gravatar.com/avatar/${hash}?d=identicon&s=200`;
 };
 
@@ -65,10 +75,20 @@ export default function MyProfile() {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
   // Payment method deletion states
-  const [deletingPaymentMethodId, setDeletingPaymentMethodId] = useState<number | null>(null);
-  const [methodToDelete, setMethodToDelete] = useState<IPaymentMethod | null>(null);
-  const { isOpen: isDeleteModalOpen, onOpen: onDeleteModalOpen, onOpenChange: onDeleteModalOpenChange } = useDisclosure();
-  const [paymentMethodError, setPaymentMethodError] = useState<string | null>(null);
+  const [deletingPaymentMethodId, setDeletingPaymentMethodId] = useState<
+    number | null
+  >(null);
+  const [methodToDelete, setMethodToDelete] = useState<IPaymentMethod | null>(
+    null,
+  );
+  const {
+    isOpen: isDeleteModalOpen,
+    onOpen: onDeleteModalOpen,
+    onOpenChange: onDeleteModalOpenChange,
+  } = useDisclosure();
+  const [paymentMethodError, setPaymentMethodError] = useState<string | null>(
+    null,
+  );
 
   // Edit mode states
   const [isEditing, setIsEditing] = useState(false);
@@ -110,8 +130,10 @@ export default function MyProfile() {
       // Fetch user's subscriptions using new helper
       try {
         const userDocumentId = (userData as any).documentId;
+
         if (userDocumentId) {
           const subs = await getUserSubscriptions(userDocumentId);
+
           setSubscriptions(subs);
         } else {
           setSubscriptions([]);
@@ -124,6 +146,7 @@ export default function MyProfile() {
       // Load payment methods
       try {
         const methods = await getUserPaymentMethods();
+
         setPaymentMethods(methods);
       } catch (error) {
         console.error("Failed to load payment methods:", error);
@@ -140,13 +163,16 @@ export default function MyProfile() {
     const fetchPaymentHistory = async () => {
       if (!user) {
         setPaymentHistory([]);
+
         return;
       }
 
       try {
         const userDocumentId = (user as any).documentId;
+
         if (userDocumentId) {
           const history = await getUserPaymentHistory(userDocumentId);
+
           setPaymentHistory(history);
         } else {
           setPaymentHistory([]);
@@ -170,7 +196,10 @@ export default function MyProfile() {
     }
 
     // Full name is optional but if provided, should have minimum length
-    if (editFormData.fullName.trim() && editFormData.fullName.trim().length < 2) {
+    if (
+      editFormData.fullName.trim() &&
+      editFormData.fullName.trim().length < 2
+    ) {
       errors.fullName = "Ամբողջ անունը պետք է լինի առնվազն 2 նիշ";
     }
 
@@ -264,11 +293,15 @@ export default function MyProfile() {
 
     try {
       await deletePaymentMethod(methodToDelete.documentId);
-      setPaymentMethods(prev => prev.filter(method => method.id !== methodToDelete.id));
+      setPaymentMethods((prev) =>
+        prev.filter((method) => method.id !== methodToDelete.id),
+      );
       setMethodToDelete(null);
       onDeleteModalOpenChange();
     } catch (err) {
-      setPaymentMethodError(err instanceof Error ? err.message : "Վճարման եղանակը ջնջելու սխալ");
+      setPaymentMethodError(
+        err instanceof Error ? err.message : "Վճարման եղանակը ջնջելու սխալ",
+      );
     } finally {
       setDeletingPaymentMethodId(null);
     }
@@ -378,7 +411,9 @@ export default function MyProfile() {
   }
 
   // Calculate stats
-  const activeSubscriptionsCount = subscriptions.filter(s => s.type === "recurring").length;
+  const activeSubscriptionsCount = subscriptions.filter(
+    (s) => s.type === "recurring",
+  ).length;
   const totalDonations = subscriptions.reduce((sum, s) => sum + s.amount, 0);
   const displayName = user?.fullName || user?.username || "...";
   const avatarUrl = user?.email ? getUserAvatarUrl(user.email) : undefined;
@@ -389,8 +424,6 @@ export default function MyProfile() {
       <Card className="p-6">
         <CardBody>
           <User
-            name={displayName}
-            description={user?.email}
             avatarProps={{
               src: avatarUrl,
               size: "lg",
@@ -410,6 +443,8 @@ export default function MyProfile() {
               name: "text-2xl font-bold",
               description: "text-default-500",
             }}
+            description={user?.email}
+            name={displayName}
           />
         </CardBody>
       </Card>
@@ -419,15 +454,16 @@ export default function MyProfile() {
         <CardBody>
           <Tabs
             aria-label="Profile sections"
-            color="primary"
-            variant="underlined"
             classNames={{
               base: "w-full",
               tabList: "gap-2 w-full relative rounded-none p-0 overflow-x-auto",
               cursor: "w-full",
               tab: "max-w-fit px-2 h-12",
-              tabContent: "group-data-[selected=true]:text-primary text-xs sm:text-sm"
+              tabContent:
+                "group-data-[selected=true]:text-primary text-xs sm:text-sm",
             }}
+            color="primary"
+            variant="underlined"
           >
             {/* Subscriptions Tab - FIRST */}
             <Tab
@@ -435,9 +471,11 @@ export default function MyProfile() {
               title={
                 <div className="flex items-center gap-1 sm:gap-2">
                   <TrendingUp className="w-4 h-4" />
-                  <span className="whitespace-nowrap">Բաժանորդագրություններ</span>
+                  <span className="whitespace-nowrap">
+                    Բաժանորդագրություններ
+                  </span>
                   {activeSubscriptionsCount > 0 && (
-                    <Chip size="sm" color="primary" variant="flat">
+                    <Chip color="primary" size="sm" variant="flat">
                       {activeSubscriptionsCount}
                     </Chip>
                   )}
@@ -452,7 +490,9 @@ export default function MyProfile() {
                         <CardBody className="p-0">
                           {/* Project Image */}
                           {subscription.project?.image && (
-                            <Link href={`/project/${subscription.project.slug}`}>
+                            <Link
+                              href={`/project/${subscription.project.slug}`}
+                            >
                               <Image
                                 alt={
                                   subscription.project.image.alternativeText ||
@@ -469,24 +509,34 @@ export default function MyProfile() {
                           {/* Card Content */}
                           <div className="p-4 space-y-3">
                             <div className="flex justify-between items-start">
-                              <Link href={`/project/${subscription.project?.slug}`}>
+                              <Link
+                                href={`/project/${subscription.project?.slug}`}
+                              >
                                 <h3 className="text-lg font-semibold hover:text-primary transition-colors line-clamp-2">
                                   {subscription.project?.name}
                                 </h3>
                               </Link>
                               <Chip
+                                color={
+                                  subscription.type === "recurring"
+                                    ? "success"
+                                    : "default"
+                                }
                                 size="sm"
-                                color={subscription.type === "recurring" ? "success" : "default"}
                                 variant="flat"
                               >
-                                {subscription.type === "recurring" ? "Ամսական" : "Միանգամյա"}
+                                {subscription.type === "recurring"
+                                  ? "Ամսական"
+                                  : "Միանգամյա"}
                               </Chip>
                             </div>
 
                             <Divider />
 
                             <div className="flex justify-between items-center">
-                              <span className="text-sm text-default-600">Գումար</span>
+                              <span className="text-sm text-default-600">
+                                Գումար
+                              </span>
                               <span className="text-lg font-bold text-primary">
                                 {formatCurrency(subscription.amount)}
                               </span>
@@ -496,10 +546,14 @@ export default function MyProfile() {
                               <Button
                                 className="w-full"
                                 color="danger"
-                                isLoading={cancellingSubscription === subscription.id}
+                                isLoading={
+                                  cancellingSubscription === subscription.id
+                                }
                                 size="sm"
                                 variant="light"
-                                onPress={() => handleCancelSubscriptionClick(subscription)}
+                                onPress={() =>
+                                  handleCancelSubscriptionClick(subscription)
+                                }
                               >
                                 Չեղարկել բաժանորդագրությունը
                               </Button>
@@ -512,7 +566,9 @@ export default function MyProfile() {
                 ) : (
                   <div className="text-center py-12">
                     <TrendingUp className="w-16 h-16 mx-auto mb-4 text-default-300" />
-                    <h3 className="text-lg font-semibold mb-2">Բաժանորդագրություններ չկան</h3>
+                    <h3 className="text-lg font-semibold mb-2">
+                      Բաժանորդագրություններ չկան
+                    </h3>
                     <p className="text-default-500 mb-4">
                       Դուք դեռ չունեք ակտիվ բաժանորդագրություններ
                     </p>
@@ -532,7 +588,9 @@ export default function MyProfile() {
               title={
                 <div className="flex items-center gap-1 sm:gap-2">
                   <Receipt className="w-4 h-4" />
-                  <span className="whitespace-nowrap">Վճարումների պատմություն</span>
+                  <span className="whitespace-nowrap">
+                    Վճարումների պատմություն
+                  </span>
                 </div>
               }
             >
@@ -545,29 +603,54 @@ export default function MyProfile() {
                           // Get project name from multiple sources (fallback chain)
                           const projectName =
                             log.project_payment?.project?.name || // First try: populated project relation
-                            log.donation?.project?.name ||         // Second try: donation project relation
-                            log.project_payment?.name ||           // Third try: project_payment.name field (stored at payment time)
-                            "Վճարում";                             // Final fallback
+                            log.donation?.project?.name || // Second try: donation project relation
+                            log.project_payment?.name || // Third try: project_payment.name field (stored at payment time)
+                            "Վճարում"; // Final fallback
 
                           return (
                             <ListboxItem
                               key={log.id}
-                              textValue={projectName}
                               description={
                                 <span className="text-small text-default-500">
-                                  {new Date(log.createdAt).toLocaleDateString("hy-AM", {
-                                    year: 'numeric',
-                                    month: 'long',
-                                    day: 'numeric',
-                                    hour: '2-digit',
-                                    minute: '2-digit'
-                                  })}
+                                  {new Date(log.createdAt).toLocaleDateString(
+                                    "hy-AM",
+                                    {
+                                      year: "numeric",
+                                      month: "long",
+                                      day: "numeric",
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    },
+                                  )}
                                 </span>
                               }
+                              endContent={
+                                <div className="flex flex-col items-end gap-1 shrink-0">
+                                  <span className="text-base font-bold text-primary whitespace-nowrap">
+                                    {formatCurrency(
+                                      log.amount,
+                                      log.currency?.toUpperCase() === "AMD"
+                                        ? "AMD"
+                                        : "AMD",
+                                    )}
+                                  </span>
+                                  <Chip
+                                    color={log.success ? "success" : "danger"}
+                                    size="sm"
+                                    variant="flat"
+                                  >
+                                    {log.success ? "Հաջողված" : "Ձախողված"}
+                                  </Chip>
+                                </div>
+                              }
                               startContent={
-                                <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${
-                                  log.success ? 'bg-success-100' : 'bg-danger-100'
-                                }`}>
+                                <div
+                                  className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${
+                                    log.success
+                                      ? "bg-success-100"
+                                      : "bg-danger-100"
+                                  }`}
+                                >
                                   {log.success ? (
                                     <CheckCircle className="w-5 h-5 text-success-600" />
                                   ) : (
@@ -575,22 +658,11 @@ export default function MyProfile() {
                                   )}
                                 </div>
                               }
-                              endContent={
-                                <div className="flex flex-col items-end gap-1 shrink-0">
-                                  <span className="text-base font-bold text-primary whitespace-nowrap">
-                                    {formatCurrency(log.amount, log.currency?.toUpperCase() === 'AMD' ? 'AMD' : 'AMD')}
-                                  </span>
-                                  <Chip
-                                    size="sm"
-                                    color={log.success ? "success" : "danger"}
-                                    variant="flat"
-                                  >
-                                    {log.success ? "Հաջողված" : "Ձախողված"}
-                                  </Chip>
-                                </div>
-                              }
+                              textValue={projectName}
                             >
-                              <span className="font-semibold text-base">{projectName}</span>
+                              <span className="font-semibold text-base">
+                                {projectName}
+                              </span>
                             </ListboxItem>
                           );
                         })}
@@ -600,7 +672,9 @@ export default function MyProfile() {
                 ) : (
                   <div className="text-center py-12">
                     <Receipt className="w-16 h-16 mx-auto mb-4 text-default-300" />
-                    <h3 className="text-lg font-semibold mb-2">Վճարումների պատմություն չկա</h3>
+                    <h3 className="text-lg font-semibold mb-2">
+                      Վճարումների պատմություն չկա
+                    </h3>
                     <p className="text-default-500 mb-4">
                       Դուք դեռ չեք կատարել որևէ վճարում
                     </p>
@@ -648,25 +722,33 @@ export default function MyProfile() {
                   {isEditing ? (
                     <>
                       <Input
-                        label="Անուն Ազգանուն"
-                        labelPlacement="outside"
                         errorMessage={validationErrors.fullName}
                         isInvalid={!!validationErrors.fullName}
+                        label="Անուն Ազգանուն"
+                        labelPlacement="outside"
                         placeholder="Մուտքագրեք ձեր անունը"
+                        startContent={
+                          <UserIcon className="w-4 h-4 text-default-400" />
+                        }
                         value={editFormData.fullName}
-                        onChange={(e) => handleInputChange("fullName", e.target.value)}
-                        startContent={<UserIcon className="w-4 h-4 text-default-400" />}
+                        onChange={(e) =>
+                          handleInputChange("fullName", e.target.value)
+                        }
                       />
                       <Input
-                        label="Էլ. հասցե"
-                        labelPlacement="outside"
                         errorMessage={validationErrors.email}
                         isInvalid={!!validationErrors.email}
+                        label="Էլ. հասցե"
+                        labelPlacement="outside"
                         placeholder="your@email.com"
+                        startContent={
+                          <Mail className="w-4 h-4 text-default-400" />
+                        }
                         type="email"
                         value={editFormData.email}
-                        onChange={(e) => handleInputChange("email", e.target.value)}
-                        startContent={<Mail className="w-4 h-4 text-default-400" />}
+                        onChange={(e) =>
+                          handleInputChange("email", e.target.value)
+                        }
                       />
                       <div className="flex gap-2 mt-6">
                         <Button
@@ -692,8 +774,12 @@ export default function MyProfile() {
                       <div className="flex items-center gap-3 p-3 bg-default-50 rounded-lg">
                         <UserIcon className="w-5 h-5 text-default-400" />
                         <div>
-                          <p className="text-xs text-default-500">Անուն Ազգանուն</p>
-                          <p className="text-sm font-medium">{user.fullName || "Նշված չէ"}</p>
+                          <p className="text-xs text-default-500">
+                            Անուն Ազգանուն
+                          </p>
+                          <p className="text-sm font-medium">
+                            {user.fullName || "Նշված չէ"}
+                          </p>
                         </div>
                       </div>
                       <div className="flex items-center gap-3 p-3 bg-default-50 rounded-lg">
@@ -717,7 +803,7 @@ export default function MyProfile() {
                   <CreditCard className="w-4 h-4" />
                   <span className="whitespace-nowrap">Վճարման եղանակներ</span>
                   {paymentMethods.length > 0 && (
-                    <Chip size="sm" color="secondary" variant="flat">
+                    <Chip color="secondary" size="sm" variant="flat">
                       {paymentMethods.length}
                     </Chip>
                   )}
@@ -726,9 +812,13 @@ export default function MyProfile() {
             >
               <div className="py-4 space-y-4">
                 <div>
-                  <h3 className="text-lg font-semibold">Պահպանված վճարման եղանակներ</h3>
+                  <h3 className="text-lg font-semibold">
+                    Պահպանված վճարման եղանակներ
+                  </h3>
                   <p className="text-sm text-default-500">
-                    Կառավարեք ձեր պահպանված քարտերը և վճարման եղանակները։ Այս եղանակներն օգտագործվում են նախկինում կատարված վճարումների համար։
+                    Կառավարեք ձեր պահպանված քարտերը և վճարման եղանակները։ Այս
+                    եղանակներն օգտագործվում են նախկինում կատարված վճարումների
+                    համար։
                   </p>
                 </div>
 
@@ -749,22 +839,29 @@ export default function MyProfile() {
                                 <CreditCard className="w-6 h-6 text-primary-600" />
                               </div>
                               <div className="flex-1">
-                                <h4 className="font-semibold text-lg">{getPaymentMethodDisplayName(method)}</h4>
+                                <h4 className="font-semibold text-lg">
+                                  {getPaymentMethodDisplayName(method)}
+                                </h4>
                                 <p className="text-sm text-default-500">
                                   {getPaymentMethodDetails(method)}
                                 </p>
                                 <p className="text-xs text-default-400 mt-1">
-                                  Ավելացվել է՝ {new Date(method.createdAt).toLocaleDateString("hy-AM")}
+                                  Ավելացվել է՝{" "}
+                                  {new Date(
+                                    method.createdAt,
+                                  ).toLocaleDateString("hy-AM")}
                                 </p>
                               </div>
                             </div>
                             <Button
-                              color="danger"
-                              variant="ghost"
-                              size="sm"
                               fullWidth
+                              color="danger"
                               isLoading={deletingPaymentMethodId === method.id}
-                              onPress={() => handleDeletePaymentMethodClick(method)}
+                              size="sm"
+                              variant="ghost"
+                              onPress={() =>
+                                handleDeletePaymentMethodClick(method)
+                              }
                             >
                               <Trash2 className="w-4 h-4 mr-2" />
                               Հեռացնել
@@ -777,9 +874,12 @@ export default function MyProfile() {
                 ) : (
                   <div className="text-center py-12">
                     <CreditCard className="w-16 h-16 mx-auto mb-4 text-default-300" />
-                    <h3 className="text-lg font-semibold mb-2">Վճարման եղանակներ չկան</h3>
+                    <h3 className="text-lg font-semibold mb-2">
+                      Վճարման եղանակներ չկան
+                    </h3>
                     <p className="text-default-500 mb-4">
-                      Դուք դեռ չունեք պահպանված վճարման եղանակներ։ Նրանք ավտոմատ կպահպանվեն, երբ կատարեք ձեր առաջին աջակցությունը։
+                      Դուք դեռ չունեք պահպանված վճարման եղանակներ։ Նրանք ավտոմատ
+                      կպահպանվեն, երբ կատարեք ձեր առաջին աջակցությունը։
                     </p>
                   </div>
                 )}
@@ -809,8 +909,8 @@ export default function MyProfile() {
               <ModalFooter>
                 <Button
                   color="default"
-                  variant="light"
                   isDisabled={cancellingSubscription !== null}
+                  variant="light"
                   onPress={onClose}
                 >
                   Չեղարկել
@@ -831,7 +931,11 @@ export default function MyProfile() {
       </Modal>
 
       {/* Delete Payment Method Confirmation Modal */}
-      <Modal isOpen={isDeleteModalOpen} placement="center" onOpenChange={onDeleteModalOpenChange}>
+      <Modal
+        isOpen={isDeleteModalOpen}
+        placement="center"
+        onOpenChange={onDeleteModalOpenChange}
+      >
         <ModalContent>
           {(onClose) => (
             <>
@@ -843,17 +947,19 @@ export default function MyProfile() {
                   Դուք վստա՞հ եք, որ ցանկանում եք ջնջել այս վճարման եղանակը՝
                 </p>
                 <p className="font-semibold text-primary">
-                  {methodToDelete && getPaymentMethodDisplayName(methodToDelete)}
+                  {methodToDelete &&
+                    getPaymentMethodDisplayName(methodToDelete)}
                 </p>
                 <p className="text-sm text-default-500 mt-2">
-                  Այս գործողությունը հնարավոր չէ չեղարկել։ Բոլոր հետագա վճարումները կպահանջեն նոր վճարման եղանակ։
+                  Այս գործողությունը հնարավոր չէ չեղարկել։ Բոլոր հետագա
+                  վճարումները կպահանջեն նոր վճարման եղանակ։
                 </p>
               </ModalBody>
               <ModalFooter>
                 <Button
                   color="default"
-                  variant="light"
                   isDisabled={deletingPaymentMethodId !== null}
+                  variant="light"
                   onPress={onClose}
                 >
                   Չեղարկել

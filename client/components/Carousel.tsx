@@ -42,10 +42,10 @@ export default function Carousel({ slider, image }: ICarouselProps) {
   if (slider?.videoIframe) {
     slides.push(
       <div
-        key="video"
         dangerouslySetInnerHTML={{ __html: videoIframe || "" }}
+        key="video"
         className="text-container"
-      />
+      />,
     );
   }
 
@@ -61,7 +61,7 @@ export default function Carousel({ slider, image }: ICarouselProps) {
           shadow="sm"
           src={getMediaUrl(image)}
           width="100%"
-        />
+        />,
       );
     });
   }

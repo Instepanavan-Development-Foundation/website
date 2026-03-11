@@ -16,7 +16,7 @@ import { IProjectFunding } from "@/models/project-funding";
  * @returns IProjectFunding with dynamic calculated amounts, or null if not found
  */
 export default async function getProjectFunding(
-  projectDocumentId: string
+  projectDocumentId: string,
 ): Promise<IProjectFunding | null> {
   const baseUrl =
     process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:1337";
@@ -32,9 +32,11 @@ export default async function getProjectFunding(
     }
 
     const json = await response.json();
+
     return json.data || null;
   } catch (error) {
     console.error("Failed to fetch project funding:", error);
+
     return null;
   }
 }

@@ -25,13 +25,14 @@ export default function EmblaCarousel({
   const [currentSlide, setCurrentSlide] = useState(0);
   const hasMultipleSlides = children.length > 1;
 
-  const plugins = hasMultipleSlides && autoplay
-    ? [Autoplay({ delay: autoplayDelay, stopOnInteraction: true })]
-    : [];
+  const plugins =
+    hasMultipleSlides && autoplay
+      ? [Autoplay({ delay: autoplayDelay, stopOnInteraction: true })]
+      : [];
 
   const [emblaRef, emblaApi] = useEmblaCarousel(
     { loop: loop && hasMultipleSlides },
-    plugins
+    plugins,
   );
 
   const scrollPrev = useCallback(() => {
@@ -46,7 +47,7 @@ export default function EmblaCarousel({
     (index: number) => {
       if (emblaApi) emblaApi.scrollTo(index);
     },
-    [emblaApi]
+    [emblaApi],
   );
 
   const onSelect = useCallback(() => {
@@ -58,6 +59,7 @@ export default function EmblaCarousel({
     if (!emblaApi) return;
     onSelect();
     emblaApi.on("select", onSelect);
+
     return () => {
       emblaApi.off("select", onSelect);
     };
@@ -71,7 +73,7 @@ export default function EmblaCarousel({
     <>
       <div className={`embla ${className}`}>
         <div className="navigation-wrapper">
-          <div className="embla__viewport" ref={emblaRef}>
+          <div ref={emblaRef} className="embla__viewport">
             <div className="embla__container">
               {children.map((child, index) => (
                 <div key={index} className="embla__slide">

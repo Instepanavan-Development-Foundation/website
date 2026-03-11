@@ -5,6 +5,7 @@ import { Input } from "@heroui/input";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, FormEvent, useEffect } from "react";
+
 import { isAuthenticated, login } from "@/src/services/userService";
 
 const Login = () => {
@@ -26,6 +27,7 @@ const Login = () => {
     setError("");
     if (!email || !password) {
       setError("Խնդրում ենք լրացնել բոլոր դաշտերը");
+
       return;
     }
     setLoading(true);
@@ -37,6 +39,7 @@ const Login = () => {
 
       // Redirect to saved URL from query parameter or home
       const returnUrl = searchParams.get("returnUrl");
+
       if (returnUrl) {
         router.push(decodeURIComponent(returnUrl));
       } else {

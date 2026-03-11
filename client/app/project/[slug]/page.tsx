@@ -17,7 +17,6 @@ import Carousel from "@/components/Carousel";
 import { formatCurrency } from "@/components/home/ProjectCard";
 import getMediaSrc from "@/src/helpers/getMediaUrl";
 import ModifiedMarkdown from "@/src/hok/modifiedMarkdown";
-import { ProjectFunding } from "@/components/ProjectFunding";
 import getProjectFunding from "@/src/helpers/getProjectFunding";
 
 export async function generateMetadata({ params }: IParams) {
@@ -147,7 +146,8 @@ export default async function ProjectPage({ params }: IParams) {
             </h2>
             <div className="flex justify-between items-center mb-2">
               <span className="text-xl text-default-600">
-                {formatCurrency(project.gatheredAmount)} {project.donationType === "recurring" ? "ամսական" : "ընդհանուր"}
+                {formatCurrency(project.gatheredAmount)}{" "}
+                {project.donationType === "recurring" ? "ամսական" : "ընդհանուր"}
               </span>
               <span className="text-lg text-default-500">
                 Նպատակ: {formatCurrency(project.requiredAmount)}

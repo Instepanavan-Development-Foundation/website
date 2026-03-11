@@ -18,7 +18,14 @@ export default async function Home() {
         fields: ["url", "alternativeText", "name"],
       },
     },
-    fields: ["documentId", "name", "description", "slug", "gatheredAmount", "requiredAmount"],
+    fields: [
+      "documentId",
+      "name",
+      "description",
+      "slug",
+      "gatheredAmount",
+      "requiredAmount",
+    ],
   });
 
   return (

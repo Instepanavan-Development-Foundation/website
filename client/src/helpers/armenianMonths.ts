@@ -16,5 +16,6 @@ export const ARMENIAN_MONTHS = [
 export function formatMonthArmenian(monthStr: string): string {
   const [year, month] = monthStr.split("-");
   const monthIndex = parseInt(month) - 1;
+
   return `${ARMENIAN_MONTHS[monthIndex]} ${year}`;
 }

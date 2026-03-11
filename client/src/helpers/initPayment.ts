@@ -23,7 +23,7 @@ export async function initPayment({
         lang: "am",
         paymentMethod: "ameriabank",
       }),
-    }
+    },
   );
 
   return response.json();

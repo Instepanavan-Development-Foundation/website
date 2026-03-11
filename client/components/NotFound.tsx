@@ -3,6 +3,7 @@
 import { Button } from "@heroui/button";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+
 import { IProject } from "@/src/models/project";
 import { ProjectCard } from "@/components/home/ProjectCard";
 import getData from "@/src/helpers/getData";
@@ -45,18 +46,22 @@ export default function NotFound() {
   const hasProjects = projects.length > 0;
 
   return (
-    <div className={`flex flex-col items-center justify-center mt-10 gap-8 px-4 ${isShaking ? "shake-page" : ""}`}>
+    <div
+      className={`flex flex-col items-center justify-center mt-10 gap-8 px-4 ${isShaking ? "shake-page" : ""}`}
+    >
       <h1 className="text-4xl md:text-5xl font-bold">404: Էջը չի գտնվել</h1>
 
       {!showProjects && hasProjects && (
         <Button
-          size="lg"
           color="secondary"
+          disabled={isShaking}
+          size="lg"
           variant="flat"
           onClick={handleShake}
-          disabled={isShaking}
         >
-          {isShaking ? "Թափահարում է... 🌪️" : "Թափահարեք էջը՝ գտնելու համար! 🔍"}
+          {isShaking
+            ? "Թափահարում է... 🌪️"
+            : "Թափահարեք էջը՝ գտնելու համար! 🔍"}
         </Button>
       )}
 
@@ -64,17 +69,24 @@ export default function NotFound() {
         <div className="w-full max-w-6xl mt-8">
           <div className="text-center mb-6">
             <h2 className="text-2xl md:text-3xl font-bold mb-2 shake-reveal">
-              {isFirstShake ? "Օ՜ֆ! Էջը չգտանք, բայց ահա մի քանի ծրագիր, որոնք կարող եք աջակցել! 🎉" : "Ահա մի քանի ծրագիր, որոնք կարող եք աջակցել!"}
+              {isFirstShake
+                ? "Օ՜ֆ! Էջը չգտանք, բայց ահա մի քանի ծրագիր, որոնք կարող եք աջակցել! 🎉"
+                : "Ահա մի քանի ծրագիր, որոնք կարող եք աջակցել!"}
             </h2>
             <p className="text-gray-600 dark:text-gray-400 shake-reveal">
-              {isFirstShake ? "Թափահարելու մեջ չենք գտել էջը, բայց գտանք ավելի լավ բան!" : "Ընտրեք ծրագիր և օգնեք փոփոխություն ստեղծել"}
+              {isFirstShake
+                ? "Թափահարելու մեջ չենք գտել էջը, բայց գտանք ավելի լավ բան!"
+                : "Ընտրեք ծրագիր և օգնեք փոփոխություն ստեղծել"}
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {projects.map((project, index) => (
               <Link key={project.documentId} href={`/project/${project.slug}`}>
-                <div className="fall-from-top" style={{ animationDelay: `${index * 200}ms` }}>
+                <div
+                  className="fall-from-top"
+                  style={{ animationDelay: `${index * 200}ms` }}
+                >
                   <ProjectCard {...project} />
                 </div>
               </Link>

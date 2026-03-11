@@ -22,6 +22,7 @@ import {
 import Link from "next/link";
 import Confetti from "react-confetti";
 import { motion, AnimatePresence } from "framer-motion";
+
 import { getUserAvatarUrl } from "@/src/services/userService";
 import getData from "@/src/helpers/getData";
 import { IProject } from "@/src/models/project";
@@ -74,6 +75,7 @@ export default function DonationSuccessPage() {
   useEffect(() => {
     async function loadData() {
       const url = await getUserAvatarUrl();
+
       setAvatarUrl(url);
 
       // Fetch project data if slug is available
@@ -83,13 +85,16 @@ export default function DonationSuccessPage() {
           filters: { slug: projectSlug },
           fields: ["name", "documentId", "donationType"],
         });
+
         if (data && data.length > 0) {
           const projectData = data[0];
+
           setProject(projectData);
 
           // Fetch dynamic funding data
           if (projectData.documentId) {
             const fundingData = await getProjectFunding(projectData.documentId);
+
             setFunding(fundingData);
           }
         }
@@ -154,9 +159,10 @@ export default function DonationSuccessPage() {
   useEffect(() => {
     if (funding) {
       // Get gathered amount based on project type
-      const gatheredAmount = funding.donationType === "recurring"
-        ? funding.currentMonth.recurring.amount
-        : funding.allTime.oneTime.amount;
+      const gatheredAmount =
+        funding.donationType === "recurring"
+          ? funding.currentMonth.recurring.amount
+          : funding.allTime.oneTime.amount;
 
       if (gatheredAmount > 0) {
         const duration = 2000; // 2 seconds
@@ -333,11 +339,11 @@ export default function DonationSuccessPage() {
                     <div className="relative mb-6">
                       {avatarUrl ? (
                         <Avatar
-                          className="w-24 h-24"
-                          src={avatarUrl}
-                          size="lg"
                           isBordered
+                          className="w-24 h-24"
                           color="primary"
+                          size="lg"
+                          src={avatarUrl}
                         />
                       ) : (
                         <div className="w-24 h-24 bg-primary-100 rounded-full flex items-center justify-center">
@@ -363,10 +369,13 @@ export default function DonationSuccessPage() {
                         <div className="w-full mb-6">
                           <div className="flex justify-between mb-2 text-sm">
                             <span className="font-semibold">
-                              {funding.donationType === "recurring" ? "Այս ամիս հավաքված՝" : "Հավաքված՝"}
+                              {funding.donationType === "recurring"
+                                ? "Այս ամիս հավաքված՝"
+                                : "Հավաքված՝"}
                             </span>
                             <span className="font-bold text-primary">
-                              {Math.round(animatedRaised).toLocaleString()} ֏ / {funding.requiredAmount.toLocaleString()} ֏
+                              {Math.round(animatedRaised).toLocaleString()} ֏ /{" "}
+                              {funding.requiredAmount.toLocaleString()} ֏
                             </span>
                           </div>
                           <Progress
@@ -374,10 +383,16 @@ export default function DonationSuccessPage() {
                             className="w-full"
                             color="primary"
                             size="md"
-                            value={(animatedRaised / funding.requiredAmount) * 100}
+                            value={
+                              (animatedRaised / funding.requiredAmount) * 100
+                            }
                           />
                           <p className="text-xs text-default-500 mt-2 text-center">
-                            {((animatedRaised / funding.requiredAmount) * 100).toFixed(1)}% նպատակից
+                            {(
+                              (animatedRaised / funding.requiredAmount) *
+                              100
+                            ).toFixed(1)}
+                            % նպատակից
                           </p>
                         </div>
                       </>

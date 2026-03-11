@@ -93,7 +93,9 @@ export function BlogPost({
             {isLink ? (
               <Link href={`/blog/${slug}`}>
                 <div className="text-default-500 mb-4 line-clamp-[10]">
-                  <ModifiedMarkdown disableLinks={true}>{content}</ModifiedMarkdown>
+                  <ModifiedMarkdown disableLinks={true}>
+                    {content}
+                  </ModifiedMarkdown>
                 </div>
               </Link>
             ) : (

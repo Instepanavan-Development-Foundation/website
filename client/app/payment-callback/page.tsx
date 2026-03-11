@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+
 import { parseAmeriabankError } from "@/src/helpers/parseAmeriabankError";
 
 export default function PaymentCallbackPage() {
@@ -15,24 +16,34 @@ export default function PaymentCallbackPage() {
       const projectSlug = searchParams.get("project");
 
       if (!paymentID || !projectSlug) {
-        router.replace(`/donate/${projectSlug || 'unknown'}?error=${encodeURIComponent("Վճարման տվյալները չեն գտնվել")}`);
+        router.replace(
+          `/donate/${projectSlug || "unknown"}?error=${encodeURIComponent("Վճարման տվյալները չեն գտնվել")}`,
+        );
+
         return;
       }
 
       // Check if payment was successful (response code "00" means success)
       if (responseCode !== "00") {
         const errorMessage = parseAmeriabankError(responseCode || "");
-        router.replace(`/donate/${projectSlug}?error=${encodeURIComponent(errorMessage)}`);
+
+        router.replace(
+          `/donate/${projectSlug}?error=${encodeURIComponent(errorMessage)}`,
+        );
+
         return;
       }
 
       // Fetch project to get documentId and name from slug
       const projectResponse = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/projects?filters[slug][$eq]=${projectSlug}&fields[0]=documentId&fields[1]=name`
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/projects?filters[slug][$eq]=${projectSlug}&fields[0]=documentId&fields[1]=name`,
       );
 
       if (!projectResponse.ok) {
-        router.replace(`/donate/${projectSlug}?error=${encodeURIComponent("Նախագիծը չի գտնվել")}`);
+        router.replace(
+          `/donate/${projectSlug}?error=${encodeURIComponent("Նախագիծը չի գտնվել")}`,
+        );
+
         return;
       }
 
@@ -40,16 +51,23 @@ export default function PaymentCallbackPage() {
       const project = projectData.data?.[0];
 
       if (!project?.documentId) {
-        router.replace(`/donate/${projectSlug}?error=${encodeURIComponent("Նախագիծը չի գտնվել")}`);
+        router.replace(
+          `/donate/${projectSlug}?error=${encodeURIComponent("Նախագիծը չի գտնվել")}`,
+        );
+
         return;
       }
 
       // Call backend to save payment details
       try {
-        const jwt = typeof window !== "undefined" ? localStorage.getItem("jwt") : null;
+        const jwt =
+          typeof window !== "undefined" ? localStorage.getItem("jwt") : null;
 
         if (!jwt) {
-          router.replace(`/donate/${projectSlug}?error=${encodeURIComponent("Խնդրում ենք մուտք գործել")}`);
+          router.replace(
+            `/donate/${projectSlug}?error=${encodeURIComponent("Խնդրում ենք մուտք գործել")}`,
+          );
+
           return;
         }
 
@@ -59,13 +77,13 @@ export default function PaymentCallbackPage() {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              "Authorization": `Bearer ${jwt}`
+              Authorization: `Bearer ${jwt}`,
             },
             body: JSON.stringify({
               paymentId: paymentID,
               projectDocumentId: project.documentId,
             }),
-          }
+          },
         );
 
         if (response.ok) {
@@ -74,13 +92,20 @@ export default function PaymentCallbackPage() {
           const projectName = project?.name || projectSlug;
 
           // Redirect to success page with payment details
-          router.replace(`/donate/success?amount=${amount}&project=${encodeURIComponent(projectName)}&slug=${projectSlug}`);
+          router.replace(
+            `/donate/success?amount=${amount}&project=${encodeURIComponent(projectName)}&slug=${projectSlug}`,
+          );
         } else {
           const data = await response.json();
-          router.replace(`/donate/${projectSlug}?error=${encodeURIComponent(data.errorMessage || "Վճարման տվյալները պահպանելիս սխալ է տեղի ունեցել")}`);
+
+          router.replace(
+            `/donate/${projectSlug}?error=${encodeURIComponent(data.errorMessage || "Վճարման տվյալները պահպանելիս սխալ է տեղի ունեցել")}`,
+          );
         }
       } catch (error) {
-        router.replace(`/donate/${projectSlug}?error=${encodeURIComponent("Սերվերի հետ կապի սխալ")}`);
+        router.replace(
+          `/donate/${projectSlug}?error=${encodeURIComponent("Սերվերի հետ կապի սխալ")}`,
+        );
       }
     }
 

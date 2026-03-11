@@ -5,6 +5,7 @@ import { Input } from "@heroui/input";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, FormEvent, useEffect } from "react";
+
 import { isAuthenticated, register } from "@/src/services/userService";
 
 const Register = () => {
@@ -29,6 +30,7 @@ const Register = () => {
     setSuccess(false);
     if (!email || !password) {
       setError("Խնդրում ենք լրացնել էլ. հասցեն և գաղտնաբառը");
+
       return;
     }
     setLoading(true);
@@ -38,6 +40,7 @@ const Register = () => {
 
       // Redirect to saved URL from query parameter or home
       const returnUrl = searchParams.get("returnUrl");
+
       if (returnUrl) {
         router.push(decodeURIComponent(returnUrl));
       } else {

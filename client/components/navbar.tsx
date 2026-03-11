@@ -14,7 +14,7 @@ import Link from "next/link";
 import { link as linkStyles } from "@heroui/theme";
 import NextLink from "next/link";
 import clsx from "clsx";
-import { Heart, LogIn, LogOut, User } from "lucide-react";
+import { LogIn, LogOut, User } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { getSiteConfig } from "@/config/site";
@@ -61,9 +61,9 @@ export const Navbar = () => {
 
   return (
     <NextUINavbar
+      isMenuOpen={isMenuOpen}
       maxWidth="xl"
       position="sticky"
-      isMenuOpen={isMenuOpen}
       onMenuOpenChange={setIsMenuOpen}
     >
       <NavbarContent justify="start">
@@ -81,10 +81,7 @@ export const Navbar = () => {
           aria-label={isMenuOpen ? "Close menu" : "Open menu"}
         />
       </NavbarContent>
-      <NavbarContent
-        className="hidden sm:flex gap-4"
-        justify="end"
-      >
+      <NavbarContent className="hidden sm:flex gap-4" justify="end">
         <ul className="flex gap-4">
           {siteConfig.navItems.map((item: IMenuLink) => (
             <NavbarItem key={item.href}>

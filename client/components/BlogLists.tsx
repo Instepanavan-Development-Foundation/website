@@ -9,7 +9,7 @@ import { Chip } from "@heroui/chip";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { RangeValue } from "@react-types/shared";
-import { ArrowDownIcon, Filter } from "lucide-react";
+import { Filter } from "lucide-react";
 import { Accordion, AccordionItem } from "@heroui/accordion";
 
 import { BlogPost } from "./BlogPost";
@@ -66,60 +66,63 @@ function BlogListUnwrapped() {
     router.push(`/blog?${params.toString()}`);
   };
 
-  const fetchBlogs = useCallback(async (reset = false) => {
-    if (loading) return;
-    setLoading(true);
+  const fetchBlogs = useCallback(
+    async (reset = false) => {
+      if (loading) return;
+      setLoading(true);
 
-    const filters: INestedObject = {};
+      const filters: INestedObject = {};
 
-    if (searchQuery) {
-      filters.$or = [
-        { content: { $containsi: searchQuery } },
-        { project: { name: { $containsi: searchQuery } } },
-      ];
-    }
+      if (searchQuery) {
+        filters.$or = [
+          { content: { $containsi: searchQuery } },
+          { project: { name: { $containsi: searchQuery } } },
+        ];
+      }
 
-    if (selectedProject) {
-      filters.project = { name: selectedProject };
-    }
+      if (selectedProject) {
+        filters.project = { name: selectedProject };
+      }
 
-    if (selectedTags) {
-      filters.tag = {
-        $containsi: selectedTags,
-      };
-    }
+      if (selectedTags) {
+        filters.tag = {
+          $containsi: selectedTags,
+        };
+      }
 
-    if (dateRange.start && dateRange.end) {
-      filters.createdAt = {
-        $between: [dateRange.start.toString(), dateRange.end.toString()],
-      };
-    }
+      if (dateRange.start && dateRange.end) {
+        filters.createdAt = {
+          $between: [dateRange.start.toString(), dateRange.end.toString()],
+        };
+      }
 
-    const { data }: { data: IBlog[] } = await getData({
-      type: "blogs",
-      populate: {
-        images: { fields: ["url"] },
-        contribution: { populate: ["contributor.avatar"] },
-        attachments: { fields: ["url", "name"] },
-        project: { fields: ["name", "slug"] },
-      },
-      filters,
-      sort: "createdAt:desc",
-      offset: reset ? 0 : offset,
-      limit: LIMIT,
-    });
+      const { data }: { data: IBlog[] } = await getData({
+        type: "blogs",
+        populate: {
+          images: { fields: ["url"] },
+          contribution: { populate: ["contributor.avatar"] },
+          attachments: { fields: ["url", "name"] },
+          project: { fields: ["name", "slug"] },
+        },
+        filters,
+        sort: "createdAt:desc",
+        offset: reset ? 0 : offset,
+        limit: LIMIT,
+      });
 
-    if (reset) {
-      setBlogs(data);
-      setOffset(data.length);
-    } else {
-      setBlogs((prevBlogs) => [...prevBlogs, ...data]);
-      setOffset((prevOffset) => prevOffset + data.length);
-    }
+      if (reset) {
+        setBlogs(data);
+        setOffset(data.length);
+      } else {
+        setBlogs((prevBlogs) => [...prevBlogs, ...data]);
+        setOffset((prevOffset) => prevOffset + data.length);
+      }
 
-    setHasMore(data.length === LIMIT);
-    setLoading(false);
-  }, [loading, searchQuery, selectedProject, selectedTags, dateRange, offset]);
+      setHasMore(data.length === LIMIT);
+      setLoading(false);
+    },
+    [loading, searchQuery, selectedProject, selectedTags, dateRange, offset],
+  );
 
   useEffect(() => {
     fetchBlogs(true);
@@ -140,10 +143,11 @@ function BlogListUnwrapped() {
           fetchBlogs();
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.1 },
     );
 
     const currentTarget = observerTarget.current;
+
     if (currentTarget) {
       observer.observe(currentTarget);
     }
@@ -224,7 +228,8 @@ function BlogListUnwrapped() {
                     .filter(
                       (project, index, self) =>
                         project &&
-                        self.findIndex((p) => p?.name === project?.name) === index,
+                        self.findIndex((p) => p?.name === project?.name) ===
+                          index,
                     )
                     .map((project) => (
                       <SelectItem key={project?.name || ""}>
@@ -247,11 +252,11 @@ function BlogListUnwrapped() {
                   {blogs
                     .flatMap((blog) => blog.tag || [])
                     .map((tag) => tag.name)
-                    .filter((tagName, index, self) => self.indexOf(tagName) === index)
+                    .filter(
+                      (tagName, index, self) => self.indexOf(tagName) === index,
+                    )
                     .map((tagName) => (
-                      <SelectItem key={tagName}>
-                        {tagName}
-                      </SelectItem>
+                      <SelectItem key={tagName}>{tagName}</SelectItem>
                     ))}
                 </Select>
 
@@ -265,7 +270,11 @@ function BlogListUnwrapped() {
                   }}
                 />
 
-                <Button className="w-full" color="warning" onClick={resetFilters}>
+                <Button
+                  className="w-full"
+                  color="warning"
+                  onClick={resetFilters}
+                >
                   Չեղարկել
                 </Button>
               </div>
@@ -326,9 +335,7 @@ function BlogListUnwrapped() {
               .map((tag) => tag.name)
               .filter((tagName, index, self) => self.indexOf(tagName) === index)
               .map((tagName) => (
-                <SelectItem key={tagName}>
-                  {tagName}
-                </SelectItem>
+                <SelectItem key={tagName}>{tagName}</SelectItem>
               ))}
           </Select>
 
@@ -412,11 +419,11 @@ function BlogListUnwrapped() {
 
       {/* Infinite scroll trigger */}
       <div ref={observerTarget} className="text-center mt-12 py-4">
-        {loading && (
-          <div className="text-default-500">Բեռնում...</div>
-        )}
+        {loading && <div className="text-default-500">Բեռնում...</div>}
         {!hasMore && blogs.length > 0 && (
-          <div className="text-default-400 text-sm">Բոլոր հոդվածները ցուցադրված են</div>
+          <div className="text-default-400 text-sm">
+            Բոլոր հոդվածները ցուցադրված են
+          </div>
         )}
       </div>
     </div>

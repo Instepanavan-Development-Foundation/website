@@ -4,7 +4,6 @@ import { Chip } from "@heroui/chip";
 import { RadioGroup, Radio } from "@heroui/radio";
 import { Spacer } from "@heroui/spacer";
 import { Skeleton } from "@heroui/skeleton";
-import { useAuth } from "@/src/hooks/useAuth";
 
 // TODO: Add metadata
 // export async function generateMetadata({ params }: IParams): Promise<Metadata> {
@@ -46,6 +45,7 @@ export default function DonatePage({ params }: IParams) {
   useEffect(() => {
     async function loadData() {
       const resolvedParams = await params;
+
       setSlug(resolvedParams.slug);
 
       const { data }: { data: IProject[] } = await getData({
@@ -95,8 +95,8 @@ export default function DonatePage({ params }: IParams) {
         <div className="container mt-8 text-center">
           <h1 className="text-4xl font-bold mb-4">Արխիվացված նախագիծ</h1>
           <p className="text-xl mb-8">
-            Այս նախագիծն այլևս չի ընդունում աջակցություններ։ Խնդրում ենք
-            ստուգել մեր այլ ակտիվ նախագծերը։
+            Այս նախագիծն այլևս չի ընդունում աջակցություններ։ Խնդրում ենք ստուգել
+            մեր այլ ակտիվ նախագծերը։
           </p>
         </div>
       </section>
@@ -110,9 +110,9 @@ export default function DonatePage({ params }: IParams) {
         <Image
           alt={project.name}
           className="w-full h-full object-cover"
+          height={400}
           src={getMediaSrc(project.image)}
           width={1200}
-          height={400}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end p-6">
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
@@ -178,12 +178,15 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
+import { useAuth } from "@/src/hooks/useAuth";
 import getMediaSrc from "@/src/helpers/getMediaUrl";
 import NotFound from "@/components/NotFound";
 import { IParams } from "@/src/models/params";
 import { IProject } from "@/src/models/project";
 import getData from "@/src/helpers/getData";
-import getPaymentMethods, { IPaymentMethod } from "@/src/helpers/getPaymentMethods";
+import getPaymentMethods, {
+  IPaymentMethod,
+} from "@/src/helpers/getPaymentMethods";
 import { initPayment } from "@/src/helpers/initPayment";
 
 // Preset donation amounts
@@ -197,8 +200,11 @@ function DonationFormClient({ project }: { project: IProject }) {
   const defaultAmount = urlAmount ? parseInt(urlAmount) : 10000;
 
   const [amount, setAmount] = useState<number>(defaultAmount);
-  const [customAmount, setCustomAmount] = useState<string>(defaultAmount.toString());
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>("");
+  const [customAmount, setCustomAmount] = useState<string>(
+    defaultAmount.toString(),
+  );
+  const [selectedPaymentMethod, setSelectedPaymentMethod] =
+    useState<string>("");
   const [donorCount, setDonorCount] = useState<number>(0);
   const [paymentMethods, setPaymentMethods] = useState<IPaymentMethod[]>([]);
   const [loadingPaymentMethods, setLoadingPaymentMethods] = useState(true);
@@ -208,6 +214,7 @@ function DonationFormClient({ project }: { project: IProject }) {
   useEffect(() => {
     async function loadPaymentMethods() {
       const methods = await getPaymentMethods();
+
       setPaymentMethods(methods);
       setLoadingPaymentMethods(false);
 
@@ -222,10 +229,12 @@ function DonationFormClient({ project }: { project: IProject }) {
     async function loadDonorCount() {
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/projects/${project.documentId}/donor-count`
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/projects/${project.documentId}/donor-count`,
         );
+
         if (response.ok) {
           const result = await response.json();
+
           setDonorCount(result.data);
         }
       } catch (error) {
@@ -262,6 +271,7 @@ function DonationFormClient({ project }: { project: IProject }) {
       router.push(
         `/donate/${project.slug}?error=${encodeURIComponent(`Նվազագույն գումարը պետք է լինի ${MIN_DONATION_AMOUNT} դրամ`)}`,
       );
+
       return;
     }
 
@@ -269,9 +279,12 @@ function DonationFormClient({ project }: { project: IProject }) {
 
     // If "new card" is selected, redirect to Ameriabank payment page
     if (selectedPaymentMethod === "new") {
-      const jwt = typeof window !== "undefined" ? localStorage.getItem("jwt") : null;
+      const jwt =
+        typeof window !== "undefined" ? localStorage.getItem("jwt") : null;
+
       if (!jwt) {
         router.push("/login");
+
         return;
       }
 
@@ -280,7 +293,7 @@ function DonationFormClient({ project }: { project: IProject }) {
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/users/me`,
         {
           headers: { Authorization: `Bearer ${jwt}` },
-        }
+        },
       );
       const user = await userResponse.json();
 
@@ -297,21 +310,26 @@ function DonationFormClient({ project }: { project: IProject }) {
         router.push(
           `/donate/${project.slug}?error=${encodeURIComponent(errorMessage)}`,
         );
+
         return;
       }
 
       if (url) {
         // Keep loading state while redirecting
         window.location.href = url;
+
         return;
       }
     }
 
     // Existing card flow - pay with saved card
-    const jwt = typeof window !== "undefined" ? localStorage.getItem("jwt") : null;
+    const jwt =
+      typeof window !== "undefined" ? localStorage.getItem("jwt") : null;
+
     if (!jwt) {
       setIsSubmitting(false);
       router.push("/login");
+
       return;
     }
 
@@ -322,28 +340,33 @@ function DonationFormClient({ project }: { project: IProject }) {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${jwt}`,
+            Authorization: `Bearer ${jwt}`,
           },
           body: JSON.stringify({
             amount,
             projectDocumentId: project.documentId,
             paymentMethodId: selectedPaymentMethod,
           }),
-        }
+        },
       );
 
       if (!response.ok) {
         const errorData = await response.json();
+
         setIsSubmitting(false);
         router.push(
           `/donate/${project.slug}?error=${encodeURIComponent(errorData.error || errorData.details || "Վճարումը ձախողվեց")}`,
         );
+
         return;
       }
 
       const result = await response.json();
+
       // Keep loading state while redirecting to success page
-      router.push(`/donate/success?amount=${result.amount}&project=${encodeURIComponent(project.name)}&slug=${project.slug}`);
+      router.push(
+        `/donate/success?amount=${result.amount}&project=${encodeURIComponent(project.name)}&slug=${project.slug}`,
+      );
     } catch (error) {
       console.error("Payment error:", error);
       setIsSubmitting(false);
@@ -356,9 +379,9 @@ function DonationFormClient({ project }: { project: IProject }) {
   // Calculate progress percentage
   const progressPercentage = project.requiredAmount
     ? Math.min(
-      100,
-      Math.round((project.gatheredAmount / project.requiredAmount) * 100),
-    )
+        100,
+        Math.round((project.gatheredAmount / project.requiredAmount) * 100),
+      )
     : 0;
 
   return (
@@ -416,10 +439,10 @@ function DonationFormClient({ project }: { project: IProject }) {
               {presetAmounts.map((presetAmount) => (
                 <Button
                   key={presetAmount}
-                  variant={amount === presetAmount ? "solid" : "bordered"}
+                  className={amount === presetAmount ? "font-semibold" : ""}
                   color={amount === presetAmount ? "primary" : "default"}
                   size="lg"
-                  className={amount === presetAmount ? "font-semibold" : ""}
+                  variant={amount === presetAmount ? "solid" : "bordered"}
                   onPress={() => handlePresetAmountClick(presetAmount)}
                 >
                   {presetAmount.toLocaleString()} ֏
@@ -458,33 +481,50 @@ function DonationFormClient({ project }: { project: IProject }) {
             {loadingPaymentMethods ? (
               <div className="space-y-3">
                 <Skeleton className="rounded-lg">
-                  <div className="h-20 rounded-lg bg-default-200"></div>
+                  <div className="h-20 rounded-lg bg-default-200" />
                 </Skeleton>
                 <Skeleton className="rounded-lg">
-                  <div className="h-20 rounded-lg bg-default-200"></div>
+                  <div className="h-20 rounded-lg bg-default-200" />
                 </Skeleton>
               </div>
             ) : (
               <RadioGroup
-                label={paymentMethods.length > 0 ? "Ընտրել վճարման եղանակ" : undefined}
-                value={selectedPaymentMethod}
-                onValueChange={setSelectedPaymentMethod}
                 classNames={{
                   base: "w-full",
-                  wrapper: "gap-3"
+                  wrapper: "gap-3",
                 }}
+                label={
+                  paymentMethods.length > 0
+                    ? "Ընտրել վճարման եղանակ"
+                    : undefined
+                }
+                value={selectedPaymentMethod}
+                onValueChange={setSelectedPaymentMethod}
               >
                 {paymentMethods.map((method, index) => {
-                  const cardNumber = method.params?.CardNumber || method.params?.cardNumber || "****";
+                  const cardNumber =
+                    method.params?.CardNumber ||
+                    method.params?.cardNumber ||
+                    "****";
 
                   // Detect card type from card number
                   const getCardType = (num: string) => {
-                    const firstDigits = num.replace(/\*/g, '').substring(0, 6);
-                    if (firstDigits.startsWith('4')) return 'Visa';
-                    if (firstDigits.startsWith('5') || firstDigits.startsWith('2')) return 'Mastercard';
-                    if (firstDigits.startsWith('34') || firstDigits.startsWith('37')) return 'American Express';
-                    if (firstDigits.startsWith('6')) return 'Discover';
-                    return 'Քարտ';
+                    const firstDigits = num.replace(/\*/g, "").substring(0, 6);
+
+                    if (firstDigits.startsWith("4")) return "Visa";
+                    if (
+                      firstDigits.startsWith("5") ||
+                      firstDigits.startsWith("2")
+                    )
+                      return "Mastercard";
+                    if (
+                      firstDigits.startsWith("34") ||
+                      firstDigits.startsWith("37")
+                    )
+                      return "American Express";
+                    if (firstDigits.startsWith("6")) return "Discover";
+
+                    return "Քարտ";
                   };
 
                   const cardType = getCardType(cardNumber);
@@ -492,19 +532,25 @@ function DonationFormClient({ project }: { project: IProject }) {
                   return (
                     <Radio
                       key={method.documentId}
-                      value={method.documentId}
                       classNames={{
                         base: "inline-flex m-0 items-center hover:bg-content2 max-w-full cursor-pointer rounded-lg gap-4 p-4 border-2 border-transparent data-[selected=true]:border-primary",
                         label: "w-full",
-                        wrapper: "group-data-[selected=true]:border-primary"
+                        wrapper: "group-data-[selected=true]:border-primary",
                       }}
-                      description={index === 0 ? "Հիմնական վճարման եղանակ" : undefined}
+                      description={
+                        index === 0 ? "Հիմնական վճարման եղանակ" : undefined
+                      }
+                      value={method.documentId}
                     >
                       <div className="flex items-center gap-3 w-full">
                         <CreditCard className="w-8 h-8 text-default-400" />
                         <div className="flex-1">
-                          <p className="text-sm font-medium text-default-600">{cardType}</p>
-                          <p className="font-mono font-semibold text-base">{cardNumber}</p>
+                          <p className="text-sm font-medium text-default-600">
+                            {cardType}
+                          </p>
+                          <p className="font-mono font-semibold text-base">
+                            {cardNumber}
+                          </p>
                         </div>
                       </div>
                     </Radio>
@@ -512,14 +558,14 @@ function DonationFormClient({ project }: { project: IProject }) {
                 })}
 
                 <Radio
-                  value="new"
                   classNames={{
                     base: "inline-flex m-0 items-center hover:bg-content2 max-w-full cursor-pointer rounded-lg gap-4 p-4 border-2 border-transparent data-[selected=true]:border-primary",
-                    wrapper: "group-data-[selected=true]:border-primary"
+                    wrapper: "group-data-[selected=true]:border-primary",
                   }}
+                  value="new"
                 >
                   <div className="flex items-center gap-2">
-                    <PlusCircle size={18} className="text-primary" />
+                    <PlusCircle className="text-primary" size={18} />
                     <p className="font-medium">Կապել նոր քարտ</p>
                   </div>
                 </Radio>
@@ -545,9 +591,9 @@ function DonationFormClient({ project }: { project: IProject }) {
           <Button
             className="w-full py-7 text-lg font-medium shadow-lg"
             color="primary"
-            size="lg"
-            isLoading={isSubmitting}
             isDisabled={isSubmitting}
+            isLoading={isSubmitting}
+            size="lg"
             onClick={handleSubmit}
           >
             {isSubmitting ? "Մշակվում է..." : "Աջակցել հիմա"}

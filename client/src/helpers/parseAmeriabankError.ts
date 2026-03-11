@@ -13,7 +13,10 @@ const ERROR_CODES: ErrorCodeMapping[] = [
   { code: "00", messageAm: "Վճարումը հաջողությամբ կատարվեց" },
 
   // Common errors
-  { code: "0902", messageAm: "Գործարքն արգելված է։ Խնդրում ենք կապվել ձեր բանկի հետ։" },
+  {
+    code: "0902",
+    messageAm: "Գործարքն արգելված է։ Խնդրում ենք կապվել ձեր բանկի հետ։",
+  },
   { code: "0101", messageAm: "Քարտի վավերականության ժամկետը լրացել է" },
   { code: "0111", messageAm: "Քարտի համարն անվավեր է" },
   { code: "0116", messageAm: "Անբավարար միջոցներ" },
@@ -27,7 +30,10 @@ const ERROR_CODES: ErrorCodeMapping[] = [
   { code: "0107", messageAm: "Խնդրում ենք կապվել ձեր բանկի հետ" },
 
   // Technical errors
-  { code: "0-1", messageAm: "Կապի ժամանակը սպառվել է։ Խնդրում ենք փորձել կրկին։" },
+  {
+    code: "0-1",
+    messageAm: "Կապի ժամանակը սպառվել է։ Խնդրում ենք փորձել կրկին։",
+  },
   { code: "0907", messageAm: "Բանկը ժամանակավորապես հասանելի չէ" },
   { code: "0910", messageAm: "Բանկը ժամանակավորապես հասանելի չէ" },
   { code: "0151018", messageAm: "Մշակման ժամանակը սպառվել է" },
@@ -45,7 +51,10 @@ const ERROR_CODES: ErrorCodeMapping[] = [
 
   // Fraud and security
   { code: "0-2000", messageAm: "Քարտը սև ցուցակում է" },
-  { code: "02001", messageAm: "Գործարքը մերժվել է խարդախության կասկածի պատճառով" },
+  {
+    code: "02001",
+    messageAm: "Գործարքը մերժվել է խարդախության կասկածի պատճառով",
+  },
 
   // System errors
   { code: "07", messageAm: "Համակարգային սխալ։ Խնդրում ենք փորձել կրկին։" },
@@ -66,6 +75,7 @@ export function parseAmeriabankError(responseCode: string): string {
 
   // Find exact match
   const error = ERROR_CODES.find((e) => e.code === code);
+
   if (error) {
     return `${error.messageAm} (կոդ: ${code})`;
   }

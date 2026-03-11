@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
+
 import { isAuthenticated as checkAuth } from "@/src/services/userService";
 
 export function useAuth(redirectTo: string = "/") {
@@ -16,10 +17,12 @@ export function useAuth(redirectTo: string = "/") {
       if (typeof window !== "undefined") {
         const currentUrl = window.location.pathname + window.location.search;
         const loginUrl = `${redirectTo}?returnUrl=${encodeURIComponent(currentUrl)}`;
+
         router.replace(loginUrl);
       } else {
         router.replace(redirectTo);
       }
+
       return;
     }
 

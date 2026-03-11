@@ -60,7 +60,9 @@ export function ProjectCard({
                 width="100%"
               />
             ) : (
-              <div className={`w-full h-[200px] ${gradients[gradientIndex]} rounded-lg flex items-center justify-center z-10 p-6`}>
+              <div
+                className={`w-full h-[200px] ${gradients[gradientIndex]} rounded-lg flex items-center justify-center z-10 p-6`}
+              >
                 <span className="text-white text-2xl font-bold opacity-90 text-center line-clamp-3">
                   {name || "..."}
                 </span>

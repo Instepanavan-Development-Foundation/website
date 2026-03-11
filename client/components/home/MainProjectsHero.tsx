@@ -3,9 +3,10 @@ import Link from "next/link";
 import { Card, CardBody } from "@heroui/card";
 import { Image } from "@heroui/image";
 
+import { formatCurrency } from "./ProjectCard";
+
 import { IProject } from "@/src/models/project";
 import getMediaUrl from "@/src/helpers/getMediaUrl";
-import { formatCurrency } from "./ProjectCard";
 import EmblaCarousel from "@/components/EmblaCarousel";
 
 interface MainProjectsHeroProps {
@@ -18,7 +19,10 @@ export default function MainProjectsHero({ projects }: MainProjectsHeroProps) {
   }
 
   const slides = projects.map((project) => {
-    const remainingAmount = Math.max(project.requiredAmount - project.gatheredAmount, 0);
+    const remainingAmount = Math.max(
+      project.requiredAmount - project.gatheredAmount,
+      0,
+    );
     const percentComplete = project.requiredAmount
       ? Math.round((project.gatheredAmount / project.requiredAmount) * 100)
       : 100;
@@ -54,42 +58,44 @@ export default function MainProjectsHero({ projects }: MainProjectsHeroProps) {
                   {project.description}
                 </p>
 
-                {project.requiredAmount && project.gatheredAmount !== undefined && (
-                  <div>
-                    <div className="flex justify-between text-base mb-2">
-                      <span className="text-default-700 font-semibold">
-                        {formatCurrency(project.gatheredAmount)}
-                      </span>
-                      <span className="text-default-500">
-                        Նպատակ: {formatCurrency(project.requiredAmount)}
-                      </span>
-                    </div>
-                    <div className="w-full h-4 bg-default-100 rounded-full">
-                      <div
-                        className={`h-full rounded-full transition-all duration-300 ease-in-out ${
-                          project.gatheredAmount >= project.requiredAmount
-                            ? "bg-primary"
-                            : project.gatheredAmount >= project.requiredAmount / 2
-                              ? "bg-secondary"
-                              : "bg-danger"
-                        }`}
-                        style={{
-                          width: `${Math.min((project.gatheredAmount / project.requiredAmount) * 100, 100)}%`,
-                        }}
-                      />
-                    </div>
-                    <div className="flex justify-between items-center mt-2">
-                      <p className="text-sm text-default-500">
-                        {percentComplete}% հավաքված
-                      </p>
-                      {remainingAmount > 0 && (
-                        <p className="text-sm text-danger font-medium">
-                          Մնացել է {formatCurrency(remainingAmount)}
+                {project.requiredAmount &&
+                  project.gatheredAmount !== undefined && (
+                    <div>
+                      <div className="flex justify-between text-base mb-2">
+                        <span className="text-default-700 font-semibold">
+                          {formatCurrency(project.gatheredAmount)}
+                        </span>
+                        <span className="text-default-500">
+                          Նպատակ: {formatCurrency(project.requiredAmount)}
+                        </span>
+                      </div>
+                      <div className="w-full h-4 bg-default-100 rounded-full">
+                        <div
+                          className={`h-full rounded-full transition-all duration-300 ease-in-out ${
+                            project.gatheredAmount >= project.requiredAmount
+                              ? "bg-primary"
+                              : project.gatheredAmount >=
+                                  project.requiredAmount / 2
+                                ? "bg-secondary"
+                                : "bg-danger"
+                          }`}
+                          style={{
+                            width: `${Math.min((project.gatheredAmount / project.requiredAmount) * 100, 100)}%`,
+                          }}
+                        />
+                      </div>
+                      <div className="flex justify-between items-center mt-2">
+                        <p className="text-sm text-default-500">
+                          {percentComplete}% հավաքված
                         </p>
-                      )}
+                        {remainingAmount > 0 && (
+                          <p className="text-sm text-danger font-medium">
+                            Մնացել է {formatCurrency(remainingAmount)}
+                          </p>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
               </div>
             </CardBody>
           </Card>
