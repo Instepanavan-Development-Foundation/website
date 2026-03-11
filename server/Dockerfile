@@ -16,7 +16,8 @@ COPY . .
 
 RUN chown -R node:node /opt/app
 
-# Remove prebuilt sharp binaries (they require SSE4.2/AVX) and rebuild from source
+# Force sharp to use system libvips (prebuilt binaries require SSE4.2/AVX)
+ENV SHARP_FORCE_GLOBAL_LIBVIPS=true
 RUN rm -rf /opt/node_modules/@img/sharp-* && \
     cd /opt && npm install node-addon-api node-gyp && \
     npm rebuild --build-from-source sharp
