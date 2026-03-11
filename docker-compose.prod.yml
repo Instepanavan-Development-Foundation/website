@@ -100,16 +100,12 @@ services:
       - hatchet
 
   nginx:
-    image: jonasal/nginx-certbot
+    image: nginx:alpine
     restart: unless-stopped
-    environment:
-      CERTBOT_EMAIL: contact@instepanavan.am
     volumes:
-      - ./nginx:/etc/nginx/user_conf.d:ro
-      - ./letsencrypt:/etc/letsencrypt
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
     ports:
-      - "80:80"
-      - "443:443"
+      - "127.0.0.1:39930:80"
     depends_on:
       - server
       - client
