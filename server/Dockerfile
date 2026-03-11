@@ -19,7 +19,7 @@ RUN chown -R node:node /opt/app
 # Remove prebuilt sharp binaries (they require SSE4.2/AVX) and rebuild from source
 # See: https://sharp.pixelplumbing.com/install/#building-from-source
 RUN rm -rf /opt/node_modules/@img/sharp-* && \
-    npm explore sharp -- npm run build-from-source
+    cd /opt && npm explore sharp -- npm run build-from-source
 
 
 USER node
