@@ -2,6 +2,7 @@ services:
   postgres:
     image: postgres:17
     container_name: strapi_postgres_prod
+    restart: unless-stopped
     env_file:
       - .env
     volumes:
