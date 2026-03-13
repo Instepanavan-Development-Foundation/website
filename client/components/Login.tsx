@@ -25,7 +25,7 @@ const Login = () => {
     e.preventDefault();
     setError("");
     if (!email) {
-      setError("Please enter your email");
+      setError("Խնդրում ենք լրացնել էլ. հասցեն");
       return;
     }
     setLoading(true);
@@ -34,7 +34,7 @@ const Login = () => {
       await sendMagicLink(email, returnUrl);
       setSent(true);
     } catch (err: any) {
-      setError(err.message || "Something went wrong");
+      setError(err.message || "Սերվերի սխալ");
     } finally {
       setLoading(false);
     }
@@ -43,19 +43,19 @@ const Login = () => {
   if (sent) {
     return (
       <div className="max-w-md mx-auto mt-10 p-8 bg-white rounded-xl shadow-lg flex flex-col gap-4 text-center">
-        <h2 className="text-2xl font-bold">Check your email</h2>
+        <h2 className="text-2xl font-bold">Ստուգեք ձեր էլ. հասցեն</h2>
         <p className="text-gray-600">
-          We sent a login link to <strong>{email}</strong>
+          Մուտքի հղումը ուղարկվել է <strong>{email}</strong>
         </p>
         <p className="text-sm text-gray-400">
-          The link expires in 15 minutes.
+          Հղումը գործում է 15 րոպե:
         </p>
         <Button
           className="text-sm font-normal text-gray-600"
           variant="light"
           onPress={() => setSent(false)}
         >
-          Try a different email
+          Փորձել այլ էլ. հասցե
         </Button>
       </div>
     );
@@ -66,11 +66,11 @@ const Login = () => {
       className="max-w-md mx-auto mt-10 p-8 bg-white rounded-xl shadow-lg flex flex-col gap-6"
       onSubmit={handleSubmit}
     >
-      <h2 className="text-2xl font-bold text-center">Log in or sign up</h2>
+      <h2 className="text-2xl font-bold text-center">Մուտք գործել</h2>
       <Input
         required
         autoComplete="email"
-        label="Email"
+        label="Էլ. հասցե"
         placeholder="your@email.com"
         type="email"
         value={email}
@@ -86,7 +86,7 @@ const Login = () => {
         type="submit"
         variant="flat"
       >
-        Send login link
+        Ուղարկել մուտքի հղում
       </Button>
     </form>
   );

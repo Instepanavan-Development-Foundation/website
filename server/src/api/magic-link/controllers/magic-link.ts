@@ -16,7 +16,7 @@ export default {
     const { email, returnUrl } = ctx.request.body as any;
 
     if (!email) {
-      return ctx.send({ error: "Email is required" }, 400);
+      return ctx.send({ error: "Էլ. հասցեն պարտադիր է" }, 400);
     }
 
     const normalizedEmail = email.trim().toLowerCase();
@@ -64,26 +64,26 @@ export default {
     try {
       await strapi.plugin("email").service("email").send({
         to: normalizedEmail,
-        subject: "Login — Instepanavan",
-        text: `Click the link to log in:\n\n${magicLink}\n\nThis link expires in ${expiryMinutes} minutes.`,
+        subject: "Մուտք գործել — Ինստեպանավան",
+        text: `Սեղմեք հղումին մուտք գործելու համար:\n\n${magicLink}\n\nՀղումը գործում է ${expiryMinutes} րոպե:`,
         html: `
           <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-            <h2 style="color: #333;">Log in to Instepanavan</h2>
-            <p>Click the button below to log in:</p>
+            <h2 style="color: #333;">Մուտք գործել Ինստեպանավան</h2>
+            <p>Սեղմեք ստորև գտնվող կոճակին մուտք գործելու համար:</p>
             <p style="margin: 24px 0;">
               <a href="${magicLink}"
                 style="display: inline-block; padding: 12px 24px;
                   background: linear-gradient(to right, #ec4899, #f43f5e);
                   color: white; text-decoration: none; border-radius: 8px;
                   font-weight: bold;">
-                Log in
+                Մուտք գործել
               </a>
             </p>
             <p style="color: #666; font-size: 14px;">
-              This link expires in ${expiryMinutes} minutes.
+              Հղումը գործում է ${expiryMinutes} րոպե:
             </p>
             <p style="color: #999; font-size: 12px;">
-              If you did not request this link, you can ignore this email.
+              Եթե դուք չեք պահանջել այս հղումը, անտեսեք այն:
             </p>
           </div>
         `,
@@ -117,7 +117,7 @@ export default {
     });
 
     if (!magicToken) {
-      return ctx.send({ error: "Invalid or expired link" }, 400);
+      return ctx.send({ error: "Անվավեր կամ ժամկետանց անցած հղում" }, 400);
     }
 
     // Check expiry
@@ -126,7 +126,7 @@ export default {
         where: { id: magicToken.id },
         data: { used: true },
       });
-      return ctx.send({ error: "Link has expired" }, 400);
+      return ctx.send({ error: "Հղումի ժամկետը լրացել է" }, 400);
     }
 
     // Mark token as used (one-time use)

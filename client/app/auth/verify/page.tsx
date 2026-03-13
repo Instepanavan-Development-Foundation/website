@@ -25,7 +25,7 @@ export default function MagicLinkVerifyPage() {
       setReturnUrl(retUrl);
 
       if (!token) {
-        setError("Invalid link");
+        setError("Անվավեր հղում");
         return;
       }
 
@@ -37,7 +37,7 @@ export default function MagicLinkVerifyPage() {
         const data = await response.json();
 
         if (!response.ok) {
-          setError(data.error || "Verification failed");
+          setError(data.error || "Ստուգումը ձախողվեց");
           return;
         }
 
@@ -55,7 +55,7 @@ export default function MagicLinkVerifyPage() {
           redirectToDestination(retUrl);
         }
       } catch {
-        setError("Something went wrong");
+        setError("Սերվերի սխալ");
       }
     }
 
@@ -101,13 +101,13 @@ export default function MagicLinkVerifyPage() {
   if (error) {
     return (
       <div className="max-w-md mx-auto mt-10 p-8 bg-white rounded-xl shadow-lg flex flex-col gap-4 text-center">
-        <h2 className="text-2xl font-bold text-red-500">Error</h2>
+        <h2 className="text-2xl font-bold text-red-500">Սխալ</h2>
         <p className="text-gray-600">{error}</p>
         <Link
           className="text-rose-500 hover:underline font-medium mt-2"
           href="/login"
         >
-          Try again
+          Փորձել կրկին
         </Link>
       </div>
     );
@@ -119,15 +119,15 @@ export default function MagicLinkVerifyPage() {
         className="max-w-md mx-auto mt-10 p-8 bg-white rounded-xl shadow-lg flex flex-col gap-6"
         onSubmit={handleNameSubmit}
       >
-        <h2 className="text-2xl font-bold text-center">Welcome!</h2>
+        <h2 className="text-2xl font-bold text-center">Բարի գալուստ!</h2>
         <p className="text-gray-600 text-center text-sm">
-          What&apos;s your name?
+          Ինչպե՞ս է ձեր անունը?
         </p>
         <Input
           autoComplete="name"
           autoFocus
-          label="Full name"
-          placeholder="John Doe"
+          label="Անուն ազգանուն"
+          placeholder="Հովհաննես Հայրապետյան"
           type="text"
           value={fullName}
           onChange={(e) => setFullName(e.target.value)}
@@ -139,14 +139,14 @@ export default function MagicLinkVerifyPage() {
           type="submit"
           variant="flat"
         >
-          Continue
+          Շարունակել
         </Button>
         <Button
           className="text-sm font-normal text-gray-600"
           variant="light"
           onPress={handleSkip}
         >
-          Skip
+          Բաց թողնել
         </Button>
       </form>
     );
@@ -155,7 +155,7 @@ export default function MagicLinkVerifyPage() {
   return (
     <div className="max-w-md mx-auto mt-10 p-8 bg-white rounded-xl shadow-lg flex flex-col gap-4 items-center text-center">
       <Spinner size="lg" />
-      <p className="text-gray-600">Verifying...</p>
+      <p className="text-gray-600">Ստուգում...</p>
     </div>
   );
 }
