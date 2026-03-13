@@ -1,0 +1,33 @@
+{
+  "kind": "collectionType",
+  "collectionName": "magic_link_tokens",
+  "info": {
+    "singularName": "magic-link-token",
+    "pluralName": "magic-link-tokens",
+    "displayName": "Magic Link Token",
+    "description": "Stores tokens for passwordless magic link authentication"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "email": {
+      "type": "email",
+      "required": true
+    },
+    "token": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "expiresAt": {
+      "type": "datetime",
+      "required": true
+    },
+    "used": {
+      "type": "boolean",
+      "default": false
+    }
+  }
+}

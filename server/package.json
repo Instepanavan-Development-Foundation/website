@@ -15,6 +15,7 @@
   "dependencies": {
     "@hatchet-dev/typescript-sdk": "^1.10.5",
     "@strapi/plugin-users-permissions": "^5.38.1",
+    "@strapi/provider-email-nodemailer": "^5.39.0",
     "@strapi/strapi": "^5.38.1",
     "markdown-to-txt": "^2.0.1",
     "pg": "8.8.0",

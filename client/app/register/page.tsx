@@ -1,3 +1,5 @@
-import Register from "@/components/Register";
+import { redirect } from "next/navigation";
 
-export default Register;
+export default function RegisterPage() {
+  redirect("/login");
+}

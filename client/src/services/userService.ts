@@ -100,60 +100,25 @@ export async function getUserAvatarUrl(size = 200): Promise<string | null> {
 }
 
 /**
- * Login user
+ * Send magic link to email for passwordless login/registration
  */
-export async function login(
-  identifier: string,
-  password: string,
-): Promise<{ user: User; jwt: string }> {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/local`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ identifier, password }),
-    },
-  );
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.error?.message || "Մուտքը ձախողվեց");
-  }
-
-  // Save token
-  setToken(data.jwt);
-
-  return { user: data.user, jwt: data.jwt };
-}
-
-/**
- * Register new user
- */
-export async function register(
+export async function sendMagicLink(
   email: string,
-  password: string,
-  fullName?: string,
-): Promise<{ user: User; jwt: string }> {
+  returnUrl?: string,
+): Promise<void> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/local/register`,
+    `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/magic-link/send`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username: email, email, password, fullName }),
+      body: JSON.stringify({ email, returnUrl }),
     },
   );
 
-  const data = await response.json();
-
   if (!response.ok) {
-    throw new Error(data.error?.message || "Գրանցումը ձախողվեց");
+    const data = await response.json();
+    throw new Error(data.error?.message || data.error || "Sending failed");
   }
-
-  // Save token
-  setToken(data.jwt);
-
-  return { user: data.user, jwt: data.jwt };
 }
 
 /**
