@@ -19,7 +19,7 @@ mkdir -p "${LOCAL_BACKUP_DIR}"
 # Step 1: Create backup on production server
 echo "📦 Creating backup on production server..."
 ssh ${SSH_HOST} "cd ${REMOTE_PATH} && \
-    docker compose -f docker-compose.prod.yml exec -T postgres pg_dumpall -U instep | \
+    docker compose -f docker-compose.prod.yml exec -T postgres pg_dumpall -U ${DB_USER} | \
     gzip > /tmp/${COMPRESSED_FILENAME}"
 
 # Step 2: Download backup to local machine
