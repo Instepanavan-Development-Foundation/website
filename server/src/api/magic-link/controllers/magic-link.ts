@@ -1,5 +1,9 @@
 import crypto from "crypto";
 
+// Use db.query for magic-link-token since auto-generated types
+// don't exist until after the first build with this content type
+const TOKEN_UID = "api::magic-link-token.magic-link-token";
+
 export default {
   /**
    * POST /api/magic-link/send
@@ -9,7 +13,7 @@ export default {
    * Always returns 200 to prevent email enumeration.
    */
   async send(ctx) {
-    const { email, returnUrl } = ctx.request.body;
+    const { email, returnUrl } = ctx.request.body as any;
 
     if (!email) {
       return ctx.send({ error: "Email is required" }, 400);
@@ -18,19 +22,14 @@ export default {
     const normalizedEmail = email.trim().toLowerCase();
 
     // Rate limit: 1 email per 60 seconds per address
-    const recentTokens = await strapi
-      .documents("api::magic-link-token.magic-link-token")
-      .findMany({
-        filters: {
-          email: { $eq: normalizedEmail },
-          createdAt: {
-            $gte: new Date(Date.now() - 60 * 1000).toISOString(),
-          },
-        },
-        limit: 1,
-      });
+    const recentToken = await strapi.db.query(TOKEN_UID).findOne({
+      where: {
+        email: normalizedEmail,
+        createdAt: { $gte: new Date(Date.now() - 60 * 1000) },
+      },
+    });
 
-    if (recentTokens?.length > 0) {
+    if (recentToken) {
       return ctx.send({ message: "ok" }, 200);
     }
 
@@ -40,21 +39,19 @@ export default {
     // Calculate expiry
     const expiryMinutes = parseInt(
       process.env.MAGIC_LINK_EXPIRY_MINUTES || "15",
-      10
+      10,
     );
     const expiresAt = new Date(Date.now() + expiryMinutes * 60 * 1000);
 
     // Store token
-    await strapi
-      .documents("api::magic-link-token.magic-link-token")
-      .create({
-        data: {
-          email: normalizedEmail,
-          token,
-          expiresAt: expiresAt.toISOString(),
-          used: false,
-        },
-      });
+    await strapi.db.query(TOKEN_UID).create({
+      data: {
+        email: normalizedEmail,
+        token,
+        expiresAt,
+        used: false,
+      },
+    });
 
     // Build magic link URL
     const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
@@ -105,24 +102,19 @@ export default {
    * Validates the token, finds or creates user, issues JWT.
    */
   async verify(ctx) {
-    const { token } = ctx.query;
+    const { token } = ctx.query as any;
 
     if (!token) {
       return ctx.send({ error: "Token is required" }, 400);
     }
 
     // Look up token
-    const tokens = await strapi
-      .documents("api::magic-link-token.magic-link-token")
-      .findMany({
-        filters: {
-          token: { $eq: token },
-          used: { $eq: false },
-        },
-        limit: 1,
-      });
-
-    const magicToken = tokens?.[0];
+    const magicToken = await strapi.db.query(TOKEN_UID).findOne({
+      where: {
+        token,
+        used: false,
+      },
+    });
 
     if (!magicToken) {
       return ctx.send({ error: "Invalid or expired link" }, 400);
@@ -130,65 +122,64 @@ export default {
 
     // Check expiry
     if (new Date(magicToken.expiresAt) < new Date()) {
-      await strapi
-        .documents("api::magic-link-token.magic-link-token")
-        .update({
-          documentId: magicToken.documentId,
-          data: { used: true },
-        });
+      await strapi.db.query(TOKEN_UID).update({
+        where: { id: magicToken.id },
+        data: { used: true },
+      });
       return ctx.send({ error: "Link has expired" }, 400);
     }
 
     // Mark token as used (one-time use)
-    await strapi
-      .documents("api::magic-link-token.magic-link-token")
-      .update({
-        documentId: magicToken.documentId,
-        data: { used: true },
-      });
+    await strapi.db.query(TOKEN_UID).update({
+      where: { id: magicToken.id },
+      data: { used: true },
+    });
 
     const email = magicToken.email;
 
     // Find existing user by email
-    const existingUsers = await strapi
-      .documents("plugin::users-permissions.user")
-      .findMany({
-        filters: { email: { $eq: email } },
-        limit: 1,
-      });
+    const user = await strapi.db
+      .query("plugin::users-permissions.user")
+      .findOne({ where: { email } });
 
-    let user = existingUsers?.[0];
     let isNewUser = false;
+    let finalUser = user;
 
     if (!user) {
       isNewUser = true;
       // Auto-create user
-      const defaultRole = await strapi
+      const defaultRole = await strapi.db
         .query("plugin::users-permissions.role")
         .findOne({ where: { type: "authenticated" } });
 
       // Random password (required by Strapi schema but never used)
       const randomPassword = crypto.randomBytes(32).toString("hex");
 
-      user = await strapi
-        .documents("plugin::users-permissions.user")
-        .create({
-          data: {
-            username: email,
-            email,
-            password: randomPassword,
-            confirmed: true,
-            blocked: false,
-            role: defaultRole.id,
-            provider: "local",
-          },
+      // Use the plugin's register method to properly hash the password
+      const pluginStore = await strapi.store({
+        type: "plugin",
+        name: "users-permissions",
+      });
+      const settings = await pluginStore.get({ key: "advanced" }) as any;
+
+      finalUser = await strapi
+        .plugin("users-permissions")
+        .service("user")
+        .add({
+          username: email,
+          email,
+          password: randomPassword,
+          confirmed: true,
+          blocked: false,
+          role: defaultRole.id,
+          provider: "local",
         });
     } else if (!user.confirmed) {
       // Auto-confirm user on magic link verification
-      await strapi
-        .documents("plugin::users-permissions.user")
+      finalUser = await strapi.db
+        .query("plugin::users-permissions.user")
         .update({
-          documentId: user.documentId,
+          where: { id: user.id },
           data: { confirmed: true },
         });
     }
@@ -196,21 +187,21 @@ export default {
     // Issue JWT
     const jwt = strapi
       .service("plugin::users-permissions.jwt")
-      .issue({ id: user.id });
+      .issue({ id: finalUser.id });
 
     return ctx.send(
       {
         jwt,
         isNewUser,
         user: {
-          id: user.id,
-          documentId: user.documentId,
-          email: user.email,
-          username: user.username,
-          fullName: (user as any).fullName,
+          id: finalUser.id,
+          documentId: finalUser.documentId,
+          email: finalUser.email,
+          username: finalUser.username,
+          fullName: finalUser.fullName,
         },
       },
-      200
+      200,
     );
   },
 };
