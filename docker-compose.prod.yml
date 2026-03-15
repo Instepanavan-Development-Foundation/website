@@ -47,6 +47,7 @@ services:
     restart: unless-stopped
     environment:
       DATABASE_URL: "postgresql://hatchet:hatchet@hatchet_postgres:5432/hatchet"
+      SERVER_AUTH_COOKIE_DOMAIN: "localhost"
     volumes:
       - ./hatchet-data:/data
     depends_on:
