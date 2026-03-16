@@ -867,14 +867,14 @@ HATCHET_CLIENT_HOST_PORT=localhost:7077
 - [x] **Add authentication to recurring payment endpoints** — Both `doRecurringPayment` and `triggerAllPayments` now check `x-admin-api-key` header against `ADMIN_API_KEY` env var ([controllers/payment.ts:107-110](controllers/payment.ts#L107-L110), [controllers/payment.ts:198-201](controllers/payment.ts#L198-L201))
 - [x] **Link payment methods to users** — `createProjectPaymentMethod` now saves `userDocumentId` (string) and `users_permissions_user` (numeric) ([services/strapi.ts:132-147](services/strapi.ts#L132-L147))
 - [x] **Fix hardcoded payment type** — Now uses project's `donationType` directly (`"recurring"` or `"one time"`). Project-payment schema enum updated to match ([services/strapi.ts:94](services/strapi.ts#L94))
-- [ ] **Add email to project payments** — Still uses dummy email `"TODO: dummy EMAIL ADD LATER"` ([../../../queue/workflow.ts:111](../../../queue/workflow.ts#L111))
+- [x] **Add email to project payments** — Now populates user email via project_payment → payment_method → users_permissions_user ([../../../queue/workflow.ts:89-112](../../../queue/workflow.ts#L89-L112))
 - [x] **Change cron schedule to monthly** — Now runs on 4th, 14th, 24th of each month at 00:00 UTC ([../../../queue/workflow.ts:67-71](../../../queue/workflow.ts#L67-L71))
 
 ### Medium Priority
 
 - [x] **Handle donation type properly** — Payment type now derived from project's `donationType` in `createProjectPayment` ([services/strapi.ts:85-87](services/strapi.ts#L85-L87)). Note: TODO comment in [controllers/payment.ts:9](controllers/payment.ts#L9) can be removed
-- [ ] **Update payment logs relation** — Still no logic to update project payment with new logs ([services/strapi.ts:178-180](services/strapi.ts#L178-L180))
-- [ ] **Add logic to update project payment with logs** — TODO comment still present ([services/strapi.ts:179](services/strapi.ts#L179))
+- [x] **Update payment logs relation** — Already handled: `createPaymentLog` sets `project_payment: projectPaymentId` which links both sides via Strapi's `manyToOne`/`inversedBy` relation. Removed dead TODO.
+- [x] **Add logic to update project payment with logs** — Same as above; no extra update needed since the relation is bidirectional by schema design
 
 ### Low Priority
 

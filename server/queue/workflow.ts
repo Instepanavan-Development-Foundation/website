@@ -86,7 +86,6 @@ recurringPaymentsTask?.task({
       filters.documentId = projectDocumentId;
     }
 
-    //TODO: Add email or user to projectPayment so we can log it and associate with an account
     const projects = await strapiGlobal
       .documents("api::project.project")
       .findMany({
@@ -95,6 +94,16 @@ recurringPaymentsTask?.task({
         populate: {
           project_payments: {
             fields: ["documentId", "amount"],
+            populate: {
+              payment_method: {
+                fields: ["userDocumentId"],
+                populate: {
+                  users_permissions_user: {
+                    fields: ["email"],
+                  },
+                },
+              },
+            },
           },
         },
       });
@@ -104,11 +113,12 @@ recurringPaymentsTask?.task({
     for (const project of projects) {
       for (const projectPayment of project.project_payments) {
         const { amount, documentId } = projectPayment;
+        const email = projectPayment.payment_method?.users_permissions_user?.email || "";
 
         const result = await hatchet.events.push(PROJECT_PAYMENT_CREATE_EVENT, {
           amount,
           documentId,
-          email: "TODO: dummy EMAIL ADD LATER",
+          email,
           ShouldSkip: false,
         });
 
