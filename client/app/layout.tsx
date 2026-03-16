@@ -57,8 +57,8 @@ export default async function RootLayout({
             <main className="container mx-auto max-w-7xl pt-2 flex-grow">
               {children}
             </main>
-            <footer className="w-full flex flex-col items-center justify-center py-3 gap-2">
-              <div className="flex gap-4">
+            <footer className="w-full flex flex-col items-start container mx-auto max-w-7xl py-3 gap-2">
+              <div className="flex flex-col items-start gap-1">
                 {footerMenu.map((link) => (
                   <Link
                     key={link.title}
@@ -70,7 +70,7 @@ export default async function RootLayout({
                   </Link>
                 ))}
               </div>
-              <div className="container mx-auto max-w-7xl text-center text-sm text-default-500">
+              <div className="text-sm text-default-500">
                 Կայքը բաց կոդով է՝{" "}
                 <Link
                   className="text-primary"
