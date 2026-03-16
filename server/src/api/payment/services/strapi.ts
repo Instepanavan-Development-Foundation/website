@@ -63,7 +63,7 @@ const service = {
       paymentDetails,
       projectPaymentMethod,
       paymentLog,
-      projectDocumentId,
+      project: currentProject,
     });
 
     await service.updateProjectData({
@@ -79,12 +79,9 @@ const service = {
     paymentDetails,
     projectPaymentMethod,
     paymentLog,
-    projectDocumentId,
+    project,
   }) => {
     try {
-      // Get project to determine donation type and name
-      const project = await service.getProject(projectDocumentId);
-      const projectName = project?.name || paymentDetails.Description;
       const projectPayment = await strapi
         .documents(PROJECT_PAYMENT_API)
         .create({
@@ -92,10 +89,10 @@ const service = {
             amount: paymentDetails.Amount,
             currency: paymentDetails.Currency,
             type: project?.donationType || "recurring",
-            name: projectName,
+            name: project?.name || paymentDetails.Description,
             payment_method: projectPaymentMethod.documentId,
             payment_logs: [paymentLog.documentId],
-            project: projectDocumentId,
+            project: project.documentId,
           },
         });
 

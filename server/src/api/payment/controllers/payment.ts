@@ -6,7 +6,7 @@ export default {
   initPayment: async (ctx, next) => {
     const {
       amount,
-      projectDocumentId, // TODO: we have donationType in db, handle it!
+      projectDocumentId,
       projectSlug,
       currencyCode = process.env.CURRENCY_AM,
       lang = "am",
@@ -94,7 +94,10 @@ export default {
       }, 200);
     } catch (error) {
       console.error("ERROR in getPaymentDetails:", error);
-      await service.createPaymentLog(error.message);
+      await service.createPaymentLog({
+        paymentDetails: { Amount: null, Currency: null, OrderId: null, Description: error.message },
+        success: false,
+      });
       return ctx.send({ errorMessage: error.message }, 500);
     }
   },
@@ -148,8 +151,17 @@ export default {
         return ctx.send({ errorMessage: "Failed to get latest orderId" }, 500);
       }
 
+      const bindingParams = typeof projectPayment.payment_method.params === 'string'
+        ? JSON.parse(projectPayment.payment_method.params)
+        : projectPayment.payment_method.params;
+
       const paymentDetails = await service.makeBindingPayment({
-        projectPayment,
+        projectPayment: {
+          Amount: projectPayment.amount,
+          CardHolderID: bindingParams.CardHolderID,
+          BindingID: bindingParams.BindingID,
+          currency: projectPayment.currency,
+        },
         orderId,
       });
 
