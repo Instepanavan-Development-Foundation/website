@@ -41,7 +41,7 @@ export interface IProjectPayment {
   amount: number;
   currency: number;
   project: IProject;
-  type: "recurring" | "one_time";
+  type: "recurring" | "one time";
 }
 
 export interface IPaymentLog {

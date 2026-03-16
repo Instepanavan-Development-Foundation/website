@@ -24,7 +24,7 @@
       "type": "enumeration",
       "enum": [
         "recurring",
-        "one_time"
+        "one time"
       ],
       "required": true
     },

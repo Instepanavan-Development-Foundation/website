@@ -82,17 +82,16 @@ const service = {
     projectDocumentId,
   }) => {
     try {
-      // Get project name to store it
+      // Get project to determine donation type and name
       const project = await service.getProject(projectDocumentId);
       const projectName = project?.name || paymentDetails.Description;
-
       const projectPayment = await strapi
         .documents(PROJECT_PAYMENT_API)
         .create({
           data: {
             amount: paymentDetails.Amount,
             currency: paymentDetails.Currency,
-            type: "recurring", // TODO add dynamic value after adding subscription
+            type: project?.donationType || "recurring",
             name: projectName,
             payment_method: projectPaymentMethod.documentId,
             payment_logs: [paymentLog.documentId],
