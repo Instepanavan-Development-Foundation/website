@@ -94,4 +94,3 @@ ssh instepanavan "cd ./website && docker compose -f docker-compose.prod.yml logs
 
 ---
 
-See [CLAUDE.md.template](CLAUDE.md.template) for detailed documentation.
