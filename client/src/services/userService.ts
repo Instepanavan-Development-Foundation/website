@@ -1,4 +1,4 @@
-import crypto from "crypto";
+
 
 export interface User {
   id: number;
@@ -79,11 +79,18 @@ export async function getCurrentUser(): Promise<User | null> {
 }
 
 /**
- * Generate Gravatar URL from email
+ * Generate Gravatar URL from email (browser-compatible using Web Crypto API)
  */
-export function getGravatarUrl(email: string, size = 200): string {
+export async function getGravatarUrl(
+  email: string,
+  size = 200,
+): Promise<string> {
   const trimmedEmail = email.trim().toLowerCase();
-  const hash = crypto.createHash("sha256").update(trimmedEmail).digest("hex");
+  const encoder = new TextEncoder();
+  const data = encoder.encode(trimmedEmail);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hash = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 
   return `https://www.gravatar.com/avatar/${hash}?s=${size}&d=identicon`;
 }

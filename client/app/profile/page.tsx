@@ -46,18 +46,7 @@ import {
 } from "@/src/helpers/paymentMethods";
 import { getUserPaymentHistory } from "@/src/helpers/getUserPaymentHistory";
 import { getUserSubscriptions } from "@/src/helpers/getUserSubscriptions";
-
-// Helper function to get user avatar URL
-const getUserAvatarUrl = (email: string) => {
-  if (typeof window === "undefined") {
-    // Server-side: use a default avatar
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(email)}&background=random`;
-  }
-  // Client-side: use Gravatar with email hash
-  const hash = email.trim().toLowerCase();
-
-  return `https://www.gravatar.com/avatar/${hash}?d=identicon&s=200`;
-};
+import { getGravatarUrl } from "@/src/services/userService";
 
 export default function MyProfile() {
   const { isLoading: authLoading } = useAuth("/login");
@@ -66,6 +55,7 @@ export default function MyProfile() {
   const [paymentMethods, setPaymentMethods] = useState<IPaymentMethod[]>([]);
   const [paymentHistory, setPaymentHistory] = useState<IPaymentLog[]>([]);
   const [contributor, setContributor] = useState<IContributor | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState(true);
   const [cancellingSubscription, setCancellingSubscription] = useState<
     number | null
@@ -113,6 +103,12 @@ export default function MyProfile() {
       if (!userData) return;
 
       setUser(userData);
+
+      // Compute avatar URL
+      if (userData.email) {
+        const url = await getGravatarUrl(userData.email);
+        setAvatarUrl(url);
+      }
 
       // Initialize edit form data
       setEditFormData({
@@ -416,7 +412,6 @@ export default function MyProfile() {
   ).length;
   const totalDonations = subscriptions.reduce((sum, s) => sum + s.amount, 0);
   const displayName = user?.fullName || user?.username || "...";
-  const avatarUrl = user?.email ? getUserAvatarUrl(user.email) : undefined;
 
   return (
     <div className="container mx-auto flex flex-col gap-6">
