@@ -48,5 +48,25 @@ export default {
         middlewares: [],
       },
     },
+    {
+      method: "POST",
+      path: "/payment/cancel-payment",
+      handler: "payment.cancelPayment",
+      config: {
+        policies: ['admin::isAuthenticatedAdmin'],
+        middlewares: [],
+        auth: false, // Disable users-permissions auth; admin auth handled by policy
+      },
+    },
+    {
+      method: "POST",
+      path: "/payment/refund-payment",
+      handler: "payment.refundPayment",
+      config: {
+        policies: ['admin::isAuthenticatedAdmin'],
+        middlewares: [],
+        auth: false, // Disable users-permissions auth; admin auth handled by policy
+      },
+    },
   ],
 };

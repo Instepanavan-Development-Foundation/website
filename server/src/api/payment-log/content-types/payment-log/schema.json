@@ -38,6 +38,22 @@
       "relation": "oneToOne",
       "target": "api::donation.donation",
       "mappedBy": "payment_log"
+    },
+    "paymentId": {
+      "type": "string"
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": [
+        "completed",
+        "cancelled",
+        "refunded",
+        "partial_refund"
+      ]
+    },
+    "refundedAmount": {
+      "type": "decimal",
+      "default": 0
     }
   }
 }

@@ -211,6 +211,25 @@ const paymentService = {
       throw new Error(`Ameriabank API error: ${e.message}`);
     }
   },
+  cancelPayment: async (paymentId: string) => {
+    const url = `${process.env.PAYMENT_API_BASE_URL}/CancelPayment`;
+    const response = await axios.post(url, {
+      PaymentID: paymentId,
+      Username: process.env.PAYMENT_USERNAME,
+      Password: process.env.PAYMENT_PASSWORD,
+    }, { headers: { "Content-Type": "application/json" } });
+    return response.data;
+  },
+  refundPayment: async (paymentId: string, amount: number) => {
+    const url = `${process.env.PAYMENT_API_BASE_URL}/RefundPayment`;
+    const response = await axios.post(url, {
+      PaymentID: paymentId,
+      Username: process.env.PAYMENT_USERNAME,
+      Password: process.env.PAYMENT_PASSWORD,
+      Amount: amount,
+    }, { headers: { "Content-Type": "application/json" } });
+    return response.data;
+  },
 };
 
 export default paymentService;

@@ -315,4 +315,131 @@ export default {
       }, 500);
     }
   },
+  cancelPayment: async (ctx) => {
+    const { paymentLogDocumentId } = ctx.request.body;
+    const service = strapi.service(PAYMENT_API);
+
+    if (!paymentLogDocumentId) {
+      return ctx.send({ error: "paymentLogDocumentId is required" }, 400);
+    }
+
+    try {
+      const log = await strapi.documents('api::payment-log.payment-log').findOne({
+        documentId: paymentLogDocumentId,
+      });
+
+      if (!log) {
+        return ctx.send({ error: "Payment log not found" }, 404);
+      }
+
+      if (!log.success || log.status === 'cancelled' || log.status === 'refunded') {
+        return ctx.send({ error: "Payment is not eligible for cancellation" }, 400);
+      }
+
+      // Check 72-hour window
+      const hoursElapsed = (Date.now() - new Date(log.createdAt).getTime()) / (1000 * 60 * 60);
+      if (hoursElapsed > 72) {
+        return ctx.send({ error: "Cancel window expired (72 hours). Use refund instead." }, 400);
+      }
+
+      // Extract PaymentID
+      const paymentId = log.paymentId || (typeof log.details === 'string' ? JSON.parse(log.details) : log.details)?.PaymentID;
+      if (!paymentId) {
+        return ctx.send({ error: "No PaymentID found for this log" }, 400);
+      }
+
+      const result = await service.cancelPayment(paymentId);
+
+      if (result.ResponseCode !== process.env.SUCCESS_RESPONSE_CODE) {
+        return ctx.send({
+          error: "Cancel failed",
+          details: result.ResponseMessage || result.ResponseCode,
+        }, 400);
+      }
+
+      await strapi.documents('api::payment-log.payment-log').update({
+        documentId: paymentLogDocumentId,
+        data: {
+          status: 'cancelled',
+          success: false,
+          refundedAmount: log.amount,
+        } as any,
+      });
+
+      return ctx.send({ success: true, message: "Payment cancelled successfully" }, 200);
+    } catch (error) {
+      console.error("ERROR in cancelPayment:", error);
+      return ctx.send({ error: "Cancel failed", details: error.message }, 500);
+    }
+  },
+  refundPayment: async (ctx) => {
+    const { paymentLogDocumentId, amount } = ctx.request.body;
+    const service = strapi.service(PAYMENT_API);
+
+    if (!paymentLogDocumentId || !amount) {
+      return ctx.send({ error: "paymentLogDocumentId and amount are required" }, 400);
+    }
+
+    try {
+      const log = await strapi.documents('api::payment-log.payment-log').findOne({
+        documentId: paymentLogDocumentId,
+      });
+
+      if (!log) {
+        return ctx.send({ error: "Payment log not found" }, 404);
+      }
+
+      if (!log.success && log.status !== 'partial_refund') {
+        return ctx.send({ error: "Payment is not eligible for refund" }, 400);
+      }
+
+      if (log.status === 'cancelled' || log.status === 'refunded') {
+        return ctx.send({ error: "Payment is already cancelled/refunded" }, 400);
+      }
+
+      const refundedSoFar = log.refundedAmount || 0;
+      const remaining = log.amount - refundedSoFar;
+
+      if (amount > remaining) {
+        return ctx.send({ error: `Refund amount exceeds remaining (${remaining})` }, 400);
+      }
+
+      // Extract PaymentID
+      const paymentId = log.paymentId || (typeof log.details === 'string' ? JSON.parse(log.details) : log.details)?.PaymentID;
+      if (!paymentId) {
+        return ctx.send({ error: "No PaymentID found for this log" }, 400);
+      }
+
+      const result = await service.refundPayment(paymentId, amount);
+
+      if (result.ResponseCode !== process.env.SUCCESS_RESPONSE_CODE) {
+        return ctx.send({
+          error: "Refund failed",
+          details: result.ResponseMessage || result.ResponseCode,
+        }, 400);
+      }
+
+      const newRefundedAmount = refundedSoFar + amount;
+      const isFullRefund = newRefundedAmount >= log.amount;
+
+      await strapi.documents('api::payment-log.payment-log').update({
+        documentId: paymentLogDocumentId,
+        data: {
+          status: isFullRefund ? 'refunded' : 'partial_refund',
+          success: isFullRefund ? false : log.success,
+          refundedAmount: newRefundedAmount,
+        } as any,
+      });
+
+      return ctx.send({
+        success: true,
+        message: isFullRefund ? "Full refund processed" : "Partial refund processed",
+        refundedAmount: newRefundedAmount,
+        remaining: log.amount - newRefundedAmount,
+      }, 200);
+    } catch (error) {
+      console.error("ERROR in refundPayment:", error);
+      return ctx.send({ error: "Refund failed", details: error.message }, 500);
+    }
+  },
 };

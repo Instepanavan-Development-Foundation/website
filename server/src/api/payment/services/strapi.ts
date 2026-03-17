@@ -167,6 +167,8 @@ const service = {
           details: JSON.stringify(paymentDetails || {}),
           orderId: paymentDetails.OrderId,
           success: success,
+          paymentId: paymentDetails.PaymentID || null,
+          status: success ? 'completed' : null,
           project_payment: projectPaymentId,
         },
       });
