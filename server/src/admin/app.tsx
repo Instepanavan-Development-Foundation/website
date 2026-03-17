@@ -88,6 +88,7 @@ export default {
   },
   bootstrap(app: StrapiApp) {
     const contentManager = app.getPlugin('content-manager');
-    contentManager.apis.addDocumentAction([CancelPaymentAction, RefundPaymentAction]);
+    contentManager.apis.addDocumentAction(CancelPaymentAction);
+    contentManager.apis.addDocumentAction(RefundPaymentAction);
   },
 };

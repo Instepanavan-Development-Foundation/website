@@ -105,6 +105,10 @@ export default {
       }
 
       const paymentDetails = await service.getPaymentDetails(paymentId);
+      // Ensure PaymentID is in the details (GetPaymentDetails may not return it)
+      if (!paymentDetails.PaymentID) {
+        paymentDetails.PaymentID = paymentId;
+      }
 
       await service.savePayment({
         paymentDetails,
@@ -372,7 +376,7 @@ export default {
       }
 
       // Extract PaymentID
-      const paymentId = log.paymentId || (typeof log.details === 'string' ? JSON.parse(log.details) : log.details)?.PaymentID;
+      const paymentId = log.paymentId;
       if (!paymentId) {
         return ctx.send({ error: "No PaymentID found for this log" }, 400);
       }
@@ -438,7 +442,7 @@ export default {
       }
 
       // Extract PaymentID
-      const paymentId = log.paymentId || (typeof log.details === 'string' ? JSON.parse(log.details) : log.details)?.PaymentID;
+      const paymentId = log.paymentId;
       if (!paymentId) {
         return ctx.send({ error: "No PaymentID found for this log" }, 400);
       }
