@@ -2,6 +2,31 @@ import { triggerAllPaymentsManually } from "../../../../queue/workflow";
 
 const PAYMENT_API = "api::payment.payment";
 
+async function verifyAdminAuth(ctx): Promise<boolean> {
+  const { authorization } = ctx.request.header;
+  if (!authorization) return false;
+
+  const parts = authorization.split(/\s+/);
+  if (parts[0].toLowerCase() !== 'bearer' || parts.length !== 2) return false;
+
+  const token = parts[1];
+  const manager = (strapi as any).sessionManager;
+  if (!manager) return false;
+
+  const result = manager('admin').validateAccessToken(token);
+  if (!result.isValid) return false;
+
+  const isActive = await manager('admin').isSessionActive(result.payload.sessionId);
+  if (!isActive) return false;
+
+  const user = await strapi.db.query('admin::user').findOne({
+    where: { id: result.payload.userId },
+    populate: ['roles'],
+  });
+
+  return !!(user && user.isActive);
+}
+
 export default {
   initPayment: async (ctx, next) => {
     const {
@@ -316,12 +341,7 @@ export default {
     }
   },
   cancelPayment: async (ctx) => {
-    // Verify admin JWT
-    try {
-      const token = ctx.request.headers.authorization?.replace('Bearer ', '');
-      if (!token) return ctx.unauthorized('Missing authorization token');
-      await strapi.service('admin::token').decodeJwtToken({ token });
-    } catch {
+    if (!await verifyAdminAuth(ctx)) {
       return ctx.unauthorized('Invalid admin token');
     }
 
@@ -382,12 +402,7 @@ export default {
     }
   },
   refundPayment: async (ctx) => {
-    // Verify admin JWT
-    try {
-      const token = ctx.request.headers.authorization?.replace('Bearer ', '');
-      if (!token) return ctx.unauthorized('Missing authorization token');
-      await strapi.service('admin::token').decodeJwtToken({ token });
-    } catch {
+    if (!await verifyAdminAuth(ctx)) {
       return ctx.unauthorized('Invalid admin token');
     }
 
