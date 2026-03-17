@@ -57,6 +57,15 @@ const service = {
       );
     }
 
+    // IMPORTANT: Never use fallback values (||) for payment data.
+    // Missing fields must throw — silent defaults cause incorrect payment records.
+    if (!currentProject.donationType) {
+      throw new Error(`Project missing donationType: ${projectDocumentId}`);
+    }
+    if (!currentProject.name) {
+      throw new Error(`Project missing name: ${projectDocumentId}`);
+    }
+
     const newGatheredAmount = currentProject.gatheredAmount + paymentDetails.Amount;
 
     await service.createProjectPayment({
@@ -88,8 +97,8 @@ const service = {
           data: {
             amount: paymentDetails.Amount,
             currency: paymentDetails.Currency,
-            type: project?.donationType || "recurring",
-            name: project?.name || paymentDetails.Description,
+            type: project.donationType,
+            name: project.name,
             payment_method: projectPaymentMethod.documentId,
             payment_logs: [paymentLog.documentId],
             project: project.documentId,

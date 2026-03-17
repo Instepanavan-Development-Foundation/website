@@ -3,7 +3,9 @@ import { useFetchClient } from '@strapi/admin/strapi-admin';
 
 const PAYMENT_LOG_UID = 'api::payment-log.payment-log';
 
-function CancelPaymentAction({ document, documentId, model }: any) {
+function CancelPaymentAction(ctx: any) {
+  if (!ctx) return null;
+  const { document, documentId, model } = ctx;
   if (model !== PAYMENT_LOG_UID) return null;
   if (!document) return null;
   if (!document.success) return null;
@@ -37,7 +39,9 @@ function CancelPaymentAction({ document, documentId, model }: any) {
   };
 }
 
-function RefundPaymentAction({ document, documentId, model }: any) {
+function RefundPaymentAction(ctx: any) {
+  if (!ctx) return null;
+  const { document, documentId, model } = ctx;
   if (model !== PAYMENT_LOG_UID) return null;
   if (!document) return null;
   if (document.status === 'cancelled' || document.status === 'refunded') return null;
