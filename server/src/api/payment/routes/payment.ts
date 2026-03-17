@@ -53,9 +53,9 @@ export default {
       path: "/payment/cancel-payment",
       handler: "payment.cancelPayment",
       config: {
-        policies: ['admin::isAuthenticatedAdmin'],
+        policies: [],
         middlewares: [],
-        auth: false, // Disable users-permissions auth; admin auth handled by policy
+        auth: false, // Admin JWT verified manually in controller
       },
     },
     {
@@ -63,9 +63,9 @@ export default {
       path: "/payment/refund-payment",
       handler: "payment.refundPayment",
       config: {
-        policies: ['admin::isAuthenticatedAdmin'],
+        policies: [],
         middlewares: [],
-        auth: false, // Disable users-permissions auth; admin auth handled by policy
+        auth: false, // Admin JWT verified manually in controller
       },
     },
   ],

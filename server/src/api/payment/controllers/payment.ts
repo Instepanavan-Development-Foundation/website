@@ -316,6 +316,15 @@ export default {
     }
   },
   cancelPayment: async (ctx) => {
+    // Verify admin JWT
+    try {
+      const token = ctx.request.headers.authorization?.replace('Bearer ', '');
+      if (!token) return ctx.unauthorized('Missing authorization token');
+      await strapi.service('admin::token').decodeJwtToken({ token });
+    } catch {
+      return ctx.unauthorized('Invalid admin token');
+    }
+
     const { paymentLogDocumentId } = ctx.request.body;
     const service = strapi.service(PAYMENT_API);
 
@@ -373,6 +382,15 @@ export default {
     }
   },
   refundPayment: async (ctx) => {
+    // Verify admin JWT
+    try {
+      const token = ctx.request.headers.authorization?.replace('Bearer ', '');
+      if (!token) return ctx.unauthorized('Missing authorization token');
+      await strapi.service('admin::token').decodeJwtToken({ token });
+    } catch {
+      return ctx.unauthorized('Invalid admin token');
+    }
+
     const { paymentLogDocumentId, amount } = ctx.request.body;
     const service = strapi.service(PAYMENT_API);
 

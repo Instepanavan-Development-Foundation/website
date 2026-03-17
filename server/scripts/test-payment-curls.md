@@ -154,9 +154,11 @@ curl -X POST http://localhost:1337/api/payment/init-payment \
 ### Step 2: Complete Payment
 1. Open the URL from response in browser
 2. Use Ameriabank test card:
-   - **Card Number**: `5100170000000000`
-   - **Expiry**: Any future date (e.g., `12/26`)
-   - **CVV**: `123`
+   - **Card Number**: `4083060013681818`
+   - **Cardholder**: `TEST CARD VPOS`
+   - **Expiry**: `05/28`
+   - **CVV**: `233`
+   - **Test amount**: `10` AMD
 3. Complete payment on test server
 
 ### Step 3: Get Payment Details
@@ -243,4 +245,5 @@ Create an initial payment using the "Creating Test Payment" section above
 ### Ameriabank errors
 - Using test server: `https://servicestest.ameriabank.am`
 - Credentials in `.env` should be for test environment
-- Test card: `5100170000000000`
+- Test card: `4083060013681818`, expiry `05/28`, CVV `233`, cardholder `TEST CARD VPOS`
+- Test amount must be `10` AMD
