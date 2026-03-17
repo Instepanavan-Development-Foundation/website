@@ -883,6 +883,74 @@ HATCHET_CLIENT_HOST_PORT=localhost:7077
 
 ---
 
+## Cancel & Refund
+
+### Overview
+
+Ameriabank supports two reversal operations:
+
+- **CancelPayment** — Full reversal, available within **72 hours** of payment. Money hasn't settled yet, so it's voided.
+- **RefundPayment** — Partial or full refund, **no time limit**. Money was already settled; it's sent back to the cardholder.
+
+Both require the `PaymentID` from the original transaction.
+
+### Ameriabank API
+
+**CancelPayment:** `POST {PAYMENT_API_BASE_URL}/CancelPayment`
+```json
+{ "PaymentID": "...", "Username": "...", "Password": "..." }
+```
+
+**RefundPayment:** `POST {PAYMENT_API_BASE_URL}/RefundPayment`
+```json
+{ "PaymentID": "...", "Username": "...", "Password": "...", "Amount": 10.0 }
+```
+
+Both return `{ "ResponseCode": "00", "ResponseMessage": "..." }` on success.
+
+### Implementation
+
+**Backend endpoints** ([controllers/payment.ts](controllers/payment.ts)):
+- `POST /api/payment/cancel-payment` — `{ paymentLogDocumentId }` — admin auth required
+- `POST /api/payment/refund-payment` — `{ paymentLogDocumentId, amount }` — admin auth required
+
+**Auth:** Both endpoints verify the admin JWT via `strapi.sessionManager` (same mechanism as Strapi's internal admin auth). No API key needed — the admin session cookie is used.
+
+**Banking service** ([services/banking.ts](services/banking.ts)):
+- `cancelPayment(paymentId)` — calls Ameriabank CancelPayment
+- `refundPayment(paymentId, amount)` — calls Ameriabank RefundPayment
+
+### Payment Log Fields
+
+The `payment-log` schema includes:
+- `paymentId` (string) — Ameriabank PaymentID, saved when payment is created
+- `paymentStatus` (enum: `completed`, `cancelled`, `refunded`, `partial_refund`) — lifecycle state
+- `refundedAmount` (decimal) — cumulative refund amount
+
+**Note:** `GetPaymentDetails` does not return `PaymentID` in its response. The `PaymentID` is injected from the value the frontend sends to `getPaymentDetails` before saving.
+
+### Strapi Admin Button
+
+A single button appears in the payment-log edit view panel ([server/src/admin/app.tsx](../../../admin/app.tsx)):
+
+- **< 72 hours since payment:** Shows "Cancel Payment" — full reversal
+- **> 72 hours since payment:** Shows "Refund Payment" — prompts for amount
+- **After cancel or full refund:** Button hidden
+- **After partial refund:** Shows "Refund (X remaining)"
+
+### Flow
+
+1. Admin opens a payment-log entry in Strapi
+2. Clicks "Cancel Payment" or "Refund Payment"
+3. Confirms in dialog (refund also prompts for amount)
+4. Frontend calls `/api/payment/cancel-payment` or `/api/payment/refund-payment` with admin session cookie
+5. Controller validates: log exists, has `paymentId`, eligible status, amount within bounds
+6. Calls Ameriabank API
+7. On success: updates `paymentStatus`, `success`, `refundedAmount` on the payment log
+8. Page reloads showing updated state
+
+---
+
 ## Testing
 
 ### Manual Testing Endpoints
