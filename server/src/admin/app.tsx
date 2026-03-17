@@ -86,6 +86,6 @@ export default {
     locales: [],
   },
   bootstrap(app: StrapiApp) {
-    (app.getPlugin('content-manager') as any).apis.addDocumentAction(PaymentAction);
+    (app.getPlugin('content-manager') as any).apis.addDocumentAction([PaymentAction]);
   },
 };
