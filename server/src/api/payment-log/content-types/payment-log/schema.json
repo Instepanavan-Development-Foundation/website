@@ -42,7 +42,7 @@
     "paymentId": {
       "type": "string"
     },
-    "status": {
+    "paymentStatus": {
       "type": "enumeration",
       "enum": [
         "completed",

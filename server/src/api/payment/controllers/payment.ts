@@ -365,7 +365,7 @@ export default {
         return ctx.send({ error: "Payment log not found" }, 404);
       }
 
-      if (!log.success || log.status === 'cancelled' || log.status === 'refunded') {
+      if (!log.success || log.paymentStatus === 'cancelled' || log.paymentStatus === 'refunded') {
         return ctx.send({ error: "Payment is not eligible for cancellation" }, 400);
       }
 
@@ -393,7 +393,7 @@ export default {
       await strapi.documents('api::payment-log.payment-log').update({
         documentId: paymentLogDocumentId,
         data: {
-          status: 'cancelled',
+          paymentStatus: 'cancelled',
           success: false,
           refundedAmount: log.amount,
         } as any,
@@ -426,11 +426,11 @@ export default {
         return ctx.send({ error: "Payment log not found" }, 404);
       }
 
-      if (!log.success && log.status !== 'partial_refund') {
+      if (!log.success && log.paymentStatus !== 'partial_refund') {
         return ctx.send({ error: "Payment is not eligible for refund" }, 400);
       }
 
-      if (log.status === 'cancelled' || log.status === 'refunded') {
+      if (log.paymentStatus === 'cancelled' || log.paymentStatus === 'refunded') {
         return ctx.send({ error: "Payment is already cancelled/refunded" }, 400);
       }
 
@@ -462,7 +462,7 @@ export default {
       await strapi.documents('api::payment-log.payment-log').update({
         documentId: paymentLogDocumentId,
         data: {
-          status: isFullRefund ? 'refunded' : 'partial_refund',
+          paymentStatus: isFullRefund ? 'refunded' : 'partial_refund',
           success: isFullRefund ? false : log.success,
           refundedAmount: newRefundedAmount,
         } as any,

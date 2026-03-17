@@ -177,7 +177,7 @@ const service = {
           orderId: paymentDetails.OrderId,
           success: success,
           paymentId: paymentDetails.PaymentID || null,
-          status: success ? 'completed' : null,
+          paymentStatus: success ? 'completed' : null,
           project_payment: projectPaymentId,
         },
       });

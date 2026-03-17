@@ -9,7 +9,7 @@ function CancelPaymentAction(ctx: any) {
   if (model !== PAYMENT_LOG_UID) return null;
   if (!document) return null;
   if (!document.success) return null;
-  if (document.status === 'cancelled' || document.status === 'refunded') return null;
+  if (document.paymentStatus === 'cancelled' || document.paymentStatus === 'refunded') return null;
 
   const { post } = useFetchClient();
   const hoursElapsed = (Date.now() - new Date(document.createdAt).getTime()) / (1000 * 60 * 60);
@@ -43,8 +43,8 @@ function RefundPaymentAction(ctx: any) {
   const { document, documentId, model } = ctx;
   if (model !== PAYMENT_LOG_UID) return null;
   if (!document) return null;
-  if (document.status === 'cancelled' || document.status === 'refunded') return null;
-  if (!document.success && document.status !== 'partial_refund') return null;
+  if (document.paymentStatus === 'cancelled' || document.paymentStatus === 'refunded') return null;
+  if (!document.success && document.paymentStatus !== 'partial_refund') return null;
 
   const { post } = useFetchClient();
   const refundedSoFar = document.refundedAmount || 0;
