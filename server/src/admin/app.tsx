@@ -1,5 +1,4 @@
 import type { StrapiApp } from '@strapi/strapi/admin';
-import { useFetchClient } from '@strapi/admin/strapi-admin';
 
 const PAYMENT_LOG_UID = 'api::payment-log.payment-log';
 
@@ -11,7 +10,6 @@ function PaymentAction(ctx: any) {
   if (document.paymentStatus === 'cancelled' || document.paymentStatus === 'refunded') return null;
   if (!document.success && document.paymentStatus !== 'partial_refund') return null;
 
-  const { post } = useFetchClient();
   const hoursElapsed = (Date.now() - new Date(document.createdAt).getTime()) / (1000 * 60 * 60);
   const canCancel = hoursElapsed <= 71;
 
@@ -30,19 +28,23 @@ function PaymentAction(ctx: any) {
         content: `Cancel payment of ${document.amount} ${document.currency}? This will fully reverse the transaction.`,
         onConfirm: async () => {
           try {
-            await post('/api/payment/cancel-payment', {
-              paymentLogDocumentId: documentId,
+            const res = await fetch('/api/payment/cancel-payment', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+              body: JSON.stringify({ paymentLogDocumentId: documentId }),
             });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Cancel failed');
             window.location.reload();
-          } catch (error: any) {
-            alert('Cancel failed: ' + (error?.response?.data?.error || error.message));
+          } catch (err: any) {
+            alert('Cancel failed: ' + err.message);
           }
         },
       },
     };
   }
 
-  // Over 72 hours — refund only
   return {
     label: refundedSoFar > 0 ? `Refund (${remaining} remaining)` : 'Refund Payment',
     variant: 'danger' as const,
@@ -62,13 +64,17 @@ function PaymentAction(ctx: any) {
         }
 
         try {
-          await post('/api/payment/refund-payment', {
-            paymentLogDocumentId: documentId,
-            amount,
+          const res = await fetch('/api/payment/refund-payment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ paymentLogDocumentId: documentId, amount }),
           });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Refund failed');
           window.location.reload();
-        } catch (error: any) {
-          alert('Refund failed: ' + (error?.response?.data?.error || error.message));
+        } catch (err: any) {
+          alert('Refund failed: ' + err.message);
         }
       },
     },
