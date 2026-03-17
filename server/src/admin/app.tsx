@@ -1,4 +1,5 @@
 import type { StrapiApp } from '@strapi/strapi/admin';
+import { getFetchClient } from '@strapi/admin/strapi-admin';
 
 const PAYMENT_LOG_UID = 'api::payment-log.payment-log';
 
@@ -17,6 +18,8 @@ function PaymentAction(ctx: any) {
   const remaining = (document.amount || 0) - refundedSoFar;
   if (remaining <= 0) return null;
 
+  const { post } = getFetchClient();
+
   if (canCancel) {
     return {
       label: 'Cancel Payment',
@@ -28,17 +31,11 @@ function PaymentAction(ctx: any) {
         content: `Cancel payment of ${document.amount} ${document.currency}? This will fully reverse the transaction.`,
         onConfirm: async () => {
           try {
-            const res = await fetch('/api/payment/cancel-payment', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              credentials: 'include',
-              body: JSON.stringify({ paymentLogDocumentId: documentId }),
-            });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error || 'Cancel failed');
+            await post('/api/payment/cancel-payment', { paymentLogDocumentId: documentId });
             window.location.reload();
           } catch (err: any) {
-            alert('Cancel failed: ' + err.message);
+            const msg = err?.response?.data?.error?.message || err?.message || 'Unknown error';
+            alert('Cancel failed: ' + msg);
           }
         },
       },
@@ -64,17 +61,11 @@ function PaymentAction(ctx: any) {
         }
 
         try {
-          const res = await fetch('/api/payment/refund-payment', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({ paymentLogDocumentId: documentId, amount }),
-          });
-          const data = await res.json();
-          if (!res.ok) throw new Error(data.error || 'Refund failed');
+          await post('/api/payment/refund-payment', { paymentLogDocumentId: documentId, amount });
           window.location.reload();
         } catch (err: any) {
-          alert('Refund failed: ' + err.message);
+          const msg = err?.response?.data?.error?.message || err?.message || 'Unknown error';
+          alert('Refund failed: ' + msg);
         }
       },
     },
