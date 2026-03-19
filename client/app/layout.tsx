@@ -6,6 +6,7 @@ import clsx from "clsx";
 export const dynamic = "force-dynamic";
 
 import { Providers } from "./providers";
+import { PostHogProvider } from "./posthog-provider";
 
 import { getSiteConfig } from "@/config/site";
 import { Navbar } from "@/components/navbar";
@@ -51,6 +52,7 @@ export default async function RootLayout({
         suppressHydrationWarning
         className={clsx("min-h-screen bg-background antialiased")}
       >
+        <PostHogProvider>
         <Providers themeProps={{ attribute: "class", defaultTheme: "light" }}>
           <div className="relative flex flex-col h-screen">
             <Navbar />
@@ -93,6 +95,7 @@ export default async function RootLayout({
             </footer>
           </div>
         </Providers>
+        </PostHogProvider>
       </body>
     </html>
   );
