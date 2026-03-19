@@ -10,7 +10,8 @@ const posthogHost = process.env.NEXT_PUBLIC_POSTHOG_HOST;
 
 if (typeof window !== "undefined" && posthogKey) {
   posthog.init(posthogKey, {
-    api_host: posthogHost,
+    api_host: "/ingest",
+    ui_host: "https://us.i.posthog.com",
     capture_pageview: false, // We capture manually on route change
     capture_pageleave: true,
   });
