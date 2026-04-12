@@ -137,6 +137,7 @@ const paymentService = {
           amount,
           projectDocumentId,
           projectSlug,
+          projectName,
           currencyCode,
           paymentMethod,
           lang,
