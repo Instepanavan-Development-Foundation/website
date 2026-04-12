@@ -269,7 +269,7 @@ function DonationFormClient({ project }: { project: IProject }) {
     // Validate minimum amount
     if (amount < MIN_DONATION_AMOUNT) {
       router.push(
-        `/donate/${project.slug}?error=${encodeURIComponent(`Նվազագույն գումարը պետք է լինի ${MIN_DONATION_AMOUNT} դրամ`)}`,
+        `/donate/${project.slug}?error=${encodeURIComponent(`Նվազագույն գումարը պետք է լինի ${MIN_DONATION_AMOUNT} դրամ`)}&amount=${amount}`,
       );
 
       return;
@@ -308,7 +308,7 @@ function DonationFormClient({ project }: { project: IProject }) {
       if (errorMessage) {
         setIsSubmitting(false);
         router.push(
-          `/donate/${project.slug}?error=${encodeURIComponent(errorMessage)}`,
+          `/donate/${project.slug}?error=${encodeURIComponent(errorMessage)}&amount=${amount}`,
         );
 
         return;
@@ -355,7 +355,7 @@ function DonationFormClient({ project }: { project: IProject }) {
 
         setIsSubmitting(false);
         router.push(
-          `/donate/${project.slug}?error=${encodeURIComponent(errorData.error || errorData.details || "Վճարումը ձախողվեց")}`,
+          `/donate/${project.slug}?error=${encodeURIComponent(errorData.error || errorData.details || "Վճարումը ձախողվեց")}&amount=${amount}`,
         );
 
         return;
@@ -371,7 +371,7 @@ function DonationFormClient({ project }: { project: IProject }) {
       console.error("Payment error:", error);
       setIsSubmitting(false);
       router.push(
-        `/donate/${project.slug}?error=${encodeURIComponent("Սերվերի հետ կապի սխալ")}`,
+        `/donate/${project.slug}?error=${encodeURIComponent("Սերվերի հետ կապի սխալ")}&amount=${amount}`,
       );
     }
   };

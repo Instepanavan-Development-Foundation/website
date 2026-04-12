@@ -178,10 +178,8 @@ const paymentService = {
     }
   },
   getOrderId: () => {
-    const minValue = parseInt(process.env.MIN_ORDER_ID || "3831001", 10);
-    const maxValue = parseInt(process.env.MAX_ORDER_ID || "3832000", 10);
-
-    return Math.trunc(Math.random() * (maxValue - minValue) + minValue);
+    // Use timestamp mod 1e9 to stay within safe integer bounds (~year 2033)
+    return Date.now() % 1_000_000_000;
   },
   makeBindingPayment: async ({ projectPayment, orderId, projectDocumentId, projectSlug }) => {
     const { Amount, CardHolderID, BindingID, currency } = projectPayment;
