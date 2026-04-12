@@ -57,13 +57,19 @@ const paymentService = {
     return params;
   },
 
-  // Params for MakeBindingPayment - includes BackURL as required by API spec
+  // Params for MakeBindingPayment
+  // Binding flow:
+  //   1. InitPayment: we send a unique CardHolderID (email_projectId_uuid)
+  //   2. User pays → Ameriabank creates a binding and returns BindingID + CardHolderID
+  //   3. We save both to payment_methods table
+  //   4. MakeBindingPayment: we only send CardHolderID — Ameriabank resolves the saved card from it
+  //      BindingID is NOT part of the request (see MakeBindingPaymentRequest in vPOS docs)
+  //      BindingID is saved for our own audit/reference only
   getBindingPaymentParams: ({
     amount,
     orderId,
     currencyCode = process.env.CURRENCY_AM,
     CardHolderID,
-    BindingID,
     projectSlug,
   }) => {
     const params: any = {
@@ -77,12 +83,8 @@ const paymentService = {
       BackURL: `${process.env.BACK_URL}/payment-callback?project=${projectSlug}`,
       Timeout: Number(process.env.PAYMENT_TIMEOUT),
       PaymentType: 6,
+      CardHolderID,
     };
-
-    // Only use CardHolderID for MakeBindingPayment (BindingID is not needed)
-    if (CardHolderID) {
-      params.CardHolderID = CardHolderID;
-    }
 
     return params;
   },
