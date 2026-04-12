@@ -48,6 +48,11 @@ export default {
 
     const service = strapi.service(PAYMENT_API);
 
+    const project = await strapi.documents('api::project.project').findOne({
+      documentId: projectDocumentId,
+      fields: ['name'],
+    });
+
     const orderId = await service.getOrderId();
     if (!orderId) {
       return ctx.send({ errorMessage: "Failed to get latest orderId" }, 500);
@@ -57,6 +62,7 @@ export default {
       amount,
       projectDocumentId,
       projectSlug,
+      projectName: project?.name,
       currencyCode,
       paymentMethod,
       lang,

@@ -22,6 +22,7 @@ interface IPaymentParamsProps {
   amount: number;
   projectDocumentId?: string;
   projectSlug?: string;
+  projectName?: string;
   orderId: number;
   currencyCode: string; // TODO: change to currencies enum,
   email?: string;
@@ -33,6 +34,7 @@ const paymentService = {
     amount,
     projectDocumentId,
     projectSlug,
+    projectName,
     orderId,
     currencyCode = process.env.CURRENCY_AM,
     email,
@@ -43,7 +45,7 @@ const paymentService = {
       Username: process.env.PAYMENT_USERNAME,
       Password: process.env.PAYMENT_PASSWORD,
       Currency: currencyCode,
-      Description: `Donation for project ${projectDocumentId}`, // TODO, replace to projectName
+      Description: `Donation for project ${projectName}`,
       OrderID: String(orderId),
       Amount: amount, // 10 for testing
       BackURL: `${process.env.BACK_URL}/payment-callback?project=${projectSlug}`,
@@ -88,6 +90,7 @@ const paymentService = {
     amount,
     projectDocumentId,
     projectSlug,
+    projectName,
     currencyCode,
     paymentMethod,
     lang,
@@ -100,6 +103,7 @@ const paymentService = {
         amount,
         projectDocumentId,
         projectSlug,
+        projectName,
         currencyCode,
         paymentMethod,
         orderId,
