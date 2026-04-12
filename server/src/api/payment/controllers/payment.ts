@@ -323,6 +323,7 @@ export default {
 
       // Check if payment was successful
       if (paymentDetails.ResponseCode !== process.env.SUCCESS_RESPONSE_CODE) {
+        console.error("MakeBindingPayment failed:", JSON.stringify(paymentDetails, null, 2));
         return ctx.send({
           error: "Payment failed",
           details: paymentDetails.Description || "Unknown error"

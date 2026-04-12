@@ -1,4 +1,3 @@
-import Image from "next/image";
 import {
   isImageFitCover,
   isImageSlide,
@@ -48,15 +47,17 @@ export default function NextJsImage({
 
   return (
     <div style={{ position: "relative", width, height }}>
-      <Image
-        fill
+      <img
         alt=""
         draggable={false}
         loading="eager"
-        placeholder={slide.blurDataURL ? "blur" : undefined}
-        sizes={`${Math.ceil((width / window.innerWidth) * 100)}vw`}
-        src={slide}
+        src={slide.src}
         style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
           objectFit: cover ? "cover" : "contain",
           cursor: click ? "pointer" : undefined,
         }}

@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { Image } from "@heroui/image";
 import Link from "next/link";
 import { button as buttonStyles } from "@heroui/theme";
 
@@ -22,11 +22,9 @@ export const HeroSection = ({
       <Image
         alt="Hero Image"
         className="w-full h-full object-cover brightness-50"
-        height={600}
-        loading="eager"
-        priority={true}
+        radius="none"
         src={imageUrl}
-        width={1920}
+        width="100%"
       />
       <div className="absolute inset-0 flex flex-col items-center justify-center text-white p-4 z-10">
         <h1 className="text-5xl md:text-6xl font-bold text-center mb-6">

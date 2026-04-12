@@ -45,7 +45,7 @@ const paymentService = {
       Username: process.env.PAYMENT_USERNAME,
       Password: process.env.PAYMENT_PASSWORD,
       Currency: currencyCode,
-      Description: `Donation for project "${projectSlug}"`,
+      Description: `Donation for project ${projectSlug}`,
       OrderID: String(orderId),
       Amount: amount, // 10 for testing
       BackURL: `${process.env.BACK_URL}/payment-callback?project=${projectSlug}`,

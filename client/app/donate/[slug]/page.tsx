@@ -110,9 +110,9 @@ export default function DonatePage({ params }: IParams) {
         <Image
           alt={project.name}
           className="w-full h-full object-cover"
-          height={400}
+          radius="none"
           src={getMediaSrc(project.image)}
-          width={1200}
+          width="100%"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end p-6">
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
@@ -176,7 +176,7 @@ import { Progress } from "@heroui/progress";
 import { PlusCircle, CreditCard, Heart, Users } from "lucide-react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import Image from "next/image";
+import { Image } from "@heroui/image";
 
 import { useAuth } from "@/src/hooks/useAuth";
 import getMediaSrc from "@/src/helpers/getMediaUrl";

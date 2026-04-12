@@ -19,8 +19,8 @@ export interface IMediaFormat {
   updatedAt: string;
 }
 
+export type StrapiImageFormat = "thumbnail" | "small" | "medium" | "large";
+
 export interface IImage extends IMediaFormat {
-  formats: {
-    thumbnail: IMediaFormat;
-  };
+  formats: Partial<Record<StrapiImageFormat, IMediaFormat>>;
 }
