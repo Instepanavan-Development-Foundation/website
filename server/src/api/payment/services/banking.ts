@@ -45,7 +45,7 @@ const paymentService = {
       Username: process.env.PAYMENT_USERNAME,
       Password: process.env.PAYMENT_PASSWORD,
       Currency: currencyCode,
-      Description: `Donation for project ${projectName}`,
+      Description: `Donation for project "${projectSlug}"`,
       OrderID: String(orderId),
       Amount: amount, // 10 for testing
       BackURL: `${process.env.BACK_URL}/payment-callback?project=${projectSlug}`,
@@ -129,7 +129,7 @@ const paymentService = {
 
       // Check if error is OrderID collision (you may need to adjust the error code)
       // For now, only retry on specific error codes that indicate OrderID collision
-      const isOrderIdCollision = response.data.ResponseCode === 110; // TODO: verify correct error code from Ameriabank docs
+      const isOrderIdCollision = response.data.ResponseCode === "08204";
 
       if (isOrderIdCollision) {
         const newOrderId = paymentService.getOrderId();
