@@ -110,6 +110,15 @@ export default {
         );
       }
 
+      // Guard against duplicate saves for the same paymentId
+      const existing = await strapi.db.query('api::payment-log.payment-log').findOne({
+        where: { paymentId, success: true },
+      });
+      if (existing) {
+        const paymentDetails = await service.getPaymentDetails(paymentId);
+        return ctx.send({ success: true, amount: paymentDetails?.Amount }, 200);
+      }
+
       const paymentDetails = await service.getPaymentDetails(paymentId);
       // Ensure PaymentID is in the details (GetPaymentDetails may not return it)
       if (!paymentDetails.PaymentID) {

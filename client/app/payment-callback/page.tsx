@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 
 import { parseAmeriabankError } from "@/src/helpers/parseAmeriabankError";
@@ -8,8 +8,12 @@ import { parseAmeriabankError } from "@/src/helpers/parseAmeriabankError";
 export default function PaymentCallbackPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const hasProcessed = useRef(false);
 
   useEffect(() => {
+    if (hasProcessed.current) return;
+    hasProcessed.current = true;
+
     async function handlePayment() {
       const paymentID = searchParams.get("paymentID");
       const responseCode = searchParams.get("resposneCode"); // Note: Ameriabank has a typo
