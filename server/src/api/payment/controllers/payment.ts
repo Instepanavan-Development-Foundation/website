@@ -138,10 +138,6 @@ export default {
       }, 200);
     } catch (error) {
       console.error("ERROR in getPaymentDetails:", error);
-      await service.createPaymentLog({
-        paymentDetails: { Amount: null, Currency: null, OrderId: null, Description: error.message },
-        success: false,
-      });
       return ctx.send({ errorMessage: error.message }, 500);
     }
   },

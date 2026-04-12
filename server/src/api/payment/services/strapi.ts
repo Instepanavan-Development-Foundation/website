@@ -35,13 +35,13 @@ const service = {
       );
     }
 
-    const paymentLog = await service.createPaymentLog({
-      paymentDetails,
-      projectPaymentId,
-      success: true,
-    });
-
     if (!projectDocumentId) {
+      // No project to link — create standalone log here
+      await service.createPaymentLog({
+        paymentDetails,
+        projectPaymentId,
+        success: true,
+      });
       return;
     }
 
@@ -71,7 +71,6 @@ const service = {
     await service.createProjectPayment({
       paymentDetails,
       projectPaymentMethod,
-      paymentLog,
       project: currentProject,
     });
 
@@ -87,7 +86,6 @@ const service = {
   createProjectPayment: async ({
     paymentDetails,
     projectPaymentMethod,
-    paymentLog,
     project,
   }) => {
     try {
@@ -100,11 +98,11 @@ const service = {
             type: project.donationType,
             name: project.name,
             payment_method: projectPaymentMethod.documentId,
-            payment_logs: [paymentLog.documentId],
             project: project.documentId,
           },
         });
 
+      // Create exactly one payment log, linked to this project payment
       await service.createPaymentLog({
         success: true,
         paymentDetails,
