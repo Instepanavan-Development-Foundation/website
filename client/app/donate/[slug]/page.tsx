@@ -175,7 +175,7 @@ import { Divider } from "@heroui/divider";
 import { Progress } from "@heroui/progress";
 import { PlusCircle, CreditCard, Heart, Users } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import Image from "next/image";
 
 import { useAuth } from "@/src/hooks/useAuth";
@@ -195,6 +195,7 @@ const MIN_DONATION_AMOUNT = 10;
 
 function DonationFormClient({ project }: { project: IProject }) {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const urlAmount = searchParams.get("amount");
   const defaultAmount = urlAmount ? parseInt(urlAmount) : 10000;
@@ -247,6 +248,15 @@ function DonationFormClient({ project }: { project: IProject }) {
     loadDonorCount();
   }, [project.documentId]);
 
+  const updateAmountInUrl = (newAmount: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    params.set("amount", newAmount.toString());
+    params.delete("error");
+    params.delete("success");
+    window.history.replaceState(null, "", `${pathname}?${params.toString()}`);
+  };
+
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
 
@@ -255,12 +265,14 @@ function DonationFormClient({ project }: { project: IProject }) {
 
     if (!isNaN(numValue) && numValue > 0) {
       setAmount(numValue);
+      updateAmountInUrl(numValue);
     }
   };
 
   const handlePresetAmountClick = (presetAmount: number) => {
     setAmount(presetAmount);
     setCustomAmount(presetAmount.toString());
+    updateAmountInUrl(presetAmount);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
