@@ -410,7 +410,12 @@ export default function MyProfile() {
   const activeSubscriptionsCount = subscriptions.filter(
     (s) => s.type === "recurring",
   ).length;
-  const totalDonations = subscriptions.reduce((sum, s) => sum + s.amount, 0);
+  const totalDonated = paymentHistory
+    .filter((log) => log.success)
+    .reduce((sum, log) => sum + (log.amount || 0), 0);
+  const successfulPaymentsCount = paymentHistory.filter(
+    (log) => log.success,
+  ).length;
   const displayName = user?.fullName || user?.username || "...";
 
   return (
@@ -443,6 +448,51 @@ export default function MyProfile() {
           />
         </CardBody>
       </Card>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card className="p-4">
+          <CardBody>
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center shrink-0">
+                <TrendingUp className="w-6 h-6 text-primary-600" />
+              </div>
+              <div>
+                <p className="text-sm text-default-500">Ակտիվ բաժանորդագրություններ</p>
+                <p className="text-2xl font-bold text-primary">{activeSubscriptionsCount}</p>
+              </div>
+            </div>
+          </CardBody>
+        </Card>
+
+        <Card className="p-4">
+          <CardBody>
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-success-100 rounded-lg flex items-center justify-center shrink-0">
+                <Receipt className="w-6 h-6 text-success-600" />
+              </div>
+              <div>
+                <p className="text-sm text-default-500">Ընդհանուր նվիրատվություն</p>
+                <p className="text-2xl font-bold text-success">{formatCurrency(totalDonated)}</p>
+              </div>
+            </div>
+          </CardBody>
+        </Card>
+
+        <Card className="p-4">
+          <CardBody>
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-secondary-100 rounded-lg flex items-center justify-center shrink-0">
+                <CreditCard className="w-6 h-6 text-secondary-600" />
+              </div>
+              <div>
+                <p className="text-sm text-default-500">Հաջողված վճարումներ</p>
+                <p className="text-2xl font-bold text-secondary">{successfulPaymentsCount}</p>
+              </div>
+            </div>
+          </CardBody>
+        </Card>
+      </div>
 
       {/* Tabs for different sections */}
       <Card className="p-6">
@@ -944,10 +994,6 @@ export default function MyProfile() {
                 <p className="font-semibold text-primary">
                   {methodToDelete &&
                     getPaymentMethodDisplayName(methodToDelete)}
-                </p>
-                <p className="text-sm text-default-500 mt-2">
-                  Այս գործողությունը հնարավոր չէ չեղարկել։ Բոլոր հետագա
-                  վճարումները կպահանջեն նոր վճարման եղանակ։
                 </p>
               </ModalBody>
               <ModalFooter>

@@ -5,7 +5,7 @@
     "singularName": "payment-log",
     "pluralName": "payment-logs",
     "displayName": "payment-log",
-    "description": ""
+    "description": "IMMUTABLE audit trail of payment transactions. Records must never be deleted — they are the source of truth for financial reporting and reconciliation."
   },
   "options": {
     "draftAndPublish": false

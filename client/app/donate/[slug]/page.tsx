@@ -109,7 +109,10 @@ export default function DonatePage({ params }: IParams) {
       <div className="relative w-full h-64 md:h-40 mb-8 rounded-xl overflow-hidden">
         <Image
           alt={project.name}
-          className="w-full h-full object-cover"
+          classNames={{
+            wrapper: "!max-w-full w-full h-full",
+            img: "w-full h-full object-cover",
+          }}
           radius="none"
           src={getMediaSrc(project.image)}
           width="100%"

@@ -158,6 +158,8 @@ const service = {
       return null;
     }
   },
+  // Payment logs are IMMUTABLE audit records — never delete them.
+  // To void a payment, update paymentStatus ('cancelled', 'refunded') instead.
   createPaymentLog: async ({
     paymentDetails,
     success,
