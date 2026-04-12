@@ -203,7 +203,6 @@ export default {
         projectPayment: {
           Amount: projectPayment.amount,
           CardHolderID: bindingParams.CardHolderID,
-          BindingID: bindingParams.BindingID,
           currency: projectPayment.currency,
         },
         orderId,
@@ -315,7 +314,6 @@ export default {
         projectPayment: {
           Amount: amount,
           CardHolderID: params.CardHolderID,
-          BindingID: params.BindingID,
           currency: process.env.CURRENCY_AM,
         },
         orderId,

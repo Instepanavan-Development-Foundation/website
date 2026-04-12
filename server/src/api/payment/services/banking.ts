@@ -189,14 +189,13 @@ const paymentService = {
     return Date.now() % 1_000_000_000;
   },
   makeBindingPayment: async ({ projectPayment, orderId, projectDocumentId, projectSlug }) => {
-    const { Amount, CardHolderID, BindingID, currency } = projectPayment;
+    const { Amount, CardHolderID, currency } = projectPayment;
     const url = `${process.env.PAYMENT_API_BASE_URL}/MakeBindingPayment`;
 
     try {
       const requestParams = paymentService.getBindingPaymentParams({
         amount: Amount,
         CardHolderID,
-        BindingID: projectPayment.BindingID,
         currencyCode: currency,
         orderId,
         projectSlug,
