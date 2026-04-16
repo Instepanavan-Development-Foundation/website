@@ -72,6 +72,7 @@ const service = {
       paymentDetails,
       projectPaymentMethod,
       project: currentProject,
+      userDocumentId,
     });
 
     await service.updateProjectData({
@@ -87,6 +88,7 @@ const service = {
     paymentDetails,
     projectPaymentMethod,
     project,
+    userDocumentId,
   }) => {
     try {
       const projectPayment = await strapi
@@ -107,6 +109,7 @@ const service = {
         success: true,
         paymentDetails,
         projectPaymentId: projectPayment.documentId,
+        userDocumentId,
       });
 
       return projectPayment;
@@ -162,10 +165,12 @@ const service = {
     paymentDetails,
     success,
     projectPaymentId,
+    userDocumentId,
   }: {
     paymentDetails: any;
     success: boolean;
     projectPaymentId?: string;
+    userDocumentId?: string;
   }) => {
     try {
       const log = await strapi.documents(PAYMENT_LOG_API).create({
@@ -179,6 +184,7 @@ const service = {
           paymentId: paymentDetails.PaymentID || null,
           paymentStatus: success ? 'completed' : null,
           project_payment: projectPaymentId,
+          userDocumentId: userDocumentId || null,
         },
       });
 
@@ -215,7 +221,7 @@ const service = {
         fields: ["amount", "currency", "isPaymentInProgress"],
         populate: {
           payment_method: {
-            fields: ["params"],
+            fields: ["params", "userDocumentId"],
           },
           project: {
             fields: ["documentId", "donationType", "name"],

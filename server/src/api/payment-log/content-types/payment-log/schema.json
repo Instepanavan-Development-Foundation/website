@@ -54,6 +54,9 @@
     "refundedAmount": {
       "type": "decimal",
       "default": 0
+    },
+    "userDocumentId": {
+      "type": "string"
     }
   }
 }
