@@ -57,7 +57,7 @@ export default factories.createCoreController('api::contributor.contributor', ({
       const paymentLogs = await strapi.documents('api::payment-log.payment-log').findMany({
         filters: {
           userDocumentId,
-        },
+        } as any,
         populate: {
           project_payment: {
             populate: {
