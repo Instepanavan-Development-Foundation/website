@@ -54,30 +54,9 @@ export default factories.createCoreController('api::contributor.contributor', ({
     }
 
     try {
-      // Get all payment methods for this user
-      const paymentMethods = await strapi.documents('api::payment-method.payment-method').findMany({
-        filters: {
-          userDocumentId,
-        },
-        fields: ['documentId'],
-      });
-
-      if (paymentMethods.length === 0) {
-        return ctx.send({ data: [] });
-      }
-
-      // Get all payment logs for user's payment methods
-      const paymentMethodIds = paymentMethods.map(pm => pm.documentId);
-
       const paymentLogs = await strapi.documents('api::payment-log.payment-log').findMany({
         filters: {
-          project_payment: {
-            payment_method: {
-              documentId: {
-                $in: paymentMethodIds,
-              },
-            },
-          },
+          userDocumentId,
         },
         populate: {
           project_payment: {

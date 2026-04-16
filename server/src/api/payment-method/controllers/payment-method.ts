@@ -68,7 +68,21 @@ export default factories.createCoreController('api::payment-method.payment-metho
       return ctx.notFound();
     }
 
-    // Delete it
+    // Delete all subscriptions linked to this payment method first
+    const linkedSubscriptions = await strapi.documents('api::project-payment.project-payment').findMany({
+      filters: {
+        payment_method: { documentId: id },
+      },
+      fields: ['documentId'],
+    });
+
+    for (const sub of linkedSubscriptions) {
+      await strapi.documents('api::project-payment.project-payment').delete({
+        documentId: sub.documentId,
+      });
+    }
+
+    // Delete the payment method
     await strapi.documents('api::payment-method.payment-method').delete({
       documentId: id
     });
