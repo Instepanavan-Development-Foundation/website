@@ -10,6 +10,14 @@ export function friendlyError(err: unknown): string {
   const code = e.code ?? e.error?.code ?? "";
   const message = e.message ?? e.error?.message ?? "";
 
+  // Gemini (check before generic 429 handler)
+  if (status === 503 || (status === 429 && message.includes("generativelanguage")))
+    return "⚠️ Gemini is overloaded right now. Please try again in a moment.";
+  if (status === 400 && message.includes("API key not valid"))
+    return "⚠️ Gemini API key is invalid. Check GOOGLE_API_KEY in .env";
+  if (status === 429 && message.includes("RESOURCE_EXHAUSTED"))
+    return "⚠️ Gemini daily quota exceeded. Enable billing at aistudio.google.com or wait until tomorrow.";
+
   // OpenAI
   if (code === "insufficient_quota" || (status === 429 && message.includes("quota")))
     return "⚠️ OpenAI quota exceeded. Top up at platform.openai.com/settings/billing";
@@ -17,14 +25,6 @@ export function friendlyError(err: unknown): string {
     return "⚠️ OpenAI rate limit hit. Please wait a moment and try again.";
   if ((status === 401 || status === 403) && message.toLowerCase().includes("openai"))
     return "⚠️ OpenAI API key is invalid. Check OPENAI_API_KEY in .env";
-
-  // Gemini
-  if (status === 503)
-    return "⚠️ Gemini is overloaded right now. Please try again in a moment.";
-  if (status === 400 && message.includes("API key not valid"))
-    return "⚠️ Gemini API key is invalid. Check GOOGLE_API_KEY in .env";
-  if (status === 429 && message.toLowerCase().includes("gemini"))
-    return "⚠️ Gemini rate limit hit. Please wait a moment and try again.";
 
   // Strapi
   if (message.includes("STRAPI") || message.includes("api/blogs") || message.includes("api/upload"))
