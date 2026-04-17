@@ -17,7 +17,7 @@ export default {
           }
         : {};
 
-      const blogs = await strapi.entityService.findMany("api::blog.blog", {
+      const blogs = await strapi.documents("api::blog.blog").findMany({
         filters,
         limit: parseInt(process.env.RSS_FEED_LIMIT || "20"),
         populate: ["createdBy", "images"],
@@ -93,7 +93,7 @@ export default {
       });
 
       const xml = feed.xml();
-      ctx.set("Content-Type", "application/xml");
+      ctx.type = "application/xml";
       ctx.body = xml;
     } catch (err) {
       ctx.body = err;
