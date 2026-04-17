@@ -64,7 +64,7 @@ export default {
     try {
       await strapi.plugin("email").service("email").send({
         to: normalizedEmail,
-        subject: "Մուտք գործել — Ինստեպանավան",
+        subject: `Մուտք գործել — Ինստեպանավան (${new Date().toLocaleTimeString('hy-AM', { hour: '2-digit', minute: '2-digit' })})`,
         text: `Սեղմեք հղումին մուտք գործելու համար:\n\n${magicLink}\n\nՀղումը գործում է ${expiryMinutes} րոպե:`,
         html: `
           <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">

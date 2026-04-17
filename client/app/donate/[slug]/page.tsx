@@ -580,8 +580,7 @@ function DonationFormClient({ project }: { project: IProject }) {
                   value="new"
                 >
                   <div className="flex items-center gap-2">
-                    <PlusCircle className="text-primary" size={18} />
-                    <p className="font-medium">Կապել նոր քարտ</p>
+                    <p className="font-medium">Նոր քարտ</p>
                   </div>
                 </Radio>
               </RadioGroup>
