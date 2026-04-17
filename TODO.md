@@ -4,6 +4,10 @@
 
 - [ ] Implement image resizing in Strapi using `jimp` (pure JS, no native deps). On upload, generate `thumbnail` (156px), `small` (500px), `medium` (750px), `large` (1000px) variants stored in Strapi's `formats` field. Sharp cannot be used — production VPS (AMD Phenom II) lacks SSE4.1/AVX2. See [`docs/images.md`](docs/images.md).
 
+## Multi-Instance / Portability
+
+- [ ] Replace hardcoded `instepanavan.am` references (emails, URLs) with env vars so the codebase can be deployed for other organizations without code changes. Affected places include `config/plugins.ts` (defaultFrom/defaultReplyTo), `sendDonationNotification` (fallback admin URL, recipient `contact@instepanavan.am`), and any other hardcoded domain strings.
+
 ## Payment System
 
 ### Recurring Payment Error Handling

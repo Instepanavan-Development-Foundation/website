@@ -61,24 +61,12 @@ export default async function RootLayout({
               {children}
             </main>
             <footer className="w-full flex flex-col items-start container mx-auto max-w-7xl py-3 gap-2">
-              <div className="flex flex-col items-start gap-1">
-                {footerMenu.map((link) => (
-                  <Link
-                    key={link.title}
-                    className="text-default-600 hover:text-primary"
-                    href={link.href}
-                    target="_blank"
-                  >
-                    {link.title}
-                  </Link>
-                ))}
-              </div>
-              {footerSocialMenu.length > 0 && (
-                <div className="flex flex-row items-center gap-3">
-                  {footerSocialMenu.map((link) => (
+              <div className="flex flex-col md:flex-row md:gap-10 gap-2">
+                <div className="flex flex-col items-start gap-1">
+                  {footerMenu.map((link) => (
                     <Link
                       key={link.title}
-                      className="text-default-500 hover:text-primary text-sm"
+                      className="text-default-600 hover:text-primary"
                       href={link.href}
                       target="_blank"
                     >
@@ -86,7 +74,21 @@ export default async function RootLayout({
                     </Link>
                   ))}
                 </div>
-              )}
+                {footerSocialMenu.length > 0 && (
+                  <div className="flex flex-col items-start gap-1">
+                    {footerSocialMenu.map((link) => (
+                      <Link
+                        key={link.title}
+                        className="text-default-600 hover:text-primary"
+                        href={link.href}
+                        target="_blank"
+                      >
+                        {link.title}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
               <div className="text-sm text-default-500">
                 Կայքը բաց կոդով է՝{" "}
                 <Link

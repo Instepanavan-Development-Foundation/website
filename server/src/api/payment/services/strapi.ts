@@ -83,6 +83,13 @@ const service = {
           newGatheredAmount >= currentProject.requiredAmount,
       },
     });
+
+    // Notify admin of new donation (fire-and-forget)
+    service.sendDonationNotification({
+      amount: paymentDetails.Amount,
+      currency: paymentDetails.Currency,
+      projectName: currentProject.name,
+    }).catch((err) => strapi.log.error('Failed to send donation notification:', err));
   },
   createProjectPayment: async ({
     paymentDetails,
@@ -299,6 +306,50 @@ const service = {
 
     // No successful payment this month AND no failed attempt in last 10 days = OK to process
     return null;
+  },
+  sendDonationNotification: async ({
+    amount,
+    currency,
+    projectName,
+  }: {
+    amount: number;
+    currency: string;
+    projectName: string;
+  }) => {
+    const { CURRENCIES } = await import('../constants/currencies');
+    const currencyLabel = CURRENCIES[currency] ?? currency;
+    const adminUrl = process.env.BASE_URL
+      ? `${process.env.BASE_URL}/admin`
+      : 'https://api.instepanavan.am/admin';
+    const date = new Date().toLocaleString('hy-AM', { timeZone: 'Asia/Yerevan' });
+
+    await strapi.plugin('email').service('email').send({
+      to: 'contact@instepanavan.am',
+      subject: `Նոր նվիրատվություն — ${projectName}`,
+      text: `Նոր նվիրատվություն ստացվել է:\n\nՆախագիծ: ${projectName}\nԳումար: ${amount} ${currencyLabel}\nԱմսաթիվ: ${date}\n\nAdmin: ${adminUrl}`,
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2 style="color: #333;">Նոր նվիրատվություն</h2>
+          <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+              <td style="padding: 8px 0; color: #666;">Նախագիծ</td>
+              <td style="padding: 8px 0; font-weight: bold;">${projectName}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; color: #666;">Գումար</td>
+              <td style="padding: 8px 0; font-weight: bold; color: #16a34a;">${amount} ${currencyLabel}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; color: #666;">Ամսաթիվ</td>
+              <td style="padding: 8px 0;">${date}</td>
+            </tr>
+          </table>
+          <p style="margin-top: 24px;">
+            <a href="${adminUrl}" style="color: #6366f1;">Բացել Admin Panel</a>
+          </p>
+        </div>
+      `,
+    });
   },
 };
 
