@@ -4,6 +4,15 @@ Donation website for Instepanavan Development Foundation.
 
 **Stack:** Next.js 15 + Strapi 5 + PostgreSQL 17 + Hatchet + Ameriabank
 
+## External Integrations
+
+| Service | Purpose |
+|---|---|
+| **Ameriabank** | Payment gateway for one-time and recurring donations |
+| **Telegram** | Bot for content management and publishing notifications |
+| **Facebook** | Social sharing and page links |
+| **LinkedIn** | Social sharing and profile links |
+
 ## Local Development
 
 ```bash
