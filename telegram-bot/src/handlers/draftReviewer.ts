@@ -46,19 +46,21 @@ export async function handleAction(ctx: Context): Promise<void> {
   const chatId = ctx.chat?.id;
   if (!chatId) return;
 
-  const session = sessionStore.get(chatId);
-  if (!session || !["reviewing_draft", "published"].includes(session.phase)) {
-    await ctx.answerCallbackQuery();
+  const callbackData = ctx.callbackQuery?.data ?? "";
+  await ctx.answerCallbackQuery();
+
+  // Delete is session-independent — documentId is encoded in callback data
+  if (callbackData.startsWith("action:delete:")) {
+    const documentId = callbackData.replace("action:delete:", "");
+    await handleDelete(ctx, chatId, documentId);
     return;
   }
 
-  const action = ctx.callbackQuery?.data?.replace("action:", "") ?? "";
-  await ctx.answerCallbackQuery();
+  const session = sessionStore.get(chatId);
+  if (!session || session.phase !== "reviewing_draft") return;
 
-  if (action === "publish") {
+  if (callbackData === "action:publish") {
     await handlePublish(ctx, chatId, session);
-  } else if (action === "delete") {
-    await handleDelete(ctx, chatId, session);
   }
 }
 
@@ -96,10 +98,9 @@ async function handlePublish(
     const frontendUrl = config.strapiBaseUrl.replace(/^https?:\/\/api\./, "https://");
     const blogUrl = `${frontendUrl}/blog/${blog.slug}`;
 
-    session.publishedDocumentId = blog.documentId;
-    session.phase = "published";
+    sessionStore.reset(chatId); // back to idle immediately so new posts can start
 
-    const deleteKeyboard = new InlineKeyboard().text("🗑 Delete post", "action:delete");
+    const deleteKeyboard = new InlineKeyboard().text("🗑 Delete post", `action:delete:${blog.documentId}`);
     await ctx.api.editMessageText(
       chatId,
       msg.message_id,
@@ -116,14 +117,10 @@ async function handlePublish(
 async function handleDelete(
   ctx: Context,
   chatId: number,
-  session: Session
+  documentId: string
 ): Promise<void> {
-  const documentId = session.publishedDocumentId;
-  if (!documentId) return;
-
   try {
     await deleteBlog(documentId);
-    sessionStore.reset(chatId);
     await ctx.api.sendMessage(chatId, "🗑 Blog post deleted.");
   } catch (err) {
     logger.error({ err }, "Delete error:");
