@@ -34,10 +34,10 @@ export default {
             ? content.substring(0, eclipsesLimit) + "..."
             : content;
 
-        const author =
-          (blog as any).createdBy.firstName +
-          " " +
-          (blog as any).createdBy.lastName;
+        const createdBy = (blog as any).createdBy;
+        const author = createdBy
+          ? `${createdBy.firstName || ""} ${createdBy.lastName || ""}`.trim()
+          : process.env.RSS_AUTHOR_NAME;
 
         const allImages = (blog as any).images || [];
         const firstImage = allImages[0];
@@ -96,7 +96,9 @@ export default {
       ctx.type = "application/xml";
       ctx.body = xml;
     } catch (err) {
-      ctx.body = err;
+      strapi.log.error(err);
+      ctx.status = 500;
+      ctx.body = { error: err instanceof Error ? err.message : String(err) };
     }
   },
 };
