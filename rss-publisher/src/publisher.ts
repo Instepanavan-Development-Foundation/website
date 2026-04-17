@@ -20,14 +20,18 @@ export async function broadcastPost(item: RssItem): Promise<void> {
     return;
   }
 
-  const results = await Promise.allSettled([
-    publishToTelegram(item),
-    publishToFacebook(item),
-    publishToLinkedIn(item),
-  ]);
+  const enableLinkedIn = process.env.ENABLE_LINKEDIN === "true";
+
+  const tasks: [Promise<void>, string][] = [
+    [publishToTelegram(item), "Telegram"],
+    [publishToFacebook(item), "Facebook"],
+    ...(enableLinkedIn ? [[publishToLinkedIn(item), "LinkedIn"] as [Promise<void>, string]] : []),
+  ];
+
+  const results = await Promise.allSettled(tasks.map(([p]) => p));
 
   results.forEach((result, index) => {
-    const platform = ["Telegram", "Facebook", "LinkedIn"][index];
+    const platform = tasks[index][1];
     if (result.status === "fulfilled") {
       logger.info({ guid: item.guid, platform }, "Successfully published");
     } else {
