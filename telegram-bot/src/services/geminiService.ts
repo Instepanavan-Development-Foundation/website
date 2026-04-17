@@ -72,14 +72,25 @@ export async function describeImage(imageBuffer: Buffer): Promise<string> {
 export async function processAllMedia(
   voiceBuffers: Buffer[],
   imageBuffers: Buffer[]
-): Promise<{ transcripts: string[]; imageDescriptions: string[] }> {
-  const results = await Promise.all([
-    ...voiceBuffers.map(transcribeVoice),
-    ...imageBuffers.map(describeImage),
-  ]);
+): Promise<{ transcripts: string[]; imageDescriptions: string[]; imageWarning?: string }> {
+  // Voice transcription is required — let errors propagate
+  const transcripts = await Promise.all(voiceBuffers.map(transcribeVoice));
 
-  return {
-    transcripts: results.slice(0, voiceBuffers.length),
-    imageDescriptions: results.slice(voiceBuffers.length),
-  };
+  // Image description is best-effort — skip on Gemini failure
+  let imageDescriptions: string[] = [];
+  let imageWarning: string | undefined;
+
+  if (imageBuffers.length > 0) {
+    try {
+      imageDescriptions = await Promise.all(imageBuffers.map(describeImage));
+    } catch (err: unknown) {
+      const status = (err as { status?: number }).status;
+      logger.warn({ status }, "Gemini image description failed, skipping");
+      imageWarning = status === 429
+        ? "⚠️ Gemini quota exceeded — image descriptions skipped. Post will be generated from voice only."
+        : "⚠️ Gemini unavailable — image descriptions skipped. Post will be generated from voice only.";
+    }
+  }
+
+  return { transcripts, imageDescriptions, imageWarning };
 }

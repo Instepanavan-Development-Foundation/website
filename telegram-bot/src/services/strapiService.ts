@@ -146,3 +146,7 @@ export async function createBlog(params: {
   const blog = res.data.data;
   return { documentId: blog.documentId, slug: blog.slug };
 }
+
+export async function deleteBlog(documentId: string): Promise<void> {
+  await api.delete(`/api/blogs/${documentId}`);
+}

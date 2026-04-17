@@ -1,7 +1,7 @@
 import { logger } from "../logger";
 import { Context, InlineKeyboard } from "grammy";
 import { Session, sessionStore } from "../state/sessionStore";
-import { uploadAllImages, createBlog, createContributor } from "../services/strapiService";
+import { uploadAllImages, createBlog, createContributor, deleteBlog } from "../services/strapiService";
 import { config } from "../config";
 import { friendlyError } from "../utils/friendlyError";
 
@@ -47,7 +47,7 @@ export async function handleAction(ctx: Context): Promise<void> {
   if (!chatId) return;
 
   const session = sessionStore.get(chatId);
-  if (!session || session.phase !== "reviewing_draft") {
+  if (!session || !["reviewing_draft", "published"].includes(session.phase)) {
     await ctx.answerCallbackQuery();
     return;
   }
@@ -57,6 +57,8 @@ export async function handleAction(ctx: Context): Promise<void> {
 
   if (action === "publish") {
     await handlePublish(ctx, chatId, session);
+  } else if (action === "delete") {
+    await handleDelete(ctx, chatId, session);
   }
 }
 
@@ -94,16 +96,37 @@ async function handlePublish(
     const frontendUrl = config.strapiBaseUrl.replace(/^https?:\/\/api\./, "https://");
     const blogUrl = `${frontendUrl}/blog/${blog.slug}`;
 
+    session.publishedDocumentId = blog.documentId;
+    session.phase = "published";
+
+    const deleteKeyboard = new InlineKeyboard().text("🗑 Delete post", "action:delete");
     await ctx.api.editMessageText(
       chatId,
       msg.message_id,
-      `✅ Published!\n\n${blogUrl}`
+      `✅ Published!\n\n${blogUrl}`,
+      { reply_markup: deleteKeyboard }
     );
-
-    sessionStore.reset(chatId);
   } catch (err) {
     logger.error({ err }, "Publish error:");
     await ctx.api.editMessageText(chatId, msg.message_id, friendlyError(err));
     session.phase = "reviewing_draft";
+  }
+}
+
+async function handleDelete(
+  ctx: Context,
+  chatId: number,
+  session: Session
+): Promise<void> {
+  const documentId = session.publishedDocumentId;
+  if (!documentId) return;
+
+  try {
+    await deleteBlog(documentId);
+    sessionStore.reset(chatId);
+    await ctx.api.sendMessage(chatId, "🗑 Blog post deleted.");
+  } catch (err) {
+    logger.error({ err }, "Delete error:");
+    await ctx.api.sendMessage(chatId, friendlyError(err));
   }
 }

@@ -9,6 +9,7 @@ export type Phase =
   | "reviewing_draft"
   | "awaiting_edit"
   | "publishing"
+  | "published"
   | "failed";
 
 export interface Project {
@@ -36,6 +37,7 @@ export interface Session {
   draftMessageId: number | null;
   editHistory: { role: "user" | "assistant"; content: string }[];
   retryAction: "processing" | "draft_after_project" | null;
+  publishedDocumentId: string | null;
   createdAt: number;
 }
 
@@ -57,6 +59,7 @@ function createSession(): Session {
     draftMessageId: null,
     editHistory: [],
     retryAction: null,
+    publishedDocumentId: null,
     createdAt: Date.now(),
   };
 }

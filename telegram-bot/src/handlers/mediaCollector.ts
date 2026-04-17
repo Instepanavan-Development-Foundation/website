@@ -191,6 +191,11 @@ async function runFullProcessing(ctx: Context, chatId: number): Promise<void> {
     session.allContributors = contributors;
     logger.debug({ tags, contributors: contributors.map((c) => c.fullName) }, "Strapi data loaded");
 
+    // Warn if image descriptions were skipped
+    if (mediaResult.imageWarning) {
+      await ctx.api.sendMessage(chatId, mediaResult.imageWarning);
+    }
+
     // Show transcript(s) so user can verify
     if (session.transcripts.length > 0) {
       const transcriptText = session.transcripts.map((t) => `🎙 "${t}"`).join("\n");
