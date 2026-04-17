@@ -79,12 +79,6 @@ bot.callbackQuery(/^action:/, async (ctx) => {
   await handleAction(ctx);
 });
 
-bot.on("message:text", async (ctx) => {
-  if (!isAllowed(ctx)) return;
-  if (ctx.message.text.startsWith("/")) return;
-  await handleText(ctx);
-});
-
 bot.command("start", async (ctx) => {
   await ctx.reply(`Chat ID: ${ctx.chat.id}\n\nSend voice notes and/or photos to create a microblog post.`);
 });
@@ -101,6 +95,12 @@ bot.command("new", async (ctx) => {
   const { sessionStore } = await import("./state/sessionStore");
   sessionStore.reset(ctx.chat.id);
   await ctx.reply("Ready for a new post. Send voice notes and/or photos.");
+});
+
+bot.on("message:text", async (ctx) => {
+  if (!isAllowed(ctx)) return;
+  if (ctx.message.text.startsWith("/")) return;
+  await handleText(ctx);
 });
 
 bot.catch((err) => {
