@@ -19,7 +19,7 @@ export default {
 
       const blogs = await strapi.entityService.findMany("api::blog.blog", {
         filters,
-        limit: parseInt(process.env.RSS_FEED_LIMIT),
+        limit: parseInt(process.env.RSS_FEED_LIMIT || "20"),
         populate: ["createdBy", "images"],
         sort: ["createdAt:desc"],
       });
