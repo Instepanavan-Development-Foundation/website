@@ -45,7 +45,7 @@ const Login = () => {
       <div className="max-w-md mx-auto mt-10 p-8 bg-white rounded-xl shadow-lg flex flex-col gap-4 text-center">
         <h2 className="text-2xl font-bold">Ստուգեք ձեր էլ. հասցեն</h2>
         <p className="text-gray-600">
-          Մուտքի հղումը ուղարկվել է <strong>{email}</strong>
+          Մուտքի հղումը ուղարկվել է <strong>{email}</strong>, նամակը կարող է նաև <strong>սպամ պանակում</strong> լինել:
         </p>
         <p className="text-sm text-gray-400">
           Հղումը գործում է 15 րոպե:
