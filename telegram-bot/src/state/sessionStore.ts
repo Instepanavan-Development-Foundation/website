@@ -8,7 +8,8 @@ export type Phase =
   | "selecting_project"
   | "reviewing_draft"
   | "awaiting_edit"
-  | "publishing";
+  | "publishing"
+  | "failed";
 
 export interface Project {
   documentId: string;
@@ -34,6 +35,7 @@ export interface Session {
   suggestedContributors: { documentId: string; fullName: string; isNew?: boolean }[];
   draftMessageId: number | null;
   editHistory: { role: "user" | "assistant"; content: string }[];
+  retryAction: "processing" | "draft_after_project" | null;
   createdAt: number;
 }
 
@@ -54,6 +56,7 @@ function createSession(): Session {
     suggestedContributors: [],
     draftMessageId: null,
     editHistory: [],
+    retryAction: null,
     createdAt: Date.now(),
   };
 }

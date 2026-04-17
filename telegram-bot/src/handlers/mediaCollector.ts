@@ -1,4 +1,4 @@
-import { Context } from "grammy";
+import { Context, InlineKeyboard } from "grammy";
 import { logger } from "../logger";
 import { friendlyError } from "../utils/friendlyError";
 import { sessionStore } from "../state/sessionStore";
@@ -7,6 +7,8 @@ import { transcribeVoice, processAllMedia } from "../services/geminiService";
 import { generateDraft } from "../services/gptService";
 import { getProjects, getTags, getContributors } from "../services/strapiService";
 import { showProjectKeyboard } from "./projectSelector";
+
+const RETRY_KEYBOARD = new InlineKeyboard().text("🔄 Retry", "action:retry");
 
 export async function handleVoice(ctx: Context): Promise<void> {
   const chatId = ctx.chat?.id;
@@ -221,7 +223,19 @@ async function runFullProcessing(ctx: Context, chatId: number): Promise<void> {
     await showProjectKeyboard(ctx, chatId, session);
   } catch (err: unknown) {
     logger.error({ err }, "Processing error");
-    await ctx.api.editMessageText(chatId, processingMsg.message_id, friendlyError(err));
-    sessionStore.reset(chatId);
+    session.phase = "failed";
+    session.retryAction = "processing";
+    await ctx.api.editMessageText(chatId, processingMsg.message_id, friendlyError(err), {
+      reply_markup: RETRY_KEYBOARD,
+    });
   }
+}
+
+export async function retryProcessing(ctx: Context, chatId: number): Promise<void> {
+  const session = sessionStore.get(chatId);
+  if (!session || session.retryAction !== "processing") return;
+  // Reset transcripts so voice gets re-transcribed if needed
+  session.transcripts = [];
+  session.imageDescriptions = [];
+  await runFullProcessing(ctx, chatId);
 }

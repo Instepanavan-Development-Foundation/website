@@ -1,9 +1,9 @@
 import { logger } from "../logger";
-import { Context } from "grammy";
-import { InlineKeyboard } from "grammy";
+import { Context, InlineKeyboard } from "grammy";
 import { Session, sessionStore } from "../state/sessionStore";
 import { showDraft } from "./draftReviewer";
 import { generateDraft } from "../services/gptService";
+import { friendlyError } from "../utils/friendlyError";
 
 export async function showProjectKeyboard(
   ctx: Context,
@@ -99,11 +99,18 @@ export async function handleProjectSelection(ctx: Context): Promise<void> {
     await showDraft(ctx, chatId, session);
   } catch (err) {
     logger.error({ err }, "Draft generation error:");
-    await ctx.api.editMessageText(
-      chatId,
-      processingMsg.message_id,
-      "Failed to generate draft. Please try again."
-    );
-    sessionStore.reset(chatId);
+    session.phase = "failed";
+    session.retryAction = "draft_after_project";
+    const RETRY_KEYBOARD = new InlineKeyboard().text("🔄 Retry", "action:retry");
+    await ctx.api.editMessageText(chatId, processingMsg.message_id, friendlyError(err), {
+      reply_markup: RETRY_KEYBOARD,
+    });
   }
+}
+
+export async function retryDraftAfterProject(ctx: Context, chatId: number): Promise<void> {
+  const session = sessionStore.get(chatId);
+  if (!session || session.retryAction !== "draft_after_project") return;
+  session.phase = "selecting_project";
+  await handleProjectSelection(ctx);
 }

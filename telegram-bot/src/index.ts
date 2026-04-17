@@ -2,8 +2,8 @@ import "dotenv/config";
 import { Bot, Context } from "grammy";
 import { config } from "./config";
 import { logger } from "./logger";
-import { handleVoice, handlePhoto } from "./handlers/mediaCollector";
-import { handleProjectSelection } from "./handlers/projectSelector";
+import { handleVoice, handlePhoto, retryProcessing } from "./handlers/mediaCollector";
+import { handleProjectSelection, retryDraftAfterProject } from "./handlers/projectSelector";
 import { handleAction } from "./handlers/draftReviewer";
 import { handleText } from "./handlers/editHandler";
 
@@ -65,6 +65,17 @@ bot.callbackQuery(/^proj:/, async (ctx) => {
 
 bot.callbackQuery(/^action:/, async (ctx) => {
   if (!isAllowed(ctx)) return;
+  if (ctx.callbackQuery.data === "action:retry") {
+    const chatId = ctx.chat?.id;
+    if (!chatId) { await ctx.answerCallbackQuery(); return; }
+    await ctx.answerCallbackQuery();
+    const { sessionStore } = await import("./state/sessionStore");
+    const session = sessionStore.get(chatId);
+    if (!session) return;
+    if (session.retryAction === "processing") await retryProcessing(ctx, chatId);
+    else if (session.retryAction === "draft_after_project") await retryDraftAfterProject(ctx, chatId);
+    return;
+  }
   await handleAction(ctx);
 });
 
@@ -83,6 +94,13 @@ bot.command("cancel", async (ctx) => {
   const { sessionStore } = await import("./state/sessionStore");
   sessionStore.reset(ctx.chat.id);
   await ctx.reply("Session cancelled.");
+});
+
+bot.command("new", async (ctx) => {
+  if (!isAllowed(ctx)) return;
+  const { sessionStore } = await import("./state/sessionStore");
+  sessionStore.reset(ctx.chat.id);
+  await ctx.reply("Ready for a new post. Send voice notes and/or photos.");
 });
 
 bot.catch((err) => {
