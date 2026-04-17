@@ -9,4 +9,5 @@ export interface ISiteConfig {
   defaultContact: string;
   navItems: IMenuLink[];
   footer: IMenuLink[];
+  footerSocial: IMenuLink[];
 }

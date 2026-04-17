@@ -43,7 +43,8 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { footer: footerMenu } = await getSiteConfig();
+  const { footer: footerMenu, footerSocial: footerSocialMenu } =
+    await getSiteConfig();
 
   return (
     <html suppressHydrationWarning lang="en">
@@ -72,6 +73,20 @@ export default async function RootLayout({
                   </Link>
                 ))}
               </div>
+              {footerSocialMenu.length > 0 && (
+                <div className="flex flex-row items-center gap-3">
+                  {footerSocialMenu.map((link) => (
+                    <Link
+                      key={link.title}
+                      className="text-default-500 hover:text-primary text-sm"
+                      href={link.href}
+                      target="_blank"
+                    >
+                      {link.title}
+                    </Link>
+                  ))}
+                </div>
+              )}
               <div className="text-sm text-default-500">
                 Կայքը բաց կոդով է՝{" "}
                 <Link

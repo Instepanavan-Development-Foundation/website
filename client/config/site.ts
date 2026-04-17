@@ -19,6 +19,9 @@ export const getSiteConfig = async (): Promise<ISiteConfig> => {
     menus.find((menu) => menu.title === "Main")?.links || ([] as IMenuLink[]);
   const footerMenu =
     menus.find((menu) => menu.title === "Footer")?.links || ([] as IMenuLink[]);
+  const footerSocialMenu =
+    menus.find((menu) => menu.title === "Footer Social")?.links ||
+    ([] as IMenuLink[]);
 
   const logoUrl = siteConfig?.logo?.url;
 
@@ -30,6 +33,7 @@ export const getSiteConfig = async (): Promise<ISiteConfig> => {
     contactEmail: siteConfig.contactEmail,
     navItems: mainMenu,
     footer: footerMenu,
+    footerSocial: footerSocialMenu,
     defaultContact: siteConfig.defaultContact,
   };
 };
