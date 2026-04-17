@@ -114,9 +114,21 @@ services:
     networks:
       - nginx
 
+  telegram-bot:
+    build:
+      context: ./telegram-bot
+      dockerfile: Dockerfile
+    container_name: instepanavan-telegram-bot
+    restart: unless-stopped
+    env_file:
+      - ./telegram-bot/.env
+    networks:
+      - telegram
+
 networks:
   nginx:
     name: saint-nginx
     external: true
   postgres:
   hatchet:
+  telegram:
