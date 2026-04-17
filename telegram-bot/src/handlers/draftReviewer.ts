@@ -61,6 +61,9 @@ export async function handleAction(ctx: Context): Promise<void> {
 
   if (callbackData === "action:publish") {
     await handlePublish(ctx, chatId, session);
+  } else if (callbackData === "action:show_draft") {
+    session.draftMessageId = null; // force new message
+    await showDraft(ctx, chatId, session);
   }
 }
 
@@ -108,9 +111,15 @@ async function handlePublish(
       { reply_markup: deleteKeyboard }
     );
   } catch (err) {
-    logger.error({ err }, "Publish error:");
-    await ctx.api.editMessageText(chatId, msg.message_id, friendlyError(err));
+    const responseData = (err as { response?: { data?: unknown } }).response?.data;
+    logger.error({ err, responseData }, "Publish error:");
     session.phase = "reviewing_draft";
+    const retryKeyboard = new InlineKeyboard()
+      .text("🔄 Retry publish", "action:publish")
+      .text("✏️ Back to draft", "action:show_draft");
+    await ctx.api.editMessageText(chatId, msg.message_id, friendlyError(err), {
+      reply_markup: retryKeyboard,
+    });
   }
 }
 
