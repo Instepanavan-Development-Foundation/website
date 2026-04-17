@@ -23,7 +23,12 @@ export default function ModifiedMarkdown({
     }
 
     return (
-      <a href={href} rel="noopener noreferrer" target={target}>
+      <a
+        className="text-blue-500 underline"
+        href={href}
+        rel="noopener noreferrer"
+        target={target}
+      >
         {children}
       </a>
     );

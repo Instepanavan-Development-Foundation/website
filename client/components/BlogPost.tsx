@@ -3,7 +3,7 @@
 import { Card, CardBody } from "@heroui/card";
 import { Chip } from "@heroui/chip";
 import { Paperclip, Bookmark } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Image } from "@heroui/image";
 import Link from "next/link";
 import Lightbox from "yet-another-react-lightbox";
@@ -23,6 +23,11 @@ import NextJsImage from "./NextJsImage";
 import { prettyDate } from "@/src/helpers/prettyDate";
 import ModifiedMarkdown from "@/src/hok/modifiedMarkdown";
 
+function extractFirstUrl(text: string): string | null {
+  const match = text.match(/https?:\/\/[^\s)>\]"]+/);
+  return match?.[0] ?? null;
+}
+
 export function BlogPost({
   content,
   images,
@@ -37,6 +42,24 @@ export function BlogPost({
 }: IBlog) {
   const numberOfImagesShown = 1;
   const [open, setOpen] = useState(false);
+  const [linkOgImage, setLinkOgImage] = useState<string | null>(null);
+
+  const hasImages = images?.length > 0;
+
+  useEffect(() => {
+    if (hasImages) return;
+
+    const url = extractFirstUrl(content);
+
+    if (!url) return;
+
+    fetch(`/api/og-image?url=${encodeURIComponent(url)}`)
+      .then((r) => r.json())
+      .then(({ imageUrl }) => {
+        if (imageUrl) setLinkOgImage(imageUrl);
+      })
+      .catch(() => {});
+  }, [content, hasImages]);
 
   const imageSlides = (images || []).map((image) => ({
     src: getMediaUrl(image),
@@ -59,7 +82,7 @@ export function BlogPost({
       <Card className="group">
         <CardBody className="p-0">
           {/* TODO images like in fb, 3 images on front */}
-          {images?.length ? (
+          {hasImages ? (
             <button className="cursor-zoom-in" onClick={() => setOpen(true)}>
               <Lightbox
                 close={() => setOpen(false)}
@@ -84,6 +107,14 @@ export function BlogPost({
                 </div>
               )}
             </button>
+          ) : linkOgImage ? (
+            <Image
+              alt={content}
+              className="w-full object-cover h-50 z-10"
+              radius="none"
+              src={linkOgImage}
+              width="100"
+            />
           ) : (
             <div className="w-full h-[200px] bg-gradient-to-br from-primary to-secondary z-10" />
           )}
