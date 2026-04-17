@@ -39,7 +39,8 @@ export default {
           " " +
           (blog as any).createdBy.lastName;
 
-        const firstImage = (blog as any).images?.[0];
+        const allImages = (blog as any).images || [];
+        const firstImage = allImages[0];
         const imageUrl = firstImage
           ? `${process.env.BASE_URL}${firstImage.url}`
           : process.env.RSS_ITUNES_IMAGE;
@@ -66,6 +67,16 @@ export default {
               "itunes:duration":
                 Math.ceil(content.length / minute) + " minutes",
             },
+            // Add custom field for multiple images
+            {
+              images: allImages.map((img: any) => ({
+                image: {
+                  url: `${process.env.BASE_URL}${img.url}`,
+                  mime: img.mime,
+                  size: img.size
+                }
+              }))
+            }
           ],
         };
 
@@ -82,6 +93,7 @@ export default {
       });
 
       const xml = feed.xml();
+      ctx.set("Content-Type", "application/xml");
       ctx.body = xml;
     } catch (err) {
       ctx.body = err;

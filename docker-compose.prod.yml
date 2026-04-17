@@ -125,6 +125,19 @@ services:
     networks:
       - telegram
 
+  rss-publisher:
+    build:
+      context: ./rss-publisher
+      dockerfile: Dockerfile
+    container_name: instepanavan-rss-publisher
+    restart: unless-stopped
+    env_file:
+      - ./rss-publisher/.env
+    volumes:
+      - ./rss-publisher-data:/app/data
+    networks:
+      - nginx
+
 networks:
   nginx:
     name: saint-nginx
