@@ -29,9 +29,11 @@ import {
   Receipt,
   CheckCircle,
   XCircle,
+  LogOut,
 } from "lucide-react";
 
 import { useAuth } from "@/src/hooks/useAuth";
+import { logout } from "@/src/services/userService";
 import { getUserContributor } from "@/src/helpers/getUserContributor";
 import { IContributor } from "@/src/models/contributor";
 import { IProjectPayment, IPaymentLog } from "@/src/models/getData";
@@ -423,29 +425,42 @@ export default function MyProfile() {
       {/* Profile Header with User Component */}
       <Card className="p-6">
         <CardBody>
-          <User
-            avatarProps={{
-              src: avatarUrl,
-              size: "lg",
-              isBordered: true,
-              color: "primary",
-              radius: "full",
-              classNames: {
-                base: "!rounded-full",
-                img: "!rounded-full",
-                icon: "!rounded-full",
-              },
-              style: {
-                borderRadius: "9999px",
-              },
-            }}
-            classNames={{
-              name: "text-2xl font-bold",
-              description: "text-default-500",
-            }}
-            description={user?.email}
-            name={displayName}
-          />
+          <div className="flex items-center justify-between">
+            <User
+              avatarProps={{
+                src: avatarUrl,
+                size: "lg",
+                isBordered: true,
+                color: "primary",
+                radius: "full",
+                classNames: {
+                  base: "!rounded-full",
+                  img: "!rounded-full",
+                  icon: "!rounded-full",
+                },
+                style: {
+                  borderRadius: "9999px",
+                },
+              }}
+              classNames={{
+                name: "text-2xl font-bold",
+                description: "text-default-500",
+              }}
+              description={user?.email}
+              name={displayName}
+            />
+            <Button
+              color="warning"
+              variant="flat"
+              onPress={() => {
+                logout();
+                window.dispatchEvent(new CustomEvent("loginStateChanged"));
+              }}
+            >
+              <LogOut size={18} />
+              Դուրս գալ
+            </Button>
+          </div>
         </CardBody>
       </Card>
 

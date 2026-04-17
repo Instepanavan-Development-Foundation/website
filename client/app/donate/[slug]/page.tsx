@@ -193,7 +193,7 @@ import getPaymentMethods, {
 import { initPayment } from "@/src/helpers/initPayment";
 
 // Preset donation amounts
-const presetAmounts = [1000, 5000, 10000, 20000, 50000];
+const presetAmounts = [3000, 5000, 10000, 20000, 50000];
 const MIN_DONATION_AMOUNT = 10;
 
 function DonationFormClient({ project }: { project: IProject }) {
@@ -466,15 +466,23 @@ function DonationFormClient({ project }: { project: IProject }) {
             </div>
 
             {/* Custom amount input */}
+            <div className="flex items-center gap-3 mb-3">
+              <Divider className="flex-1" />
+              <span className="text-small text-default-400">կամ այնքան ինչքան կցանկանաք</span>
+              <Divider className="flex-1" />
+            </div>
             <Input
               required
+              classNames={{
+                input: "text-2xl font-semibold text-center",
+                inputWrapper: "h-16",
+              }}
               id="custom-amount"
               min={MIN_DONATION_AMOUNT}
-              placeholder="Կամ մուտքագրեք ձեր գումարը"
               size="lg"
               startContent={
                 <div className="pointer-events-none flex items-center">
-                  <span className="text-default-400 text-small">֏</span>
+                  <span className="text-default-400 text-xl">֏</span>
                 </div>
               }
               type="number"
@@ -489,8 +497,8 @@ function DonationFormClient({ project }: { project: IProject }) {
 
           <Spacer y={6} />
 
-          {/* Payment Method Selection */}
-          <div>
+          {/* Payment Method Selection — only shown when user has saved cards */}
+          {(loadingPaymentMethods || paymentMethods.length > 0) && <div>
             <h3 className="text-lg font-semibold mb-4">Վճարման եղանակ</h3>
 
             {loadingPaymentMethods ? (
@@ -585,7 +593,7 @@ function DonationFormClient({ project }: { project: IProject }) {
                 </Radio>
               </RadioGroup>
             )}
-          </div>
+          </div>}
         </form>
       </CardBody>
 

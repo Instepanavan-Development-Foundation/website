@@ -14,14 +14,14 @@ import Link from "next/link";
 import { link as linkStyles } from "@heroui/theme";
 import NextLink from "next/link";
 import clsx from "clsx";
-import { LogIn, LogOut, User } from "lucide-react";
+import { LogIn, User } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { getSiteConfig } from "@/config/site";
 import { Logo } from "@/components/icons";
 import { IMenuLink } from "@/src/models/menu";
 import { ISiteConfig } from "@/src/models/site-config";
-import { isAuthenticated, logout } from "@/src/services/userService";
+import { isAuthenticated } from "@/src/services/userService";
 
 export const Navbar = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -47,13 +47,6 @@ export const Navbar = () => {
       window.removeEventListener("loginStateChanged", handleLoginStateChange);
     };
   }, []);
-
-  const handleLogout = () => {
-    logout();
-    setIsLoggedIn(false);
-    // Dispatch custom event to notify other components of logout
-    window.dispatchEvent(new CustomEvent("loginStateChanged"));
-  };
 
   if (!siteConfig) {
     return null;
@@ -113,27 +106,19 @@ export const Navbar = () => {
             </NextLink>
           </NavbarItem>
         ) : (
-          <>
-            <NavbarItem className="hidden md:flex">
-              <NextLink
-                className={clsx(
-                  linkStyles({ color: "foreground" }),
-                  "data-[active=true]:text-primary data-[active=true]:font-medium",
-                )}
-                color="foreground"
-                href={"/profile"}
-              >
-                <User size={18} />
-                Իմ պրոֆիլը
-              </NextLink>
-            </NavbarItem>
-            <NavbarItem className="hidden md:flex">
-              <Button color="warning" onClick={handleLogout}>
-                <LogOut size={18} />
-                Դուրս գալ
-              </Button>
-            </NavbarItem>
-          </>
+          <NavbarItem className="hidden md:flex">
+            <NextLink
+              className={clsx(
+                linkStyles({ color: "foreground" }),
+                "data-[active=true]:text-primary data-[active=true]:font-medium",
+              )}
+              color="foreground"
+              href={"/profile"}
+            >
+              <User size={18} />
+              Իմ պրոֆիլը
+            </NextLink>
+          </NavbarItem>
         )}
         {/* <NavbarItem className="hidden md:flex">
           <Button
@@ -169,28 +154,15 @@ export const Navbar = () => {
               </Link>
             </NavbarMenuItem>
           ) : (
-            <>
-              <NavbarMenuItem>
-                <Link
-                  className="flex items-center gap-2"
-                  href="/profile"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  <User size={16} /> Իմ պրոֆիլը
-                </Link>
-              </NavbarMenuItem>
-              <NavbarMenuItem>
-                <button
-                  className="flex items-center gap-2 text-warning"
-                  onClick={() => {
-                    handleLogout();
-                    setIsMenuOpen(false);
-                  }}
-                >
-                  <LogOut size={16} /> Դուրս գալ
-                </button>
-              </NavbarMenuItem>
-            </>
+            <NavbarMenuItem>
+              <Link
+                className="flex items-center gap-2"
+                href="/profile"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <User size={16} /> Իմ պրոֆիլը
+              </Link>
+            </NavbarMenuItem>
           )}
         </div>
       </NavbarMenu>

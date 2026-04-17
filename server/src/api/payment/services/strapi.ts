@@ -89,6 +89,8 @@ const service = {
       amount: paymentDetails.Amount,
       currency: paymentDetails.Currency,
       projectName: currentProject.name,
+      donationType: currentProject.donationType,
+      userDocumentId,
     }).catch((err) => strapi.log.error('Failed to send donation notification:', err));
   },
   createProjectPayment: async ({
@@ -311,10 +313,14 @@ const service = {
     amount,
     currency,
     projectName,
+    donationType,
+    userDocumentId,
   }: {
     amount: number;
     currency: string;
     projectName: string;
+    donationType?: string;
+    userDocumentId?: string;
   }) => {
     const { CURRENCIES } = await import('../constants/currencies');
     const currencyLabel = CURRENCIES[currency] ?? currency;
@@ -323,10 +329,34 @@ const service = {
       : 'https://api.instepanavan.am/admin';
     const date = new Date().toLocaleString('hy-AM', { timeZone: 'Asia/Yerevan' });
 
+    let donorEmail = '';
+    let donorName = '';
+    if (userDocumentId) {
+      try {
+        const user = await strapi.documents('plugin::users-permissions.user').findOne({
+          documentId: userDocumentId,
+          fields: ['email', 'username', 'fullName'],
+        });
+        if (user) {
+          donorEmail = user.email ?? '';
+          donorName = (user.fullName || (!user.username?.includes('@') ? user.username : '')) ?? '';
+        }
+      } catch (_) {}
+    }
+
+    const donationTypeLabel = donationType === 'recurring' ? 'Ամսական (կրկնվող)' : 'Միանվագ';
+
+    const donorRow = donorEmail
+      ? `<tr>
+          <td style="padding: 8px 0; color: #666;">Նվիրատու</td>
+          <td style="padding: 8px 0;">${donorName ? `${donorName} &lt;${donorEmail}&gt;` : donorEmail}</td>
+        </tr>`
+      : '';
+
     await strapi.plugin('email').service('email').send({
       to: 'contact@instepanavan.am',
       subject: `Նոր նվիրատվություն — ${projectName}`,
-      text: `Նոր նվիրատվություն ստացվել է:\n\nՆախագիծ: ${projectName}\nԳումար: ${amount} ${currencyLabel}\nԱմսաթիվ: ${date}\n\nAdmin: ${adminUrl}`,
+      text: `Նոր նվիրատվություն ստացվել է:\n\nՆախագիծ: ${projectName}\nԳումար: ${amount} ${currencyLabel}\nՏեսակ: ${donationTypeLabel}${donorEmail ? `\nՆվիրատու: ${donorName ? `${donorName} <${donorEmail}>` : donorEmail}` : ''}\nԱմսաթիվ: ${date}\n\nAdmin: ${adminUrl}`,
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <h2 style="color: #333;">Նոր նվիրատվություն</h2>
@@ -339,6 +369,11 @@ const service = {
               <td style="padding: 8px 0; color: #666;">Գումար</td>
               <td style="padding: 8px 0; font-weight: bold; color: #16a34a;">${amount} ${currencyLabel}</td>
             </tr>
+            <tr>
+              <td style="padding: 8px 0; color: #666;">Տեսակ</td>
+              <td style="padding: 8px 0;">${donationTypeLabel}</td>
+            </tr>
+            ${donorRow}
             <tr>
               <td style="padding: 8px 0; color: #666;">Ամսաթիվ</td>
               <td style="padding: 8px 0;">${date}</td>

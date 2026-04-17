@@ -19,3 +19,4 @@
   - Include error details and instructions to update payment method
   - Link to payment method update page
 - [ ] Handle refund logic
+- [ ] Fix Payment log, when payment is removed logs are invisible
