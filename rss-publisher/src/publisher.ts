@@ -2,6 +2,7 @@ import { RssItem } from "./rss-client";
 import { publishToTelegram } from "./platforms/telegram";
 import { publishToFacebook } from "./platforms/facebook";
 import { publishToLinkedIn } from "./platforms/linkedin";
+import { publishToMastodon } from "./platforms/mastodon";
 import pino from "pino";
 
 const logger = pino({ level: process.env.LOG_LEVEL || "info" });
@@ -21,10 +22,12 @@ export async function broadcastPost(item: RssItem): Promise<void> {
   }
 
   const enableLinkedIn = process.env.ENABLE_LINKEDIN === "true";
+  const enableMastodon = process.env.ENABLE_MASTODON !== "false";
 
   const tasks: [Promise<void>, string][] = [
     [publishToTelegram(item), "Telegram"],
     [publishToFacebook(item), "Facebook"],
+    ...(enableMastodon ? [[publishToMastodon(item), "Mastodon"] as [Promise<void>, string]] : []),
     ...(enableLinkedIn ? [[publishToLinkedIn(item), "LinkedIn"] as [Promise<void>, string]] : []),
   ];
 
