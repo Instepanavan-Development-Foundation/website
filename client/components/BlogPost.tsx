@@ -53,7 +53,7 @@ export function BlogPost({
 
     if (!url) return;
 
-    fetch(`/api/og-image?url=${encodeURIComponent(url)}`)
+    fetch(`/og-image?url=${encodeURIComponent(url)}`)
       .then((r) => r.json())
       .then(({ imageUrl }) => {
         if (imageUrl) setLinkOgImage(`/image-proxy/${imageUrl}`);
