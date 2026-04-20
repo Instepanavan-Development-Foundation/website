@@ -56,7 +56,7 @@ export function BlogPost({
     fetch(`/og-image?url=${encodeURIComponent(url)}`)
       .then((r) => r.json())
       .then(({ imageUrl }) => {
-        if (imageUrl) setLinkOgImage(`/image-proxy/${imageUrl}`);
+        if (imageUrl) setLinkOgImage(`/proxy-image?url=${encodeURIComponent(imageUrl)}`);
       })
       .catch(() => {});
   }, [content, hasImages]);
