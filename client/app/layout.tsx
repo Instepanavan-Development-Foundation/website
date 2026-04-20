@@ -35,6 +35,9 @@ export async function generateMetadata(): Promise<Metadata> {
       type: "website",
       images: { url: logo.url },
     },
+    ...(process.env.MASTODON_PROFILE_URL && {
+      other: { "fediverse:creator": process.env.MASTODON_PROFILE_URL },
+    }),
   };
 }
 
@@ -48,7 +51,11 @@ export default async function RootLayout({
 
   return (
     <html suppressHydrationWarning lang="en">
-      <head />
+      <head>
+        {process.env.MASTODON_PROFILE_URL && (
+          <link rel="me" href={process.env.MASTODON_PROFILE_URL} />
+        )}
+      </head>
       <body
         suppressHydrationWarning
         className={clsx("min-h-screen bg-background antialiased")}
