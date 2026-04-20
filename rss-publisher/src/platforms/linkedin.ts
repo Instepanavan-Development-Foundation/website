@@ -59,7 +59,7 @@ export async function publishToLinkedIn(item: RssItem): Promise<void> {
 
   const postData: any = {
     author: `urn:li:organization:${orgId}`,
-    commentary: `${item.title}\n\n${item.content.slice(0, 500)}${item.content.length > 500 ? "..." : ""}`,
+    commentary: item.content,
     visibility: "PUBLIC",
     distribution: {
       feedDistribution: "MAIN_FEED",
@@ -107,7 +107,7 @@ export async function publishToLinkedIn(item: RssItem): Promise<void> {
         {
           actor: `urn:li:organization:${orgId}`,
           message: {
-            text: `🔗 Read the full blog post on our website: ${item.link}`,
+            text: `🔗 Կարդալ սկզբնաղբյուրում: ${item.link}`,
           },
         },
         {

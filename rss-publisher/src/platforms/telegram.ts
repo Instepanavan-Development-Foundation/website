@@ -10,7 +10,7 @@ export async function publishToTelegram(item: RssItem): Promise<void> {
   }
 
   const bot = new Bot(token);
-  const caption = `<b>${item.title}</b>\n\n${item.content.slice(0, 500)}${item.content.length > 500 ? "..." : ""}\n\n🔗 <a href="${item.link}">Read the full blog post</a>`;
+  const caption = `${item.content}\n\n🔗 <a href="${item.link}">Կարդալ սկզբնաղբյուրում</a>`;
 
   if (item.imageUrls.length > 1) {
     // Send as a media group (gallery)

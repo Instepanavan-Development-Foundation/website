@@ -9,7 +9,7 @@ export async function publishToFacebook(item: RssItem): Promise<void> {
     throw new Error("Facebook configuration missing");
   }
 
-  const message = `${item.title}\n\n${item.content.slice(0, 500)}${item.content.length > 500 ? "..." : ""}`;
+  const message = item.content;
   let postId = "";
 
   if (item.imageUrls.length > 1) {
@@ -58,7 +58,7 @@ export async function publishToFacebook(item: RssItem): Promise<void> {
     try {
       await axios.post(`https://graph.facebook.com/v21.0/${postId}/comments`, null, {
         params: {
-          message: `🔗 Read the full blog post: ${item.link}`,
+          message: `🔗 Կարդալ սկզբնաղբյուրում: ${item.link}`,
           access_token: accessToken,
         },
       });
