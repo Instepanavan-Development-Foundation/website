@@ -1,5 +1,6 @@
-import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+
+import { NextResponse } from "next/server";
 
 export function proxy(request: NextRequest) {
   const url = request.nextUrl.clone();
@@ -8,6 +9,7 @@ export function proxy(request: NextRequest) {
     : "us.i.posthog.com";
 
   const requestHeaders = new Headers(request.headers);
+
   requestHeaders.set("host", hostname);
 
   url.protocol = "https";

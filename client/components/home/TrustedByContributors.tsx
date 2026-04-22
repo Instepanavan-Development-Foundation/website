@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { button as buttonStyles } from "@heroui/theme";
 import { Tooltip } from "@heroui/tooltip";
 import { ArrowRightIcon, Heart } from "lucide-react";
 
@@ -19,67 +18,60 @@ export default async function TrustedByContributors() {
   }
 
   return (
-    <div className="w-full container my-16">
+    <section className="w-full my-12 md:my-16">
       <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold mb-3">Մեզ վստահում են</h2>
-        <p className="text-default-600 max-w-2xl mx-auto">
-          Մեր աջակիցները հավատում են մեր առաքելությանը և օգնում են մեզ ստեղծել
-          իրական ազդեցություն: Միացեք նրանց և դարձեք փոփոխության մի մասը:
+        <div className="text-[11px] font-medium tracking-[0.14em] text-primary uppercase mb-2">
+          ՄԵԶ ՎՍՏԱՀՈՒՄ ԵՆ
+        </div>
+        <h2 className="text-[28px] md:text-[32px] font-semibold tracking-tighter2 text-ink">
+          Աջակիցներ, որոնք հավատում են մեզ
+        </h2>
+        <p className="mt-3 text-[15px] text-ink-muted max-w-2xl mx-auto leading-relaxed">
+          Մեր աջակիցները օգնում են մեզ ստեղծել իրական ազդեցություն։ Միացեք նրանց
+          և դարձեք փոփոխության մի մասը։
         </p>
       </div>
 
-      {/* Contributor avatars with animation */}
       <div className="relative">
-        <div className="grid grid-cols-4 md:grid-cols-4 lg:grid-cols-6 gap-8">
-          {trustedByContributors.map((contributor, index) => (
+        <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-6">
+          {trustedByContributors.map((contributor) => (
             <Tooltip
               key={contributor.id}
               content={contributor.fullName}
               showArrow={true}
             >
               <Link
-                className="flex flex-col items-center gap-2 transform hover:scale-110 transition-transform duration-300"
+                className="flex flex-col items-center gap-2 transform hover:scale-105 transition-transform duration-200"
                 href={`/contributor/${contributor.slug}`}
               >
                 <div className="relative">
                   <Avatar
-                    className="object-contain border-2 border-white shadow-md"
+                    className="object-contain border-2 border-white shadow-[0_4px_12px_rgba(0,0,0,0.06)]"
                     contributor={contributor}
-                    height={100}
+                    height={88}
                   />
                 </div>
               </Link>
             </Tooltip>
           ))}
         </div>
-        {/* Join message */}
-        <div className="mt-8 text-center">
-          <div className="flex justify-center gap-4">
-            <Link
-              className={buttonStyles({
-                variant: "flat",
-                radius: "full",
-                size: "md",
-              })}
-              href="/contributors"
-            >
-              Դիտել աջակիցների ցանկը
-              <ArrowRightIcon className="w-4 h-4 ml-1" />
-            </Link>
-            <Link
-              className={buttonStyles({
-                variant: "solid",
-                color: "danger",
-                radius: "full",
-                size: "md",
-              })}
-              href="/project/instepanavan"
-            >
-              <Heart className="w-4 h-4 mr-1" /> Դառնալ աջակից
-            </Link>
-          </div>
+        <div className="mt-10 flex justify-center gap-3 flex-wrap">
+          <Link
+            className="inline-flex items-center gap-1 px-5 py-3 rounded-full text-sm font-medium text-ink bg-cream-100 hover:bg-cream-200 transition-colors"
+            href="/contributors"
+          >
+            Դիտել աջակիցների ցանկը
+            <ArrowRightIcon className="w-4 h-4" />
+          </Link>
+          <Link
+            className="inline-flex items-center gap-1.5 px-5 py-3 rounded-full text-sm font-medium text-white bg-primary hover:bg-primary-600 transition-colors"
+            href="/project/instepanavan"
+          >
+            <Heart className="fill-white" size={14} />
+            Դառնալ աջակից
+          </Link>
         </div>
       </div>
-    </div>
+    </section>
   );
 }

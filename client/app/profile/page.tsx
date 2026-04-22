@@ -109,6 +109,7 @@ export default function MyProfile() {
       // Compute avatar URL
       if (userData.email) {
         const url = await getGravatarUrl(userData.email);
+
         setAvatarUrl(url);
       }
 
@@ -473,8 +474,12 @@ export default function MyProfile() {
                 <TrendingUp className="w-6 h-6 text-primary-600" />
               </div>
               <div>
-                <p className="text-sm text-default-500">Ակտիվ բաժանորդագրություններ</p>
-                <p className="text-2xl font-bold text-primary">{activeSubscriptionsCount}</p>
+                <p className="text-sm text-default-500">
+                  Ակտիվ բաժանորդագրություններ
+                </p>
+                <p className="text-2xl font-bold text-primary">
+                  {activeSubscriptionsCount}
+                </p>
               </div>
             </div>
           </CardBody>
@@ -487,8 +492,12 @@ export default function MyProfile() {
                 <Receipt className="w-6 h-6 text-success-600" />
               </div>
               <div>
-                <p className="text-sm text-default-500">Ընդհանուր նվիրատվություն</p>
-                <p className="text-2xl font-bold text-success">{formatCurrency(totalDonated)}</p>
+                <p className="text-sm text-default-500">
+                  Ընդհանուր նվիրատվություն
+                </p>
+                <p className="text-2xl font-bold text-success">
+                  {formatCurrency(totalDonated)}
+                </p>
               </div>
             </div>
           </CardBody>
@@ -502,7 +511,9 @@ export default function MyProfile() {
               </div>
               <div>
                 <p className="text-sm text-default-500">Հաջողված վճարումներ</p>
-                <p className="text-2xl font-bold text-secondary">{successfulPaymentsCount}</p>
+                <p className="text-2xl font-bold text-secondary">
+                  {successfulPaymentsCount}
+                </p>
               </div>
             </div>
           </CardBody>

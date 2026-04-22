@@ -1,5 +1,3 @@
-
-
 export interface User {
   id: number;
   username: string;
@@ -124,6 +122,7 @@ export async function sendMagicLink(
 
   if (!response.ok) {
     const data = await response.json();
+
     throw new Error(data.error?.message || data.error || "Sending failed");
   }
 }

@@ -19,12 +19,12 @@ export default function ModifiedMarkdown({
 
     // If disableLinks is true, render as plain text with link styling
     if (disableLinks) {
-      return <span className="text-blue-500 underline">{children}</span>;
+      return <span className="text-primary underline decoration-primary/40 hover:decoration-primary">{children}</span>;
     }
 
     return (
       <a
-        className="text-blue-500 underline"
+        className="text-primary underline decoration-primary/40 hover:decoration-primary"
         href={href}
         rel="noopener noreferrer"
         target={target}

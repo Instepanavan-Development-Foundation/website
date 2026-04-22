@@ -176,7 +176,7 @@ import { Input } from "@heroui/input";
 import { Card, CardBody, CardHeader, CardFooter } from "@heroui/card";
 import { Divider } from "@heroui/divider";
 import { Progress } from "@heroui/progress";
-import { PlusCircle, CreditCard, Heart, Users } from "lucide-react";
+import { CreditCard, Heart, Users } from "lucide-react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { Image } from "@heroui/image";
@@ -468,7 +468,9 @@ function DonationFormClient({ project }: { project: IProject }) {
             {/* Custom amount input */}
             <div className="flex items-center gap-3 mb-3">
               <Divider className="flex-1" />
-              <span className="text-small text-default-400">կամ այնքան ինչքան կցանկանաք</span>
+              <span className="text-small text-default-400">
+                կամ այնքան ինչքան կցանկանաք
+              </span>
               <Divider className="flex-1" />
             </div>
             <Input
@@ -498,102 +500,106 @@ function DonationFormClient({ project }: { project: IProject }) {
           <Spacer y={6} />
 
           {/* Payment Method Selection — only shown when user has saved cards */}
-          {(loadingPaymentMethods || paymentMethods.length > 0) && <div>
-            <h3 className="text-lg font-semibold mb-4">Վճարման եղանակ</h3>
+          {(loadingPaymentMethods || paymentMethods.length > 0) && (
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Վճարման եղանակ</h3>
 
-            {loadingPaymentMethods ? (
-              <div className="space-y-3">
-                <Skeleton className="rounded-lg">
-                  <div className="h-20 rounded-lg bg-default-200" />
-                </Skeleton>
-                <Skeleton className="rounded-lg">
-                  <div className="h-20 rounded-lg bg-default-200" />
-                </Skeleton>
-              </div>
-            ) : (
-              <RadioGroup
-                classNames={{
-                  base: "w-full",
-                  wrapper: "gap-3",
-                }}
-                label={
-                  paymentMethods.length > 0
-                    ? "Ընտրել վճարման եղանակ"
-                    : undefined
-                }
-                value={selectedPaymentMethod}
-                onValueChange={setSelectedPaymentMethod}
-              >
-                {paymentMethods.map((method, index) => {
-                  const cardNumber =
-                    method.params?.CardNumber ||
-                    method.params?.cardNumber ||
-                    "****";
-
-                  // Detect card type from card number
-                  const getCardType = (num: string) => {
-                    const firstDigits = num.replace(/\*/g, "").substring(0, 6);
-
-                    if (firstDigits.startsWith("4")) return "Visa";
-                    if (
-                      firstDigits.startsWith("5") ||
-                      firstDigits.startsWith("2")
-                    )
-                      return "Mastercard";
-                    if (
-                      firstDigits.startsWith("34") ||
-                      firstDigits.startsWith("37")
-                    )
-                      return "American Express";
-                    if (firstDigits.startsWith("6")) return "Discover";
-
-                    return "Քարտ";
-                  };
-
-                  const cardType = getCardType(cardNumber);
-
-                  return (
-                    <Radio
-                      key={method.documentId}
-                      classNames={{
-                        base: "inline-flex m-0 items-center hover:bg-content2 max-w-full cursor-pointer rounded-lg gap-4 p-4 border-2 border-transparent data-[selected=true]:border-primary",
-                        label: "w-full",
-                        wrapper: "group-data-[selected=true]:border-primary",
-                      }}
-                      description={
-                        index === 0 ? "Հիմնական վճարման եղանակ" : undefined
-                      }
-                      value={method.documentId}
-                    >
-                      <div className="flex items-center gap-3 w-full">
-                        <CreditCard className="w-8 h-8 text-default-400" />
-                        <div className="flex-1">
-                          <p className="text-sm font-medium text-default-600">
-                            {cardType}
-                          </p>
-                          <p className="font-mono font-semibold text-base">
-                            {cardNumber}
-                          </p>
-                        </div>
-                      </div>
-                    </Radio>
-                  );
-                })}
-
-                <Radio
+              {loadingPaymentMethods ? (
+                <div className="space-y-3">
+                  <Skeleton className="rounded-lg">
+                    <div className="h-20 rounded-lg bg-default-200" />
+                  </Skeleton>
+                  <Skeleton className="rounded-lg">
+                    <div className="h-20 rounded-lg bg-default-200" />
+                  </Skeleton>
+                </div>
+              ) : (
+                <RadioGroup
                   classNames={{
-                    base: "inline-flex m-0 items-center hover:bg-content2 max-w-full cursor-pointer rounded-lg gap-4 p-4 border-2 border-transparent data-[selected=true]:border-primary",
-                    wrapper: "group-data-[selected=true]:border-primary",
+                    base: "w-full",
+                    wrapper: "gap-3",
                   }}
-                  value="new"
+                  label={
+                    paymentMethods.length > 0
+                      ? "Ընտրել վճարման եղանակ"
+                      : undefined
+                  }
+                  value={selectedPaymentMethod}
+                  onValueChange={setSelectedPaymentMethod}
                 >
-                  <div className="flex items-center gap-2">
-                    <p className="font-medium">Նոր քարտ</p>
-                  </div>
-                </Radio>
-              </RadioGroup>
-            )}
-          </div>}
+                  {paymentMethods.map((method, index) => {
+                    const cardNumber =
+                      method.params?.CardNumber ||
+                      method.params?.cardNumber ||
+                      "****";
+
+                    // Detect card type from card number
+                    const getCardType = (num: string) => {
+                      const firstDigits = num
+                        .replace(/\*/g, "")
+                        .substring(0, 6);
+
+                      if (firstDigits.startsWith("4")) return "Visa";
+                      if (
+                        firstDigits.startsWith("5") ||
+                        firstDigits.startsWith("2")
+                      )
+                        return "Mastercard";
+                      if (
+                        firstDigits.startsWith("34") ||
+                        firstDigits.startsWith("37")
+                      )
+                        return "American Express";
+                      if (firstDigits.startsWith("6")) return "Discover";
+
+                      return "Քարտ";
+                    };
+
+                    const cardType = getCardType(cardNumber);
+
+                    return (
+                      <Radio
+                        key={method.documentId}
+                        classNames={{
+                          base: "inline-flex m-0 items-center hover:bg-content2 max-w-full cursor-pointer rounded-lg gap-4 p-4 border-2 border-transparent data-[selected=true]:border-primary",
+                          label: "w-full",
+                          wrapper: "group-data-[selected=true]:border-primary",
+                        }}
+                        description={
+                          index === 0 ? "Հիմնական վճարման եղանակ" : undefined
+                        }
+                        value={method.documentId}
+                      >
+                        <div className="flex items-center gap-3 w-full">
+                          <CreditCard className="w-8 h-8 text-default-400" />
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-default-600">
+                              {cardType}
+                            </p>
+                            <p className="font-mono font-semibold text-base">
+                              {cardNumber}
+                            </p>
+                          </div>
+                        </div>
+                      </Radio>
+                    );
+                  })}
+
+                  <Radio
+                    classNames={{
+                      base: "inline-flex m-0 items-center hover:bg-content2 max-w-full cursor-pointer rounded-lg gap-4 p-4 border-2 border-transparent data-[selected=true]:border-primary",
+                      wrapper: "group-data-[selected=true]:border-primary",
+                    }}
+                    value="new"
+                  >
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium">Նոր քարտ</p>
+                    </div>
+                  </Radio>
+                </RadioGroup>
+              )}
+            </div>
+          )}
         </form>
       </CardBody>
 

@@ -28,38 +28,44 @@ export default async function Projects({
     sort: ["isFeatured:desc", "createdAt:desc"],
   });
 
+  if (projects.length === 0) return null;
+
+  const eyebrow = isArchived ? "ԱՐԽԻՎ" : "ՄԵՐ ՈՒՂԻՆ";
+  const heading = isArchived ? "Ավարտված նախագծեր" : "Ակտիվ նախագծեր";
+
   return (
-    <>
-      {projects.length > 0 && (
-        <div className="w-full container my-8">
-          <h2 className="text-3xl font-bold mb-6">
-            {isArchived ? "Ավարտված" : "Ակտիվ"} նախագծեր
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
-            {projects.map((project, index) => (
-              <Link key={index} href={`/project/${project.slug}`}>
-                <ProjectCard key={index} {...project} />
-              </Link>
-            ))}
+    <section className="w-full my-12 md:my-16">
+      <div className="flex items-baseline justify-between mb-6 md:mb-8">
+        <div>
+          <div className="text-[11px] font-medium tracking-[0.14em] text-primary uppercase mb-1.5">
+            {eyebrow}
           </div>
+          <h2 className="text-[28px] md:text-[32px] font-semibold tracking-tighter2 text-ink">
+            {heading}
+          </h2>
         </div>
-      )}
-      {/* commenting archive button, maybe uncomment in Future?*/}
-      {/* {!isArchived ? (
-        <div className="flex justify-center mt-8">
+        {isArchived && (
           <Link
+            className="text-[13px] font-medium text-primary hover:text-primary-600 transition-colors"
             href="/archive"
-            className={buttonStyles({
-              variant: "flat",
-              radius: "full",
-              size: "lg",
-            })}
           >
-            <Archive className="w-5 h-5" />
-            Գնալ արխիվ
+            Տեսնել բոլորը →
           </Link>
+        )}
+      </div>
+      <div className="-mx-4 md:-mx-8">
+        <div className="flex gap-5 overflow-x-auto snap-x snap-mandatory px-4 md:px-8 pb-4 scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {projects.map((project, index) => (
+            <Link
+              key={index}
+              className="block shrink-0 snap-start w-[82%] sm:w-[48%] lg:w-[32%]"
+              href={`/project/${project.slug}`}
+            >
+              <ProjectCard {...project} />
+            </Link>
+          ))}
         </div>
-      ) : null} */}
-    </>
+      </div>
+    </section>
   );
 }

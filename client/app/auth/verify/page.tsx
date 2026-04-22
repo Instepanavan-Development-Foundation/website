@@ -22,10 +22,12 @@ export default function MagicLinkVerifyPage() {
     async function verifyToken() {
       const token = searchParams.get("token");
       const retUrl = searchParams.get("returnUrl");
+
       setReturnUrl(retUrl);
 
       if (!token) {
         setError("Անվավեր հղում");
+
         return;
       }
 
@@ -38,6 +40,7 @@ export default function MagicLinkVerifyPage() {
 
         if (!response.ok) {
           setError(data.error || "Ստուգումը ձախողվեց");
+
           return;
         }
 
@@ -76,17 +79,15 @@ export default function MagicLinkVerifyPage() {
 
     try {
       const token = getToken();
-      await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/users/me`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ fullName: fullName.trim() }),
+
+      await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/users/me`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-      );
+        body: JSON.stringify({ fullName: fullName.trim() }),
+      });
     } catch {
       // Non-critical — continue even if name save fails
     }
@@ -124,8 +125,8 @@ export default function MagicLinkVerifyPage() {
           Ինչպե՞ս է ձեր անունը?
         </p>
         <Input
-          autoComplete="name"
           autoFocus
+          autoComplete="name"
           label="Անուն ազգանուն"
           placeholder="Հովհաննես Հայրապետյան"
           type="text"

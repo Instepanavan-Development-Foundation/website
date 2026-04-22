@@ -1,4 +1,5 @@
-import MainProjectsHero from "@/components/home/MainProjectsHero";
+import HomeHero from "@/components/home/HomeHero";
+import StatsStrip from "@/components/home/StatsStrip";
 import Projects from "@/components/home/Projects";
 import Blogs from "@/components/home/Blogs";
 import TrustedByContributors from "@/components/home/TrustedByContributors";
@@ -7,7 +8,6 @@ import getData from "@/src/helpers/getData";
 import { IProject } from "@/src/models/project";
 
 export default async function Home() {
-  // Fetch main projects for hero section
   const { data: mainProjects }: { data: IProject[] } = await getData({
     type: "projects",
     filters: {
@@ -29,13 +29,14 @@ export default async function Home() {
   });
 
   return (
-    <section className="flex flex-col items-center px-4">
-      <MainProjectsHero projects={mainProjects} />
+    <div className="flex flex-col">
+      <HomeHero featuredProjects={mainProjects ?? []} />
+      <StatsStrip />
       <Projects isArchived={false} />
       <Blogs />
       <TrustedByContributors />
       <Donation />
       <Projects isArchived={true} />
-    </section>
+    </div>
   );
 }

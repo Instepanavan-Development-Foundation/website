@@ -26,11 +26,13 @@ const Login = () => {
     setError("");
     if (!email) {
       setError("Խնդրում ենք լրացնել էլ. հասցեն");
+
       return;
     }
     setLoading(true);
     try {
       const returnUrl = searchParams.get("returnUrl") || undefined;
+
       await sendMagicLink(email, returnUrl);
       setSent(true);
     } catch (err: any) {
@@ -45,11 +47,10 @@ const Login = () => {
       <div className="max-w-md mx-auto mt-10 p-8 bg-white rounded-xl shadow-lg flex flex-col gap-4 text-center">
         <h2 className="text-2xl font-bold">Ստուգեք ձեր էլ. հասցեն</h2>
         <p className="text-gray-600">
-          Մուտքի հղումը ուղարկվել է <strong>{email}</strong>, նամակը կարող է նաև <strong>սպամ պանակում</strong> լինել:
+          Մուտքի հղումը ուղարկվել է <strong>{email}</strong>, նամակը կարող է նաև{" "}
+          <strong>սպամ պանակում</strong> լինել:
         </p>
-        <p className="text-sm text-gray-400">
-          Հղումը գործում է 15 րոպե:
-        </p>
+        <p className="text-sm text-gray-400">Հղումը գործում է 15 րոպե:</p>
         <Button
           className="text-sm font-normal text-gray-600"
           variant="light"
@@ -76,9 +77,7 @@ const Login = () => {
         value={email}
         onChange={(e) => setEmail(e.target.value)}
       />
-      {error && (
-        <div className="text-red-500 text-sm text-center">{error}</div>
-      )}
+      {error && <div className="text-red-500 text-sm text-center">{error}</div>}
       <Button
         className="text-sm font-normal text-white bg-gradient-to-r from-pink-500 to-rose-500 hover:from-rose-500 hover:to-pink-500 transition-all duration-300 shadow-md hover:shadow-lg"
         isLoading={loading}

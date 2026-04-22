@@ -25,6 +25,7 @@ import ModifiedMarkdown from "@/src/hok/modifiedMarkdown";
 
 function extractFirstUrl(text: string): string | null {
   const match = text.match(/https?:\/\/[^\s)>\]"]+/);
+
   return match?.[0] ?? null;
 }
 
@@ -56,7 +57,8 @@ export function BlogPost({
     fetch(`/og-image?url=${encodeURIComponent(url)}`)
       .then((r) => r.json())
       .then(({ imageUrl }) => {
-        if (imageUrl) setLinkOgImage(`/proxy-image?url=${encodeURIComponent(imageUrl)}`);
+        if (imageUrl)
+          setLinkOgImage(`/proxy-image?url=${encodeURIComponent(imageUrl)}`);
       })
       .catch(() => {});
   }, [content, hasImages]);
@@ -70,7 +72,7 @@ export function BlogPost({
   const youtubeLink = content.match(
     /https?:\/\/(www\.)?youtube\.com\/watch\?v=([a-zA-Z0-9_-]{11})/,
   );
-  const gradient = "bg-gradient-to-br from-primary to-secondary";
+  const gradient = "bg-gradient-to-br from-[#FFB088] to-[#E65A2A]";
 
   return (
     <div className="relative">
@@ -79,7 +81,7 @@ export function BlogPost({
           <Bookmark className="w-6 h-6 text-white" />
         </div>
       )}
-      <Card className="group">
+      <Card className="group rounded-[20px] border border-cream-200 shadow-none hover:shadow-[0_12px_32px_rgba(230,90,42,0.06)] transition-shadow">
         <CardBody className="p-0">
           {/* TODO images like in fb, 3 images on front */}
           {hasImages ? (
@@ -116,11 +118,11 @@ export function BlogPost({
               width="100"
             />
           ) : (
-            <div className="w-full h-[200px] bg-gradient-to-br from-primary to-secondary z-10" />
+            <div className="w-full h-[200px] bg-gradient-to-br from-primary-300 to-primary-500 z-10" />
           )}
 
           <div className="p-5">
-            <p className="text-xs text-gray-500">{prettyDate(createdAt)}</p>
+            <p className="text-xs text-ink-meta">{prettyDate(createdAt)}</p>
             {isLink ? (
               <Link href={`/blog/${slug}`}>
                 <div className="text-default-500 mb-4 line-clamp-[10]">
@@ -169,7 +171,7 @@ export function BlogPost({
                   <Link
                     key={idx}
                     download
-                    className="flex items-center text-blue-500 hover:underline"
+                    className="flex items-center text-primary hover:underline"
                     href={getMediaUrl(attachment)}
                     target="_blank"
                   >

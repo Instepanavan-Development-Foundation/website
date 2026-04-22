@@ -1,5 +1,6 @@
 import "@/styles/globals.css";
 import { Metadata, Viewport } from "next";
+import { Inter, Noto_Sans_Armenian } from "next/font/google";
 import Link from "next/link";
 import clsx from "clsx";
 
@@ -10,6 +11,20 @@ import { PostHogProvider } from "./posthog-provider";
 
 import { getSiteConfig } from "@/config/site";
 import { Navbar } from "@/components/navbar";
+
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
+const notoArmenian = Noto_Sans_Armenian({
+  subsets: ["armenian"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-noto-armenian",
+  display: "swap",
+});
 
 export const viewport: Viewport = {
   themeColor: [
@@ -50,75 +65,83 @@ export default async function RootLayout({
     await getSiteConfig();
 
   return (
-    <html suppressHydrationWarning lang="en">
+    <html
+      suppressHydrationWarning
+      className={clsx(inter.variable, notoArmenian.variable)}
+      lang="hy"
+    >
       <head>
         {process.env.MASTODON_PROFILE_URL && (
-          <link rel="me" href={process.env.MASTODON_PROFILE_URL} />
+          <link href={process.env.MASTODON_PROFILE_URL} rel="me" />
         )}
       </head>
       <body
         suppressHydrationWarning
-        className={clsx("min-h-screen bg-background antialiased")}
+        className={clsx("min-h-screen bg-white antialiased font-sans text-ink")}
       >
         <PostHogProvider>
-        <Providers themeProps={{ attribute: "class", defaultTheme: "light" }}>
-          <div className="relative flex flex-col h-screen">
-            <Navbar />
-            <main className="container mx-auto max-w-7xl pt-2 flex-grow">
-              {children}
-            </main>
-            <footer className="w-full flex flex-col items-start container mx-auto max-w-7xl py-3 gap-2">
-              <div className="flex flex-col md:flex-row md:gap-10 gap-2">
-                <div className="flex flex-col items-start gap-1">
-                  {footerMenu.map((link) => (
+          <Providers themeProps={{ attribute: "class", defaultTheme: "light" }}>
+            <div className="relative flex flex-col min-h-screen">
+              <Navbar />
+              <main className="container mx-auto max-w-7xl px-4 md:px-8 pt-2 grow">
+                {children}
+              </main>
+              <footer className="w-full mt-16 border-t border-cream-200">
+                <div className="container mx-auto max-w-7xl px-4 md:px-8 py-10 flex flex-col gap-6">
+                  <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
+                    <div className="flex flex-col md:flex-row md:gap-12 gap-4">
+                      <div className="flex flex-col items-start gap-2">
+                        {footerMenu.map((link) => (
+                          <Link
+                            key={link.title}
+                            className="text-sm text-ink-muted hover:text-primary transition-colors"
+                            href={link.href}
+                            target="_blank"
+                          >
+                            {link.title}
+                          </Link>
+                        ))}
+                      </div>
+                      {footerSocialMenu.length > 0 && (
+                        <div className="flex flex-col items-start gap-2">
+                          {footerSocialMenu.map((link) => (
+                            <Link
+                              key={link.title}
+                              className="text-sm text-ink-muted hover:text-primary transition-colors"
+                              href={link.href}
+                              target="_blank"
+                            >
+                              {link.title}
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="text-xs text-ink-meta leading-relaxed">
+                    Կայքը բաց կոդով է՝{" "}
                     <Link
-                      key={link.title}
-                      className="text-default-600 hover:text-primary"
-                      href={link.href}
+                      className="text-primary hover:underline"
+                      href="https://en.wikipedia.org/wiki/GNU_Affero_General_Public_License"
                       target="_blank"
                     >
-                      {link.title}
+                      AGPL արտոնագրով
                     </Link>
-                  ))}
-                </div>
-                {footerSocialMenu.length > 0 && (
-                  <div className="flex flex-col items-start gap-1">
-                    {footerSocialMenu.map((link) => (
-                      <Link
-                        key={link.title}
-                        className="text-default-600 hover:text-primary"
-                        href={link.href}
-                        target="_blank"
-                      >
-                        {link.title}
-                      </Link>
-                    ))}
+                    ։ Կարող եք դիտել, ներդրում ունենալ կամ վերաբաշխել այն
+                    արտոնագրի պայմաններով{" "}
+                    <Link
+                      className="text-primary hover:underline"
+                      href="https://github.com/Instepanavan-Development-Foundation/website"
+                      target="_blank"
+                    >
+                      այստեղ
+                    </Link>
+                    ։
                   </div>
-                )}
-              </div>
-              <div className="text-sm text-default-500">
-                Կայքը բաց կոդով է՝{" "}
-                <Link
-                  className="text-primary"
-                  href="https://en.wikipedia.org/wiki/GNU_Affero_General_Public_License"
-                  target="_blank"
-                >
-                  AGPL արտոնագրով
-                </Link>
-                ։ Կարող եք դիտել, ներդրում ունենալ կամ վերաբաշխել այն արտոնագրի
-                պայմաններով{" "}
-                <Link
-                  className="text-primary"
-                  href="https://github.com/Instepanavan-Development-Foundation/website"
-                  target="_blank"
-                >
-                  այստեղ
-                </Link>
-                ։
-              </div>
-            </footer>
-          </div>
-        </Providers>
+                </div>
+              </footer>
+            </div>
+          </Providers>
         </PostHogProvider>
       </body>
     </html>

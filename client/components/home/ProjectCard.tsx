@@ -1,6 +1,4 @@
-import { Card, CardBody } from "@heroui/card";
-import { Image } from "@heroui/image";
-import { HeartHandshake } from "lucide-react";
+import Image from "next/image";
 
 import { ContributorsList } from "../ContributorsList";
 
@@ -15,141 +13,114 @@ export const formatCurrency = (amount: number, currency: string = "AMD") => {
   }).format(amount);
 };
 
+const formatCompact = (n: number) => {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(0)}K`;
+
+  return n.toLocaleString("hy-AM");
+};
+
+const GRADIENTS = [
+  "linear-gradient(135deg, #FFB088, #E65A2A)",
+  "linear-gradient(135deg, #E65A2A, #C8367E)",
+  "linear-gradient(135deg, #FFC9A0, #FF8A5C)",
+  "linear-gradient(135deg, #FF8A5C, #B83875)",
+  "linear-gradient(135deg, #FFB088, #FF8A5C, #E65A2A)",
+];
+
 export function ProjectCard({
   name,
   description,
-  about,
   blogs,
-  donationType,
   isFeatured,
   image,
-  slug,
   gatheredAmount,
   requiredAmount,
+  isArchived,
 }: IProject) {
-  // Calculate remaining amount and percentage
-  const remainingAmount = Math.max(requiredAmount - gatheredAmount, 0);
   const percentComplete = requiredAmount
-    ? Math.round((gatheredAmount / requiredAmount) * 100)
+    ? Math.min(Math.round((gatheredAmount / requiredAmount) * 100), 100)
     : 100;
-  const isUrgent = percentComplete < 30;
+  const isUrgent = !isArchived && requiredAmount > 0 && percentComplete < 30;
 
-  const gradients = [
-    "bg-gradient-to-br from-pink-500 via-purple-500 to-indigo-500",
-    "bg-gradient-to-br from-blue-500 via-cyan-500 to-teal-500",
-    "bg-gradient-to-br from-orange-500 via-red-500 to-pink-500",
-    "bg-gradient-to-br from-green-500 via-emerald-500 to-teal-500",
-    "bg-gradient-to-br from-violet-500 via-purple-500 to-fuchsia-500",
-  ];
+  const gradient = GRADIENTS[(name?.charCodeAt(0) ?? 0) % GRADIENTS.length];
+  const hasImage = !!image?.url;
 
-  const gradientIndex = name ? name.charCodeAt(0) % gradients.length : 0;
-  const hasImage = image?.url;
+  const tag = isArchived
+    ? "Ավարտված"
+    : isUrgent
+      ? "Հրատապ"
+      : isFeatured
+        ? "Առանձնահատուկ"
+        : "Ակտիվ";
 
   return (
-    <div className="relative w-full">
-      <Card className="group bg-gradient-to-br from-background to-default-50 w-full hover:shadow-lg transition-all duration-300">
-        <CardBody className="overflow-visible p-0">
-          <div className="relative">
-            {hasImage ? (
-              <Image
-                alt={name}
-                className="w-full object-cover h-[200px] z-10"
-                radius="lg"
-                shadow="sm"
-                src={getMediaUrl(image)}
-                width="100%"
-              />
-            ) : (
-              <div
-                className={`w-full h-[200px] ${gradients[gradientIndex]} rounded-lg flex items-center justify-center z-10 p-6`}
-              >
-                <span className="text-white text-2xl font-bold opacity-90 text-center line-clamp-3">
-                  {name || "..."}
-                </span>
-              </div>
-            )}
-            {isUrgent && (
-              <div className="absolute top-3 left-3 bg-danger text-white text-xs font-bold px-2 py-1 rounded-full animate-pulse z-20">
-                Հրատապ օգնության կարիք
-              </div>
-            )}
+    <article className="group bg-white border border-cream-200 rounded-[20px] overflow-hidden transition-all duration-200 hover:shadow-[0_12px_32px_rgba(230,90,42,0.08)] hover:border-cream-300 h-full flex flex-col">
+      {/* Inset cover */}
+      <div className="relative m-1.5 rounded-[16px] overflow-hidden aspect-[4/3]">
+        {hasImage ? (
+          <Image
+            fill
+            alt={name}
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, 33vw"
+            src={getMediaUrl(image)}
+          />
+        ) : (
+          <div
+            className="absolute inset-0 grid place-items-center p-6"
+            style={{ background: gradient }}
+          >
+            <span className="text-white text-xl font-semibold text-center line-clamp-3 opacity-95">
+              {name || "..."}
+            </span>
           </div>
+        )}
+        <span
+          className={`absolute top-2.5 left-2.5 text-[11px] font-semibold px-3 py-1.5 rounded-full ${
+            isUrgent ? "bg-ink text-white" : "bg-white text-primary"
+          }`}
+        >
+          {tag}
+        </span>
+      </div>
 
-          <div className="p-5">
-            {/* Project name should be one line */}
-            <p className="text-lg text-default-600 line-clamp-1 font-semibold">
-              {name}
-            </p>
+      {/* Body */}
+      <div className="px-5 pb-5 pt-1 flex flex-col grow">
+        <h3 className="text-[19px] font-semibold tracking-tight text-ink line-clamp-1">
+          {name}
+        </h3>
+        <p className="mt-2 text-[13.5px] leading-snug text-ink-muted line-clamp-2 min-h-[40px]">
+          {description}
+        </p>
 
-            {/* Short description */}
-            <p className="text-sm text-default-500 mt-1 line-clamp-2 h-10">
-              {description}
-            </p>
-
-            <div className="mt-4 flex flex-col gap-2">
+        {requiredAmount > 0 && (
+          <div className="mt-4">
+            <div className="h-1.5 bg-cream-100 rounded-full overflow-hidden">
               <div
-                className={`flex justify-between text-sm mb-1 ${!requiredAmount ? "opacity-0" : ""}`}
-              >
-                <span className="text-default-600 font-medium">
-                  {formatCurrency(gatheredAmount)}
-                </span>
-                <span className="text-default-400">
-                  Goal: {formatCurrency(requiredAmount)}
-                </span>
-              </div>
-              <div className="w-full h-3 bg-default-100 rounded-full">
-                <div
-                  className={`h-full rounded-full transition-all duration-300 ease-in-out ${
-                    gatheredAmount >= requiredAmount
-                      ? "bg-primary"
-                      : gatheredAmount >= requiredAmount / 2
-                        ? "bg-secondary"
-                        : "bg-danger"
-                  }`}
-                  style={{
-                    width: `${Math.min((gatheredAmount / requiredAmount) * 100, 100)}%`,
-                  }}
-                />
-              </div>
-
-              {/* Donation stats */}
-              <div className="flex flex-col space-between">
-                <div className="flex justify-between items-center">
-                  <div className="flex flex-col">
-                    <p
-                      className={`text-xs text-default-400 mt-1 ${!requiredAmount ? "opacity-0" : ""}`}
-                    >
-                      {requiredAmount ? `${percentComplete}%` : "100%"} հավաքված
-                    </p>
-                    {remainingAmount > 0 && (
-                      <p className="text-xs text-danger font-medium mt-1">
-                        Մնացել է {formatCurrency(remainingAmount)}
-                      </p>
-                    )}
-                  </div>
-
-                  {
-                    <div className="flex items-center gap-2 h-10">
-                      <div className="flex -space-x-2">
-                        <ContributorsList
-                          contributions={blogs
-                            .map(({ contribution }) => contribution)
-                            .flat()}
-                        />
-                      </div>
-                    </div>
-                  }
-                </div>
-              </div>
+                className="h-full bg-primary rounded-full transition-all duration-300"
+                style={{ width: `${percentComplete}%` }}
+              />
+            </div>
+            <div className="mt-2 flex justify-between items-baseline text-[12px]">
+              <span className="font-semibold text-ink">
+                {formatCompact(gatheredAmount)} ֏
+              </span>
+              <span className="text-ink-muted">{percentComplete}%</span>
             </div>
           </div>
-        </CardBody>
-      </Card>
-      {isFeatured && (
-        <div className="absolute -top-3 -right-3 z-30 bg-danger rounded-full w-12 h-12 flex items-center justify-center shadow-md">
-          <HeartHandshake className="w-6 h-6 text-white" />
-        </div>
-      )}
-    </div>
+        )}
+
+        {blogs && blogs.length > 0 && (
+          <div className="mt-3 flex -space-x-2">
+            <ContributorsList
+              contributions={blogs
+                .map(({ contribution }) => contribution)
+                .flat()}
+            />
+          </div>
+        )}
+      </div>
+    </article>
   );
 }

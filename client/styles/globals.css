@@ -1,41 +1,26 @@
 @import "tailwindcss";
 @config "../tailwind.config.js";
 
-/* almost black variable*/
 :root {
     --almost-black: rgba(0, 0, 0, 0.85);
-}
-
-@font-face {
-  font-family: 'Nicolo';
-  src: url("/fonts/Nicolo-Regular.otf");
-  font-weight: normal;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'Nicolo';
-  src: url("/fonts/NicoloBold.otf");
-  font-weight: bold;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'Nicolo';
-  src: url("/fonts/Nicolo-Italic.otf");
-  font-weight: normal;
-  font-style: italic;
-}
-
-@font-face {
-  font-family: 'Nicolo';
-  src: url("/fonts/Nicolo BoldItalic.otf");
-  font-weight: bold;
-  font-style: italic;
+    --cream-50: #FFFBF5;
+    --cream-100: #FFF4EB;
+    --cream-200: #F5EADB;
+    --cream-300: #F0DFCA;
+    --ink: #1F1712;
+    --ink-body: #4A3E32;
+    --ink-muted: #6B5E4E;
+    --ink-meta: #8A7E6E;
+    --orange: #E65A2A;
+    --hero-gradient: linear-gradient(145deg, #FFB88A, #E65A2A 55%, #B83875);
 }
 
 body {
-    font-family: "Nicolo", sans-serif !important;
+    font-family: var(--font-inter), var(--font-noto-armenian), system-ui, -apple-system, "Segoe UI", sans-serif;
+    color: var(--ink);
+    background: #FFFFFF;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 .yarl__thumbnails_container {
@@ -81,7 +66,7 @@ body {
   border: none;
   width: 10px;
   height: 10px;
-  background: #c5c5c5;
+  background: #F0DFCA;
   border-radius: 50%;
   margin: 0 5px;
   padding: 5px;
@@ -93,7 +78,7 @@ body {
 }
 
 .dot.active {
-  background: #000;
+  background: #E65A2A;
 }
 
 .arrow {
@@ -116,5 +101,3 @@ body {
   left: auto;
   right: 5px;
 }
-  
-  

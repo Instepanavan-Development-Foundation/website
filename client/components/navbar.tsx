@@ -9,16 +9,14 @@ import {
   NavbarItem,
   NavbarMenuItem,
 } from "@heroui/navbar";
-import { Button } from "@heroui/button";
 import Link from "next/link";
-import { link as linkStyles } from "@heroui/theme";
 import NextLink from "next/link";
+import NextImage from "next/image";
 import clsx from "clsx";
-import { LogIn, User } from "lucide-react";
+import { Heart, LogIn, User } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { getSiteConfig } from "@/config/site";
-import { Logo } from "@/components/icons";
 import { IMenuLink } from "@/src/models/menu";
 import { ISiteConfig } from "@/src/models/site-config";
 import { isAuthenticated } from "@/src/services/userService";
@@ -36,7 +34,6 @@ export const Navbar = () => {
       setSiteConfig(config);
     })();
 
-    // Listen for login state changes
     const handleLoginStateChange = () => {
       setIsLoggedIn(isAuthenticated());
     };
@@ -54,6 +51,10 @@ export const Navbar = () => {
 
   return (
     <NextUINavbar
+      classNames={{
+        base: "bg-white border-b border-cream-200",
+        wrapper: "px-4 md:px-8 max-w-7xl",
+      }}
       isMenuOpen={isMenuOpen}
       maxWidth="xl"
       position="sticky"
@@ -61,84 +62,92 @@ export const Navbar = () => {
     >
       <NavbarContent justify="start">
         <NavbarBrand as="li" className="gap-3 max-w-fit">
-          <NextLink className="flex justify-start items-center gap-1" href="/">
-            <Logo alt={siteConfig.logoTitle} src={siteConfig?.logo?.url} />
-            <p className="font-bold text-inherit text-wrap">
-              {siteConfig.logoTitle}
-            </p>
+          <NextLink
+            className="flex justify-start items-center gap-2.5"
+            href="/"
+          >
+            {siteConfig?.logo?.url && (
+              <NextImage
+                alt={siteConfig.logoTitle || "Ինստեփանավան"}
+                className="h-10 w-10 object-contain"
+                height={40}
+                src={siteConfig.logo.url}
+                width={40}
+              />
+            )}
+            <span className="font-semibold text-[15px] tracking-tight text-ink">
+              {siteConfig.logoTitle || "Ինստեփանավան"}
+            </span>
           </NextLink>
         </NavbarBrand>
       </NavbarContent>
+
       <NavbarContent className="sm:hidden" justify="end">
         <NavbarMenuToggle
           aria-label={isMenuOpen ? "Close menu" : "Open menu"}
         />
       </NavbarContent>
-      <NavbarContent className="hidden sm:flex gap-4" justify="end">
-        <ul className="flex gap-4">
+
+      <NavbarContent className="hidden sm:flex" justify="center">
+        <div className="flex items-center gap-1 bg-cream-100 p-1.5 rounded-full">
           {siteConfig.navItems.map((item: IMenuLink) => (
-            <NavbarItem key={item.href}>
+            <NavbarItem key={item.href} className="list-none">
               <NextLink
                 className={clsx(
-                  linkStyles({ color: "foreground" }),
-                  "data-[active=true]:text-primary data-[active=true]:font-medium",
+                  "px-4 py-2 rounded-full text-[13px] text-ink-body hover:text-ink hover:bg-white/60 transition-colors",
+                  "data-[active=true]:bg-white data-[active=true]:text-ink data-[active=true]:shadow-sm",
                 )}
-                color="foreground"
                 href={item.href}
               >
                 {item.title}
               </NextLink>
             </NavbarItem>
           ))}
-        </ul>
+        </div>
+      </NavbarContent>
+
+      <NavbarContent className="hidden sm:flex gap-2" justify="end">
         {!isLoggedIn ? (
           <NavbarItem className="hidden md:flex">
             <NextLink
-              className={clsx(
-                linkStyles({ color: "foreground" }),
-                "data-[active=true]:text-primary data-[active=true]:font-medium",
-              )}
-              color="foreground"
-              href={"/login"}
+              className="flex items-center gap-1.5 px-3 py-2 text-[13px] text-ink-body hover:text-primary transition-colors"
+              href="/login"
             >
-              <LogIn size={18} />
+              <LogIn size={16} />
               Մուտք գործել
             </NextLink>
           </NavbarItem>
         ) : (
           <NavbarItem className="hidden md:flex">
             <NextLink
-              className={clsx(
-                linkStyles({ color: "foreground" }),
-                "data-[active=true]:text-primary data-[active=true]:font-medium",
-              )}
-              color="foreground"
-              href={"/profile"}
+              className="flex items-center gap-1.5 px-3 py-2 text-[13px] text-ink-body hover:text-primary transition-colors"
+              href="/profile"
             >
-              <User size={18} />
+              <User size={16} />
               Իմ պրոֆիլը
             </NextLink>
           </NavbarItem>
         )}
-        {/* <NavbarItem className="hidden md:flex">
-          <Button
-            as={Link}
-            className="text-sm font-normal text-white bg-gradient-to-r from-pink-500 to-rose-500 hover:from-rose-500 hover:to-pink-500 transition-all duration-300 shadow-md hover:shadow-lg"
+        <NavbarItem>
+          <NextLink
+            className="inline-flex items-center gap-1.5 bg-primary text-white px-5 py-2.5 rounded-full text-[13px] font-medium hover:bg-primary-600 transition-colors"
             href="/donate"
-            startContent={<Heart className="text-white" size={18} />}
-            variant="flat"
-            size="md"
           >
-            Աջակցել հիմա
-          </Button>
-        </NavbarItem> */}
+            Աջակցել
+            <Heart className="fill-white" size={14} />
+          </NextLink>
+        </NavbarItem>
       </NavbarContent>
 
-      <NavbarMenu>
-        <div className="mx-4 mt-2 flex flex-col gap-2">
+      <NavbarMenu className="bg-white pt-6">
+        <div className="mx-4 mt-2 flex flex-col gap-3">
           {siteConfig.navItems.map((item, index) => (
-            <NavbarMenuItem key={`${item}-${index}`}>
-              <Link href={item.href} onClick={() => setIsMenuOpen(false)}>
+            <NavbarMenuItem key={`${item.href}-${index}`}>
+              <Link
+                className="text-base text-ink hover:text-primary"
+                href={item.href}
+                onClick={() => setIsMenuOpen(false)}
+              >
                 {item.title}
               </Link>
             </NavbarMenuItem>
@@ -146,7 +155,7 @@ export const Navbar = () => {
           {!isLoggedIn ? (
             <NavbarMenuItem>
               <Link
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 text-base text-ink hover:text-primary"
                 href="/login"
                 onClick={() => setIsMenuOpen(false)}
               >
@@ -156,7 +165,7 @@ export const Navbar = () => {
           ) : (
             <NavbarMenuItem>
               <Link
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 text-base text-ink hover:text-primary"
                 href="/profile"
                 onClick={() => setIsMenuOpen(false)}
               >
@@ -164,6 +173,16 @@ export const Navbar = () => {
               </Link>
             </NavbarMenuItem>
           )}
+          <NavbarMenuItem>
+            <Link
+              className="mt-2 inline-flex items-center justify-center gap-1.5 bg-primary text-white px-5 py-3 rounded-full text-sm font-medium w-full"
+              href="/donate"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Աջակցել
+              <Heart className="fill-white" size={14} />
+            </Link>
+          </NavbarMenuItem>
         </div>
       </NavbarMenu>
     </NextUINavbar>

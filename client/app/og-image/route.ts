@@ -22,9 +22,12 @@ export async function GET(request: NextRequest) {
 
     const imageUrl = match?.[1] ?? null;
 
-    return NextResponse.json({ imageUrl }, {
-      headers: { "Cache-Control": "public, max-age=3600" },
-    });
+    return NextResponse.json(
+      { imageUrl },
+      {
+        headers: { "Cache-Control": "public, max-age=3600" },
+      },
+    );
   } catch {
     return NextResponse.json({ imageUrl: null });
   }
