@@ -22,16 +22,11 @@ export async function fetchRss(url: string): Promise<RssItem[]> {
   return feed.items.map(item => {
     const imageUrls: string[] = [];
     
-    // Parse custom images field
+    // Parse custom images field (array of URLs)
     if ((item as any).images && Array.isArray((item as any).images)) {
-      (item as any).images.forEach((imgObj: any) => {
-        // Handle both old nested format and new flat format
-        if (imgObj.image && imgObj.image.url) {
-          imageUrls.push(imgObj.image.url);
-        } else if (imgObj.url) {
-          imageUrls.push(imgObj.url);
-        } else if (imgObj._attr && imgObj._attr.url) {
-          imageUrls.push(imgObj._attr.url);
+      (item as any).images.forEach((url: string) => {
+        if (typeof url === "string" && url.trim()) {
+          imageUrls.push(url.trim());
         }
       });
     }
