@@ -2,7 +2,7 @@ import Parser from "rss-parser";
 
 const parser = new Parser({
   customFields: {
-    item: ["images"],
+    item: ["image"],
   }
 });
 
