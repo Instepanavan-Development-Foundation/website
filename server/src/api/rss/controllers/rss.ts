@@ -68,15 +68,13 @@ export default {
                 Math.ceil(content.length / minute) + " minutes",
             },
             // Add custom field for multiple images
-            {
-              images: allImages.map((img: any) => ({
-                image: {
+            ...allImages.map((img: any) => ({
+              image: {
+                _attr: {
                   url: `${process.env.BASE_URL}${img.url}`,
-                  mime: img.mime,
-                  size: img.size
-                }
-              }))
-            }
+                },
+              },
+            })),
           ],
         };
 

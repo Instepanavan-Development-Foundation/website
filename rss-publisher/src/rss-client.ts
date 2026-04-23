@@ -24,11 +24,14 @@ export async function fetchRss(url: string): Promise<RssItem[]> {
     
     // Parse custom images field
     if ((item as any).images && Array.isArray((item as any).images)) {
-      // The parser usually flattens nested objects or keeps them as-is depending on structure
-      // We expect the array we built in Strapi
       (item as any).images.forEach((imgObj: any) => {
+        // Handle both old nested format and new flat format
         if (imgObj.image && imgObj.image.url) {
           imageUrls.push(imgObj.image.url);
+        } else if (imgObj.url) {
+          imageUrls.push(imgObj.url);
+        } else if (imgObj._attr && imgObj._attr.url) {
+          imageUrls.push(imgObj._attr.url);
         }
       });
     }
