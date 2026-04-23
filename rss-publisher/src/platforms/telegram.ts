@@ -15,7 +15,7 @@ export async function publishToTelegram(item: RssItem): Promise<void> {
   if (item.imageUrls.length > 1) {
     // Send as a media group (gallery)
     // Note: only the first item in the group should have the caption
-    const media = item.imageUrls.slice(0, 10).map((url, index) => {
+    const media = item.imageUrls.slice(0, 4).map((url, index) => {
       return InputMediaBuilder.photo(url, index === 0 ? { caption, parse_mode: "HTML" } : {});
     });
     await bot.api.sendMediaGroup(chatId, media);

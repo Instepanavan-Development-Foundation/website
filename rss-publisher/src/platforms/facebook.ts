@@ -14,7 +14,7 @@ export async function publishToFacebook(item: RssItem): Promise<void> {
 
   if (item.imageUrls.length > 1) {
     const photoIds = await Promise.all(
-      item.imageUrls.slice(0, 10).map(async (url) => {
+      item.imageUrls.slice(0, 4).map(async (url) => {
         const res = await axios.post(`https://graph.facebook.com/v21.0/${pageId}/photos`, null, {
           params: {
             url,

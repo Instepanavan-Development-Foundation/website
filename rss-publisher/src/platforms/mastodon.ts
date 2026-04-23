@@ -4,7 +4,7 @@ import { URL } from "node:url";
 import { RssItem } from "../rss-client";
 
 const MAX_CHARS = 500;
-const MAX_IMAGES = 3;
+const MAX_IMAGES = 4;
 
 // Convert IDN (International Domain Name) to ASCII punycode for DNS resolution
 function resolveInstanceUrl(rawUrl: string): string {
