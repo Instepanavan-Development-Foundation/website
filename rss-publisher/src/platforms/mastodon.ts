@@ -1,9 +1,22 @@
 import axios from "axios";
 import FormData from "form-data";
+import { URL } from "node:url";
 import { RssItem } from "../rss-client";
 
 const MAX_CHARS = 500;
 const MAX_IMAGES = 3;
+
+// Convert IDN (International Domain Name) to ASCII punycode for DNS resolution
+function resolveInstanceUrl(rawUrl: string): string {
+  try {
+    // Parse with URL constructor which handles punycode conversion
+    const url = new URL(rawUrl);
+    // Reconstruct using the ASCII hostname (URL.hostname already returns punycode)
+    return `${url.protocol}//${url.hostname}${url.port ? `:${url.port}` : ''}`;
+  } catch {
+    return rawUrl; // Fallback to raw if parsing fails
+  }
+}
 
 async function uploadMedia(instanceUrl: string, accessToken: string, imageUrl: string): Promise<string> {
   const imageRes = await axios.get(imageUrl, { responseType: "arraybuffer" });
@@ -29,7 +42,8 @@ async function uploadMedia(instanceUrl: string, accessToken: string, imageUrl: s
 }
 
 export async function publishToMastodon(item: RssItem): Promise<void> {
-  const instanceUrl = process.env.MASTODON_INSTANCE_URL?.replace(/\/$/, "");
+  const rawInstanceUrl = process.env.MASTODON_INSTANCE_URL?.replace(/\/$/, "");
+  const instanceUrl = resolveInstanceUrl(rawInstanceUrl || "");
   const accessToken = process.env.MASTODON_ACCESS_TOKEN;
 
   if (!instanceUrl || !accessToken) {
