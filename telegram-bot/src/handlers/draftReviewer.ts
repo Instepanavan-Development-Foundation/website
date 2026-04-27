@@ -1,7 +1,7 @@
 import { logger } from "../logger";
 import { Context, InlineKeyboard } from "grammy";
 import { Session, sessionStore } from "../state/sessionStore";
-import { uploadAllImages, createBlog, createContributor, deleteBlog } from "../services/strapiService";
+import { uploadAllImages, createBlog, createContributor, deleteBlog, getOrCreateTags } from "../services/strapiService";
 import { config } from "../config";
 import { friendlyError } from "../utils/friendlyError";
 
@@ -77,7 +77,10 @@ async function handlePublish(
   const msg = await ctx.api.sendMessage(chatId, "Publishing...");
 
   try {
-    const [imageIds] = await Promise.all([uploadAllImages(session.imageBuffers)]);
+    const [imageIds, tagDocumentIds] = await Promise.all([
+      uploadAllImages(session.imageBuffers),
+      getOrCreateTags(session.suggestedTags),
+    ]);
 
     // Create any new contributors that don't exist yet
     const resolvedContributors = await Promise.all(
@@ -93,7 +96,7 @@ async function handlePublish(
       content: session.draftText,
       slug: session.draftSlug || undefined,
       imageIds,
-      tagNames: session.suggestedTags,
+      tagDocumentIds,
       projectDocumentId: session.selectedProject?.documentId ?? null,
       contributorDocumentIds: resolvedContributors.map((c) => c.documentId).filter(Boolean),
     });

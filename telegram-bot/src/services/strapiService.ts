@@ -81,15 +81,45 @@ export async function createContributor(fullName: string): Promise<Contributor> 
   return { documentId: c.documentId, fullName: c.fullName, about: "" };
 }
 
-export async function getTags(): Promise<string[]> {
+interface Tag {
+  documentId: string;
+  name: string;
+}
+
+async function fetchAllTags(): Promise<Tag[]> {
   const res = await api.get("/api/tags", {
     params: {
       "fields[0]": "name",
+      "fields[1]": "documentId",
       "pagination[pageSize]": 200,
     },
   });
+  return (res.data.data ?? []).map((t: Tag) => ({ documentId: t.documentId, name: t.name }));
+}
 
-  return (res.data.data ?? []).map((t: { name: string }) => t.name);
+export async function getTags(): Promise<string[]> {
+  const tags = await fetchAllTags();
+  return tags.map((t) => t.name);
+}
+
+export async function getOrCreateTags(tagNames: string[]): Promise<string[]> {
+  if (tagNames.length === 0) return [];
+
+  const existing = await fetchAllTags();
+  const documentIds: string[] = [];
+
+  for (const name of tagNames) {
+    const match = existing.find((t) => t.name.toLowerCase() === name.toLowerCase());
+    if (match) {
+      documentIds.push(match.documentId);
+    } else {
+      const res = await api.post("/api/tags", { data: { name } });
+      documentIds.push(res.data.data.documentId);
+      existing.push({ documentId: res.data.data.documentId, name });
+    }
+  }
+
+  return documentIds;
 }
 
 export async function uploadImage(imageBuffer: Buffer, index: number): Promise<number> {
@@ -114,14 +144,14 @@ export async function createBlog(params: {
   content: string;
   slug?: string;
   imageIds: number[];
-  tagNames: string[];
+  tagDocumentIds: string[];
   projectDocumentId: string | null;
   contributorDocumentIds: string[];
 }): Promise<{ documentId: string; slug: string }> {
   const data: Record<string, unknown> = {
     content: params.content,
     images: params.imageIds,
-    tag: params.tagNames.map((name) => ({ name })),
+    tag: { connect: params.tagDocumentIds.map((documentId) => ({ documentId })) },
     isArchive: false,
     isFeatured: false,
   };
