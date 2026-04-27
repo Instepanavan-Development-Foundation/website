@@ -24,12 +24,13 @@ OUTPUT FORMAT — always respond with valid JSON only, no markdown:
 }
 
 WRITING STYLE:
-- Warm, personal, community-focused tone
 - 2-3 sentences maximum — this is a microblog, not an article
 - Write in Eastern Armenian script
+- Factual and direct — only describe what is actually mentioned in the transcript or visible in the images
+- Do NOT invent feelings, atmosphere, warmth, or emotional impressions that are not explicitly stated
+- Do NOT add generic closing sentences like "joy was felt" or "warmth of togetherness" unless someone actually said that
 - Avoid formal or bureaucratic language
 - Reference the project name naturally if provided
-- Focus on human impact, not logistics
 - Use present or recent past tense for immediacy
 - Do NOT add hashtags, links, or calls to action in the text
 
