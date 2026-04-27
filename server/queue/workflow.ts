@@ -132,10 +132,10 @@ recurringPaymentsTask?.task({
 });
 
 // Setup cron schedule and start system
-export async function startRecurringPaymentSystem(strapi: Core.Strapi) {
+export async function startRecurringPaymentSystem(strapi: Core.Strapi): Promise<boolean> {
   if (!hatchet) {
-    console.log("⚠️ Hatchet not initialized (missing HATCHET_CLIENT_TOKEN)");
-    return;
+    console.log("⚠️ Hatchet not initialized (missing HATCHET_CLIENT_TOKEN) — recurring payments disabled");
+    return false;
   }
 
   console.log(`🔄 Connecting to Hatchet (${process.env.HATCHET_CLIENT_HOST_PORT})...`);
@@ -169,6 +169,8 @@ export async function startRecurringPaymentSystem(strapi: Core.Strapi) {
       console.error("⚠️ Cron registration failed (manual trigger only)");
     }
   }
+
+  return true;
 }
 
 // For manual Running
