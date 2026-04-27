@@ -21,15 +21,20 @@ export function ContributorsList({
     <div className="flex items-center gap-2">
       <div className="flex -space-x-2">
         {displayedContributors.map((contribution, idx) => {
+          const avatar = (
+            <Avatar
+              contributor={contribution.contributor}
+              height={32}
+              width={32}
+            />
+          );
           return (
             <div key={idx} className="relative">
-              <Tooltip content={contribution.text}>
-                <Avatar
-                  contributor={contribution.contributor}
-                  height={32}
-                  width={32}
-                />
-              </Tooltip>
+              {contribution.text ? (
+                <Tooltip content={contribution.text}>{avatar}</Tooltip>
+              ) : (
+                avatar
+              )}
             </div>
           );
         })}
