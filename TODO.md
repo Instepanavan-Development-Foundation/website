@@ -19,4 +19,8 @@
   - Include error details and instructions to update payment method
   - Link to payment method update page
 - [ ] Handle refund logic
-- [ ] Fix Payment log, when payment is removed logs are invisible
+- [x] Fix Payment log, when payment is removed logs are invisible — backfilled `userDocumentId` on old logs in prod DB
+
+## Profile / Auth
+
+- [ ] **`PUT /api/users/me` returns 403 ForbiddenError** — endpoint is registered via `strapi-server.ts` extension and permission `plugin::users-permissions.user.updateMe` exists in `up_permissions` for the authenticated role, but Strapi's auth strategy rejects it. Suspect issue with how `config.scope` is derived for dynamically-pushed plugin routes vs. CASL ability check. Name editing in profile is currently broken.

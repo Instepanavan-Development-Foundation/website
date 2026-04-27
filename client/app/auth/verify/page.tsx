@@ -1,28 +1,21 @@
 "use client";
 
-import { Button } from "@heroui/button";
-import { Input } from "@heroui/input";
 import { Spinner } from "@heroui/spinner";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
-import { useEffect, useState, FormEvent } from "react";
+import { useEffect, useState } from "react";
 
-import { getToken, setToken } from "@/src/services/userService";
+import { setToken } from "@/src/services/userService";
 
 export default function MagicLinkVerifyPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [error, setError] = useState("");
-  const [isNewUser, setIsNewUser] = useState(false);
-  const [fullName, setFullName] = useState("");
-  const [savingName, setSavingName] = useState(false);
-  const [returnUrl, setReturnUrl] = useState<string | null>(null);
 
   useEffect(() => {
     async function verifyToken() {
       const token = searchParams.get("token");
       const retUrl = searchParams.get("returnUrl");
-      setReturnUrl(retUrl);
 
       if (!token) {
         setError("Անվավեր հղում");
@@ -41,18 +34,13 @@ export default function MagicLinkVerifyPage() {
           return;
         }
 
-        // Store JWT
         setToken(data.jwt);
-
-        // Notify navbar
         window.dispatchEvent(new CustomEvent("loginStateChanged"));
 
-        if (data.isNewUser) {
-          // Show name input for new users
-          setIsNewUser(true);
+        if (retUrl) {
+          router.replace(decodeURIComponent(retUrl));
         } else {
-          // Existing user — redirect immediately
-          redirectToDestination(retUrl);
+          router.replace("/");
         }
       } catch {
         setError("Սերվերի սխալ");
@@ -61,42 +49,6 @@ export default function MagicLinkVerifyPage() {
 
     verifyToken();
   }, [searchParams, router]);
-
-  function redirectToDestination(retUrl?: string | null) {
-    if (retUrl) {
-      router.replace(decodeURIComponent(retUrl));
-    } else {
-      router.replace("/");
-    }
-  }
-
-  async function handleNameSubmit(e: FormEvent) {
-    e.preventDefault();
-    setSavingName(true);
-
-    try {
-      const token = getToken();
-      await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/users/me`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ fullName: fullName.trim() }),
-        },
-      );
-    } catch {
-      // Non-critical — continue even if name save fails
-    }
-
-    redirectToDestination(returnUrl);
-  }
-
-  function handleSkip() {
-    redirectToDestination(returnUrl);
-  }
 
   if (error) {
     return (
@@ -110,45 +62,6 @@ export default function MagicLinkVerifyPage() {
           Փորձել կրկին
         </Link>
       </div>
-    );
-  }
-
-  if (isNewUser) {
-    return (
-      <form
-        className="max-w-md mx-auto mt-10 p-8 bg-white rounded-xl shadow-lg flex flex-col gap-6"
-        onSubmit={handleNameSubmit}
-      >
-        <h2 className="text-2xl font-bold text-center">Բարի գալուստ!</h2>
-        <p className="text-gray-600 text-center text-sm">
-          Ինչպե՞ս է ձեր անունը?
-        </p>
-        <Input
-          autoComplete="name"
-          autoFocus
-          label="Անուն ազգանուն"
-          placeholder="Հովհաննես Հայրապետյան"
-          type="text"
-          value={fullName}
-          onChange={(e) => setFullName(e.target.value)}
-        />
-        <Button
-          className="text-sm font-normal text-white bg-gradient-to-r from-pink-500 to-rose-500 hover:from-rose-500 hover:to-pink-500 transition-all duration-300 shadow-md hover:shadow-lg"
-          isLoading={savingName}
-          size="md"
-          type="submit"
-          variant="flat"
-        >
-          Շարունակել
-        </Button>
-        <Button
-          className="text-sm font-normal text-gray-600"
-          variant="light"
-          onPress={handleSkip}
-        >
-          Բաց թողնել
-        </Button>
-      </form>
     );
   }
 
