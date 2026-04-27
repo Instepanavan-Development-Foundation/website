@@ -1,7 +1,7 @@
 import { logger } from "../logger";
 import { Context, InlineKeyboard } from "grammy";
 import { Session, sessionStore } from "../state/sessionStore";
-import { uploadAllImages, createBlog, createContributor, deleteBlog, getOrCreateTags } from "../services/strapiService";
+import { uploadAllImages, createBlog, createContributor, deleteBlog } from "../services/strapiService";
 import { config } from "../config";
 import { friendlyError } from "../utils/friendlyError";
 
@@ -77,10 +77,7 @@ async function handlePublish(
   const msg = await ctx.api.sendMessage(chatId, "Publishing...");
 
   try {
-    const [imageIds, tagDocumentIds] = await Promise.all([
-      uploadAllImages(session.imageBuffers),
-      getOrCreateTags(session.suggestedTags),
-    ]);
+    const [imageIds] = await Promise.all([uploadAllImages(session.imageBuffers)]);
 
     // Create any new contributors that don't exist yet
     const resolvedContributors = await Promise.all(
@@ -92,11 +89,14 @@ async function handlePublish(
       })
     );
 
+    const dateSuffix = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+    const slug = session.draftSlug ? `${session.draftSlug}-${dateSuffix}` : undefined;
+
     const blog = await createBlog({
       content: session.draftText,
-      slug: session.draftSlug || undefined,
+      slug,
       imageIds,
-      tagDocumentIds,
+      tagNames: session.suggestedTags,
       projectDocumentId: session.selectedProject?.documentId ?? null,
       contributorDocumentIds: resolvedContributors.map((c) => c.documentId).filter(Boolean),
     });

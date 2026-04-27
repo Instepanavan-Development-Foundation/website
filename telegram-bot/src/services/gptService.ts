@@ -48,7 +48,7 @@ SLUG RULES:
 TAG RULES:
 - Suggest 1-3 tags that best describe the content
 - Prefer tags from the existing list when they fit
-- If no existing tag fits well, invent a short relevant one (Armenian or English, lowercase)
+- If no existing tag fits well, invent a short relevant one in English (lowercase)
 - Tags should be short keywords, not phrases
 
 EDITING MODE:

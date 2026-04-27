@@ -144,14 +144,14 @@ export async function createBlog(params: {
   content: string;
   slug?: string;
   imageIds: number[];
-  tagDocumentIds: string[];
+  tagNames: string[];
   projectDocumentId: string | null;
   contributorDocumentIds: string[];
 }): Promise<{ documentId: string; slug: string }> {
   const data: Record<string, unknown> = {
     content: params.content,
     images: params.imageIds,
-    tag: { connect: params.tagDocumentIds.map((documentId) => ({ documentId })) },
+    tag: params.tagNames.map((name) => ({ name })),
     isArchive: false,
     isFeatured: false,
   };
