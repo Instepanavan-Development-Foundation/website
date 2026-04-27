@@ -53,6 +53,7 @@ services:
       SERVER_GRPC_INSECURE: "t"
     volumes:
       - ./hatchet-data:/data
+      - ./hatchet-config:/config
     depends_on:
       hatchet_postgres:
         condition: service_healthy
