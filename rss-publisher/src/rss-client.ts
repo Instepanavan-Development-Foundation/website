@@ -2,8 +2,8 @@ import Parser from "rss-parser";
 
 const parser = new Parser({
   customFields: {
-    item: ["image"],
-  }
+    item: [["image", "images", { keepArray: true }]],
+  },
 });
 
 export interface RssItem {
