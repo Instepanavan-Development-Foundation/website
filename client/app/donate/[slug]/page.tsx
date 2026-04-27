@@ -618,7 +618,11 @@ function DonationFormClient({ project }: { project: IProject }) {
             size="lg"
             onClick={handleSubmit}
           >
-            {isSubmitting ? "Մշակվում է..." : "Աջակցել հիմա"}
+            {isSubmitting
+              ? "Մշակվում է..."
+              : project.donationType === "recurring"
+                ? "Ամսական բաժանորդագրություն"
+                : "Աջակցել հիմա"}
           </Button>
           <p className="text-center text-xs text-default-500 mt-3">
             {/* TODO: Add terms and conditions link */}

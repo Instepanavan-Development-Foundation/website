@@ -64,11 +64,11 @@ export default {
     try {
       await strapi.plugin("email").service("email").send({
         to: normalizedEmail,
-        subject: `Մուտք գործել — Ինստեպանավան (${new Date().toLocaleTimeString('hy-AM', { hour: '2-digit', minute: '2-digit' })})`,
+        subject: `Մուտք գործել — Ինստեփանավան (${new Date().toLocaleTimeString('hy-AM', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Yerevan' })})`,
         text: `Սեղմեք հղումին մուտք գործելու համար:\n\n${magicLink}\n\nՀղումը գործում է ${expiryMinutes} րոպե:`,
         html: `
           <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-            <h2 style="color: #333;">Մուտք գործել Ինստեպանավան</h2>
+            <h2 style="color: #333;">Մուտք գործել Ինսփեպանավան</h2>
             <p>Սեղմեք ստորև գտնվող կոճակին մուտք գործելու համար:</p>
             <p style="margin: 24px 0;">
               <a href="${magicLink}"
