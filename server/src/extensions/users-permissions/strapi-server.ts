@@ -1,33 +1,25 @@
 export default (plugin) => {
-  const originalUserFactory = plugin.controllers.user;
+  plugin.controllers.user.updateMe = async (ctx) => {
+    const userId = ctx.state.user?.id;
 
-  plugin.controllers.user = ({ strapi: strapiInstance }) => {
-    const originalUser = originalUserFactory({ strapi: strapiInstance });
+    if (!userId) {
+      return ctx.unauthorized("User not authenticated");
+    }
 
-    originalUser.updateMe = async (ctx) => {
-      const userId = ctx.state.user?.id;
+    const allowedFields = ["fullName"];
+    const updates: Record<string, unknown> = {};
 
-      if (!userId) {
-        return ctx.unauthorized("User not authenticated");
+    for (const field of allowedFields) {
+      if (field in ctx.request.body) {
+        updates[field] = ctx.request.body[field];
       }
+    }
 
-      const allowedFields = ["fullName"];
-      const updates: Record<string, unknown> = {};
+    const user = await strapi.db
+      .query("plugin::users-permissions.user")
+      .update({ where: { id: userId }, data: updates });
 
-      for (const field of allowedFields) {
-        if (field in ctx.request.body) {
-          updates[field] = ctx.request.body[field];
-        }
-      }
-
-      const user = await strapiInstance.db
-        .query("plugin::users-permissions.user")
-        .update({ where: { id: userId }, data: updates });
-
-      ctx.body = { id: user.id, documentId: user.documentId, fullName: user.fullName };
-    };
-
-    return originalUser;
+    ctx.body = { id: user.id, documentId: user.documentId, fullName: user.fullName };
   };
 
   plugin.routes["content-api"].routes.push({
