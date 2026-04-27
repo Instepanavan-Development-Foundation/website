@@ -50,7 +50,7 @@ services:
       SERVER_AUTH_COOKIE_DOMAIN: "localhost"
       SERVER_GRPC_BIND_ADDRESS: "0.0.0.0"
       SERVER_GRPC_BROADCAST_ADDRESS: "hatchet:7070"
-      SERVER_TLS_STRATEGY: "none"
+      SERVER_GRPC_INSECURE: "t"
     volumes:
       - ./hatchet-data:/data
     depends_on:
