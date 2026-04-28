@@ -53,17 +53,17 @@ export async function publishToFacebook(item: RssItem): Promise<void> {
     postId = res.data.id;
   }
 
-  // Post the link as a comment
-  if (postId) {
-    try {
-      await axios.post(`https://graph.facebook.com/v21.0/${postId}/comments`, null, {
-        params: {
-          message: `🔗 Կարդալ սկզբնաղբյուրում: ${item.link}`,
-          access_token: accessToken,
-        },
-      });
-    } catch (err) {
-      console.error("Facebook comment failed:", err);
-    }
-  }
+  // Commented out — posting link in comments may hurt FB ranking
+  // if (postId) {
+  //   try {
+  //     await axios.post(`https://graph.facebook.com/v21.0/${postId}/comments`, null, {
+  //       params: {
+  //         message: `🔗 Կարդալ սկզբնաղբյուրում: ${item.link}`,
+  //         access_token: accessToken,
+  //       },
+  //     });
+  //   } catch (err) {
+  //     console.error("Facebook comment failed:", err);
+  //   }
+  // }
 }
