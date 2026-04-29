@@ -32,27 +32,16 @@ export function ProjectCard({
   name,
   description,
   blogs,
-  isFeatured,
   image,
   gatheredAmount,
   requiredAmount,
-  isArchived,
 }: IProject) {
   const percentComplete = requiredAmount
     ? Math.min(Math.round((gatheredAmount / requiredAmount) * 100), 100)
     : 100;
-  const isUrgent = !isArchived && requiredAmount > 0 && percentComplete < 30;
 
   const gradient = GRADIENTS[(name?.charCodeAt(0) ?? 0) % GRADIENTS.length];
   const hasImage = !!image?.url;
-
-  const tag = isArchived
-    ? "Ավարտված"
-    : isUrgent
-      ? "Հրատապ"
-      : isFeatured
-        ? "Առանձնահատուկ"
-        : "Ակտիվ";
 
   return (
     <article className="group bg-white border border-cream-200 rounded-[20px] overflow-hidden transition-all duration-200 hover:shadow-[0_12px_32px_rgba(230,90,42,0.08)] hover:border-cream-300 h-full flex flex-col">
@@ -76,13 +65,6 @@ export function ProjectCard({
             </span>
           </div>
         )}
-        <span
-          className={`absolute top-2.5 left-2.5 text-[11px] font-semibold px-3 py-1.5 rounded-full ${
-            isUrgent ? "bg-ink text-white" : "bg-white text-primary"
-          }`}
-        >
-          {tag}
-        </span>
       </div>
 
       {/* Body */}

@@ -31,8 +31,7 @@ export default function HomeHero({
           </div>
 
           <h1 className="mt-5 font-semibold leading-[1.05] tracking-tightest text-ink text-[clamp(40px,6vw,72px)]">
-            Ստեփանավանը <span className="text-primary">փոխվում</span> է — և դա
-            ձեր ձեռքերով է։
+            Ստեփանավանը <span className="text-primary">փոխվում</span> է — ձեր ձեռքերով։
           </h1>
 
           <p className="mt-6 text-[17px] leading-relaxed text-ink-body max-w-[520px]">

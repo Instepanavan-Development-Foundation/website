@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { BlogPost } from "@/components/BlogPost";
 import NotFound from "@/components/NotFound";
 import getData from "@/src/helpers/getData";
@@ -78,10 +80,51 @@ export default async function BlogPage({ params }: IParams) {
     return <NotFound />;
   }
 
+  const relatedBlogs = blog.project
+    ? await getData({
+        type: "blogs",
+        populate: {
+          images: { fields: ["url"] },
+          contribution: { populate: ["contributor.avatar"] },
+          attachments: { fields: ["url", "name"] },
+          project: { fields: ["name", "slug"] },
+        },
+        filters: {
+          slug: { $ne: slug },
+          project: { slug: { $eq: blog.project.slug } },
+        },
+        sort: ["isFeatured:desc", "createdAt:desc"],
+        limit: 4,
+      }).then((r) => r.data as IBlog[])
+    : [];
+
   return (
-    // TODO maybe change styles?
     <div className="container mx-auto px-4 py-8">
       <BlogPost {...blog} isLink={false} />
+
+      {relatedBlogs.length > 0 && (
+        <div className="mt-12">
+          <div className="text-[11px] font-medium tracking-[0.14em] text-primary uppercase mb-1.5">
+            ՆՈՒՅՆ ԾՐԱԳՐԻՑ
+          </div>
+          <div className="flex items-baseline justify-between mb-6">
+            <h2 className="text-[24px] font-semibold tracking-tight text-ink">
+              {blog.project.name}-ից ևս
+            </h2>
+            <Link
+              className="text-[13px] font-medium text-primary hover:text-primary-600 transition-colors"
+              href={`/project/${blog.project.slug}`}
+            >
+              Տեսնել նախագիծը →
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {relatedBlogs.map((related, index) => (
+              <BlogPost key={index} {...related} />
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

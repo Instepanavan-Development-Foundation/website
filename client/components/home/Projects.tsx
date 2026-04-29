@@ -53,18 +53,12 @@ export default async function Projects({
           </Link>
         )}
       </div>
-      <div className="-mx-4 md:-mx-8 overflow-x-auto scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        <div className="flex flex-nowrap gap-5 px-4 md:px-8 pb-4">
-          {projects.map((project, index) => (
-            <Link
-              key={index}
-              className="block shrink-0 w-[82vw] sm:w-[44vw] lg:w-110"
-              href={`/project/${project.slug}`}
-            >
-              <ProjectCard {...project} />
-            </Link>
-          ))}
-        </div>
+      <div className="flex flex-wrap justify-center gap-5">
+        {projects.map((project, index) => (
+          <Link key={index} className="block w-full sm:w-[calc(50%-10px)] lg:w-[calc(33.333%-14px)]" href={`/project/${project.slug}`}>
+            <ProjectCard {...project} />
+          </Link>
+        ))}
       </div>
     </section>
   );
