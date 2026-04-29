@@ -119,6 +119,8 @@ const service = {
         paymentDetails,
         projectPaymentId: projectPayment.documentId,
         userDocumentId,
+        projectDocumentId: project.documentId,
+        projectName: project.name,
       });
 
       return projectPayment;
@@ -175,11 +177,15 @@ const service = {
     success,
     projectPaymentId,
     userDocumentId,
+    projectDocumentId,
+    projectName,
   }: {
     paymentDetails: any;
     success: boolean;
     projectPaymentId?: string;
     userDocumentId?: string;
+    projectDocumentId?: string;
+    projectName?: string;
   }) => {
     try {
       const log = await strapi.documents(PAYMENT_LOG_API).create({
@@ -194,6 +200,8 @@ const service = {
           paymentStatus: success ? 'completed' : null,
           project_payment: projectPaymentId,
           userDocumentId: userDocumentId || null,
+          projectDocumentId: projectDocumentId || null,
+          projectName: projectName || null,
         },
       });
 

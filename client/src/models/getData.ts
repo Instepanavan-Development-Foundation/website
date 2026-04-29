@@ -52,6 +52,8 @@ export interface IPaymentLog {
   success: boolean;
   createdAt: string;
   updatedAt: string;
+  projectDocumentId?: string;
+  projectName?: string;
   project_payment?: {
     name?: string;
     project?: IProject;

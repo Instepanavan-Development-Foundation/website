@@ -57,6 +57,12 @@
     },
     "userDocumentId": {
       "type": "string"
+    },
+    "projectDocumentId": {
+      "type": "string"
+    },
+    "projectName": {
+      "type": "string"
     }
   }
 }

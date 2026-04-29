@@ -34,17 +34,12 @@ export default factories.createCoreService('api::project.project', ({ strapi }) 
       populate: ['donation'],
     });
 
-    // Query recurring payment logs for this project
+    // Query recurring payment logs for this project directly by projectDocumentId
     const recurringPaymentLogs = await strapi.documents('api::payment-log.payment-log').findMany({
       filters: {
         success: true,
-        project_payment: {
-          project: {
-            documentId: projectDocumentId,
-          },
-        },
-      },
-      populate: ['project_payment'],
+        projectDocumentId: projectDocumentId,
+      } as any,
     });
 
     // Calculate current month recurring and all-time one-time
@@ -106,16 +101,12 @@ export default factories.createCoreService('api::project.project', ({ strapi }) 
     const recurringPaymentLogs = await strapi.documents('api::payment-log.payment-log').findMany({
       filters: {
         success: true,
-        project_payment: {
-          project: {
-            documentId: projectDocumentId,
-          },
-        },
-      },
-      populate: ['project_payment'],
+        projectDocumentId: projectDocumentId,
+      } as any,
+      fields: ['userDocumentId'],
     });
 
-    // Count unique donors by tracking unique payment methods
+    // Count unique donors by tracking unique users
     const uniqueDonors = new Set();
 
     // Count one-time donations (each is a unique donor)
@@ -125,11 +116,9 @@ export default factories.createCoreService('api::project.project', ({ strapi }) 
       }
     });
 
-    // Count recurring payments (same project_payment = same donor)
+    // Count recurring payments by unique user
     recurringPaymentLogs.forEach((log) => {
-      if (log.project_payment) {
-        uniqueDonors.add(`project-payment-${log.project_payment.id}`);
-      }
+      uniqueDonors.add(`user-${log.userDocumentId}`);
     });
 
     return uniqueDonors.size;

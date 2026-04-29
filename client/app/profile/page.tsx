@@ -673,10 +673,11 @@ export default function MyProfile() {
                         {paymentHistory.map((log) => {
                           // Get project name from multiple sources (fallback chain)
                           const projectName =
-                            log.project_payment?.project?.name || // First try: populated project relation
-                            log.donation?.project?.name || // Second try: donation project relation
-                            log.project_payment?.name || // Third try: project_payment.name field (stored at payment time)
-                            "Վճարում"; // Final fallback
+                            log.project_payment?.project?.name ||
+                            log.donation?.project?.name ||
+                            log.project_payment?.name ||
+                            log.projectName ||
+                            "Վճaarym";
 
                           return (
                             <ListboxItem

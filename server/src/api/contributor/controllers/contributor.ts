@@ -74,7 +74,7 @@ export default factories.createCoreController('api::contributor.contributor', ({
             },
           },
         },
-        fields: ['documentId', 'amount', 'currency', 'success', 'createdAt'],
+        fields: ['documentId', 'amount', 'currency', 'success', 'createdAt', 'projectDocumentId', 'projectName'],
         sort: ['createdAt:desc'],
         limit: 100,
       });

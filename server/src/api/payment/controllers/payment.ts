@@ -212,6 +212,8 @@ export default {
         projectPaymentId,
         success: isSuccess,
         userDocumentId: projectPayment.payment_method?.userDocumentId,
+        projectDocumentId: projectPayment.project.documentId,
+        projectName: projectPayment.project.name,
       });
 
       await service.updateProjectPaymentIsPaymentInProgress(
