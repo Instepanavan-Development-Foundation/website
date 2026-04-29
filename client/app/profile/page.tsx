@@ -677,7 +677,7 @@ export default function MyProfile() {
                             log.donation?.project?.name ||
                             log.project_payment?.name ||
                             log.projectName ||
-                            "Վճaarym";
+                            "Վճարում";
 
                           return (
                             <ListboxItem
