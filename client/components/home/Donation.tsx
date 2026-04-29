@@ -1,37 +1,7 @@
-"use client";
-
 import Link from "next/link";
 import { Heart } from "lucide-react";
-import { useEffect, useState } from "react";
-
-import getData from "@/src/helpers/getData";
-import { IProject } from "@/src/models/project";
 
 export default function Donation() {
-  const [featuredProject, setFeaturedProject] = useState<IProject | null>(null);
-
-  useEffect(() => {
-    const fetchFeaturedProject = async () => {
-      try {
-        const { data } = await getData({
-          type: "projects",
-          filters: {
-            isFeatured: true,
-            isArchived: false,
-          },
-          limit: 1,
-        });
-
-        if (data && data.length > 0) {
-          setFeaturedProject(data[0]);
-        }
-      } catch (error) {
-        console.error("Error fetching featured project:", error);
-      }
-    };
-
-    fetchFeaturedProject();
-  }, []);
 
   const impactCards = [
     {
@@ -90,18 +60,10 @@ export default function Donation() {
         <div className="mt-8 flex flex-wrap items-center gap-4">
           <Link
             className="inline-flex items-center gap-1.5 bg-primary text-white px-7 py-3.5 rounded-full text-sm font-medium hover:bg-primary-600 transition-colors"
-            href={
-              featuredProject ? `/donate/${featuredProject.slug}` : "/projects"
-            }
+            href={process.env.NEXT_PUBLIC_DONATE_URL ?? "/projects"}
           >
             Աջակցել հիմա
             <Heart className="fill-white" size={16} />
-          </Link>
-          <Link
-            className="text-sm text-ink font-medium hover:text-primary transition-colors"
-            href="/finances"
-          >
-            Տեսնել մեր ֆինանսները →
           </Link>
         </div>
       </div>

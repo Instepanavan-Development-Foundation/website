@@ -272,7 +272,7 @@ function BlogListUnwrapped() {
 
                 <Button
                   className="w-full"
-                  color="warning"
+                  color="primary"
                   onClick={resetFilters}
                 >
                   Չեղարկել
@@ -351,7 +351,7 @@ function BlogListUnwrapped() {
           />
 
           <div className="flex gap-2 col-span-1">
-            <Button className="flex-1" color="warning" onClick={resetFilters}>
+            <Button className="flex-1" color="primary" onClick={resetFilters}>
               Չեղարկել
             </Button>
           </div>
@@ -390,7 +390,7 @@ function BlogListUnwrapped() {
             <Chip
               key={`tag-${selectedTags}`}
               className="capitalize"
-              color="warning"
+              color="primary"
               variant="flat"
               onClose={() => removeTag()}
             >

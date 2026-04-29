@@ -36,17 +36,10 @@ export default function HomeHeroSlide({ project }: HomeHeroSlideProps) {
       {heroImageUrl && (
         <div
           aria-hidden
-          className="absolute inset-0 bg-cover bg-center opacity-30 mix-blend-overlay"
+          className="absolute inset-0 bg-cover bg-center opacity-60 mix-blend-overlay"
           style={{ backgroundImage: `url(${heroImageUrl})` }}
         />
       )}
-      <div
-        aria-hidden
-        className="absolute inset-0 grid place-items-center opacity-30"
-      >
-        <InLogo color="#FFFFFF" size={380} />
-      </div>
-
       {project && (
         <span className="absolute top-5 left-5 bg-white/95 backdrop-blur-sm text-primary text-[11px] font-semibold px-3.5 py-2 rounded-full">
           Ընթացիկ կոչ

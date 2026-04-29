@@ -8,7 +8,7 @@ export default function RSS() {
       href={`${process.env.NEXT_PUBLIC_BACKEND_URL}${process.env.NEXT_PUBLIC_RSS_URL}`}
       target="_blank"
     >
-      <Button color="warning" variant="bordered">
+      <Button color="primary" variant="bordered">
         <Rss className="w-4 h-4" />
         RSS
       </Button>

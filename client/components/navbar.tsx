@@ -131,7 +131,7 @@ export const Navbar = () => {
         <NavbarItem>
           <NextLink
             className="inline-flex items-center gap-1.5 bg-primary text-white px-5 py-2.5 rounded-full text-[13px] font-medium hover:bg-primary-600 transition-colors"
-            href="/donate"
+            href={process.env.NEXT_PUBLIC_DONATE_URL ?? "/projects"}
           >
             Աջակցել
             <Heart className="fill-white" size={14} />
@@ -176,7 +176,7 @@ export const Navbar = () => {
           <NavbarMenuItem>
             <Link
               className="mt-2 inline-flex items-center justify-center gap-1.5 bg-primary text-white px-5 py-3 rounded-full text-sm font-medium w-full"
-              href="/donate"
+              href={process.env.NEXT_PUBLIC_DONATE_URL ?? "/projects"}
               onClick={() => setIsMenuOpen(false)}
             >
               Աջակցել

@@ -105,7 +105,7 @@ export default async function ProjectPage({ params }: IParams) {
       {project.isArchived && (
         <Chip
           className="w-full mb-4 max-w-full text-lg p-4"
-          color="warning"
+          color="primary"
           radius="sm"
           variant="shadow"
         >
@@ -137,7 +137,7 @@ export default async function ProjectPage({ params }: IParams) {
       </div>
 
       {/* Project Details */}
-      {project.gatheredAmount && project.requiredAmount && (
+      {project.requiredAmount > 0 && (
         <div className="container mb-16">
           {/* Funding Progress */}
           <div className="bg-gradient-to-r from-primary-50 to-secondary-50 dark:from-primary-900/20 dark:to-secondary-900/20 rounded-xl p-8 shadow-md">
@@ -187,7 +187,7 @@ export default async function ProjectPage({ params }: IParams) {
             href={`${process.env.NEXT_PUBLIC_BACKEND_URL}${process.env.NEXT_PUBLIC_RSS_URL}?project=${project.slug}`}
             target="_blank"
           >
-            <Button color="warning" variant="bordered">
+            <Button color="primary" variant="bordered">
               <Rss className="w-4 h-4" />
               RSS
             </Button>

@@ -34,7 +34,7 @@ export default async function Projects({
   const heading = isArchived ? "Ավարտված նախագծեր" : "Ակտիվ նախագծեր";
 
   return (
-    <section className="w-full my-12 md:my-16">
+    <section className="w-full my-12 md:my-16" id={isArchived ? undefined : "projects"}>
       <div className="flex items-baseline justify-between mb-6 md:mb-8">
         <div>
           <div className="text-[11px] font-medium tracking-[0.14em] text-primary uppercase mb-1.5">
@@ -53,12 +53,12 @@ export default async function Projects({
           </Link>
         )}
       </div>
-      <div className="-mx-4 md:-mx-8">
-        <div className="flex gap-5 overflow-x-auto snap-x snap-mandatory px-4 md:px-8 pb-4 scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="-mx-4 md:-mx-8 overflow-x-auto scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="flex flex-nowrap gap-5 px-4 md:px-8 pb-4">
           {projects.map((project, index) => (
             <Link
               key={index}
-              className="block shrink-0 snap-start w-[82%] sm:w-[48%] lg:w-[32%]"
+              className="block shrink-0 w-[82vw] sm:w-[44vw] lg:w-110"
               href={`/project/${project.slug}`}
             >
               <ProjectCard {...project} />

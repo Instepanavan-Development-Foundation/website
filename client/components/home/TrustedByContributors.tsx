@@ -26,34 +26,30 @@ export default async function TrustedByContributors() {
         <h2 className="text-[28px] md:text-[32px] font-semibold tracking-tighter2 text-ink">
           Աջակիցներ, որոնք հավատում են մեզ
         </h2>
-        <p className="mt-3 text-[15px] text-ink-muted max-w-2xl mx-auto leading-relaxed">
-          Մեր աջակիցները օգնում են մեզ ստեղծել իրական ազդեցություն։ Միացեք նրանց
-          և դարձեք փոփոխության մի մասը։
-        </p>
       </div>
 
       <div className="relative">
-        <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-6">
-          {trustedByContributors.map((contributor) => (
-            <Tooltip
-              key={contributor.id}
-              content={contributor.fullName}
-              showArrow={true}
-            >
-              <Link
-                className="flex flex-col items-center gap-2 transform hover:scale-105 transition-transform duration-200"
-                href={`/contributor/${contributor.slug}`}
+        <div className="-mx-4 md:-mx-8 overflow-hidden">
+          <div className="flex py-4 animate-[marquee_30s_linear_infinite] hover:[animation-play-state:paused]">
+            {[...trustedByContributors, ...trustedByContributors].map((contributor, i) => (
+              <Tooltip
+                key={`${contributor.id}-${i}`}
+                content={contributor.fullName}
+                showArrow={true}
               >
-                <div className="relative">
+                <Link
+                  className="flex shrink-0 flex-col items-center px-4 transform hover:scale-105 transition-transform duration-200"
+                  href={`/contributor/${contributor.slug}`}
+                >
                   <Avatar
                     className="object-contain border-2 border-white shadow-[0_4px_12px_rgba(0,0,0,0.06)]"
                     contributor={contributor}
                     height={88}
                   />
-                </div>
-              </Link>
-            </Tooltip>
-          ))}
+                </Link>
+              </Tooltip>
+            ))}
+          </div>
         </div>
         <div className="mt-10 flex justify-center gap-3 flex-wrap">
           <Link
@@ -65,7 +61,7 @@ export default async function TrustedByContributors() {
           </Link>
           <Link
             className="inline-flex items-center gap-1.5 px-5 py-3 rounded-full text-sm font-medium text-white bg-primary hover:bg-primary-600 transition-colors"
-            href="/project/instepanavan"
+            href={process.env.NEXT_PUBLIC_DONATE_URL ?? "/projects"}
           >
             <Heart className="fill-white" size={14} />
             Դառնալ աջակից

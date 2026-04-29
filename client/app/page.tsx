@@ -1,5 +1,4 @@
 import HomeHero from "@/components/home/HomeHero";
-import StatsStrip from "@/components/home/StatsStrip";
 import Projects from "@/components/home/Projects";
 import Blogs from "@/components/home/Blogs";
 import TrustedByContributors from "@/components/home/TrustedByContributors";
@@ -31,7 +30,6 @@ export default async function Home() {
   return (
     <div className="flex flex-col">
       <HomeHero featuredProjects={mainProjects ?? []} />
-      <StatsStrip />
       <Projects isArchived={false} />
       <Blogs />
       <TrustedByContributors />

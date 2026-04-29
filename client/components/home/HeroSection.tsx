@@ -52,7 +52,7 @@ export const HeroSection = ({
               variant: "flat",
               size: "lg",
             })}
-            href="/donate"
+            href={process.env.NEXT_PUBLIC_DONATE_URL ?? "/projects"}
           >
             <span className="text-xl px-8 py-2">Աջակցել մեր առաքելությանը</span>
           </Link>

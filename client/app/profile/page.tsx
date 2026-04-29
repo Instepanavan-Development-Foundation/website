@@ -451,7 +451,7 @@ export default function MyProfile() {
               name={displayName}
             />
             <Button
-              color="warning"
+              color="primary"
               variant="flat"
               onPress={() => {
                 logout();

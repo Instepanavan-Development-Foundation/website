@@ -15,13 +15,21 @@ export const getSiteConfig = async (): Promise<ISiteConfig> => {
     },
   });
 
-  const mainMenu =
-    menus.find((menu) => menu.title === "Main")?.links || ([] as IMenuLink[]);
-  const footerMenu =
-    menus.find((menu) => menu.title === "Footer")?.links || ([] as IMenuLink[]);
-  const footerSocialMenu =
-    menus.find((menu) => menu.title === "Footer Social")?.links ||
-    ([] as IMenuLink[]);
+  const normalizeHref = (links: IMenuLink[]) =>
+    links.map((link) => ({
+      ...link,
+      href: link.href.startsWith("/") || link.href.startsWith("http") ? link.href : `/${link.href}`,
+    }));
+
+  const mainMenu = normalizeHref(
+    menus.find((menu) => menu.title === "Main")?.links || [],
+  );
+  const footerMenu = normalizeHref(
+    menus.find((menu) => menu.title === "Footer")?.links || [],
+  );
+  const footerSocialMenu = normalizeHref(
+    menus.find((menu) => menu.title === "Footer Social")?.links || [],
+  );
 
   const logoUrl = siteConfig?.logo?.url;
 

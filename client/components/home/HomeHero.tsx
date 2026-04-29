@@ -44,7 +44,7 @@ export default function HomeHero({
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
               className="inline-flex items-center bg-ink text-white px-6 py-3.5 rounded-full text-sm font-medium hover:bg-ink-body transition-colors"
-              href="/archive"
+              href="/#projects"
             >
               Տեսնել նախագծերը
             </Link>

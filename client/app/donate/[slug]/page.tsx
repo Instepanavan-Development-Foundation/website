@@ -86,7 +86,7 @@ export default function DonatePage({ params }: IParams) {
       <section className="flex flex-col px-4">
         <Chip
           className="w-full mb-4 max-w-full text-lg p-4"
-          color="warning"
+          color="primary"
           radius="sm"
           variant="shadow"
         >
