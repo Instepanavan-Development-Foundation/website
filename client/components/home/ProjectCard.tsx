@@ -29,9 +29,12 @@ export function ProjectCard({
   description,
   blogs,
   image,
-  gatheredAmount,
-  requiredAmount,
+  gatheredAmount: propGatheredAmount,
+  requiredAmount: propRequiredAmount,
 }: IProject) {
+  const gatheredAmount = propGatheredAmount ?? 0;
+  const requiredAmount = propRequiredAmount ?? 0;
+
   const percentComplete = requiredAmount
     ? Math.min(Math.round((gatheredAmount / requiredAmount) * 100), 100)
     : 100;

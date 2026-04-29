@@ -16,9 +16,12 @@ interface HomeHeroSlideProps {
 }
 
 export default function HomeHeroSlide({ project }: HomeHeroSlideProps) {
-  const percentComplete = project?.requiredAmount
+  const gatheredAmount = project?.gatheredAmount ?? 0;
+  const requiredAmount = project?.requiredAmount ?? 0;
+
+  const percentComplete = requiredAmount > 0
     ? Math.min(
-        Math.round((project.gatheredAmount / project.requiredAmount) * 100),
+        Math.round((gatheredAmount / requiredAmount) * 100),
         100,
       )
     : 0;
@@ -51,7 +54,7 @@ export default function HomeHeroSlide({ project }: HomeHeroSlideProps) {
           <div className="text-[22px] font-semibold leading-tight line-clamp-2">
             {project.name}
           </div>
-          {project.requiredAmount > 0 && (
+          {requiredAmount > 0 && (
             <>
               <div className="mt-4 h-2 bg-white/25 rounded-full overflow-hidden">
                 <div
@@ -60,9 +63,7 @@ export default function HomeHeroSlide({ project }: HomeHeroSlideProps) {
                 />
               </div>
               <div className="mt-2 flex justify-between text-[13px]">
-                <span>
-                  {formatCompact(project.gatheredAmount)} ֏ հավաքված
-                </span>
+                <span>{formatCompact(gatheredAmount)} ֏ հավաքված</span>
                 <span>{percentComplete}%</span>
               </div>
             </>

@@ -16,14 +16,15 @@ export function ProjectFunding({ funding }: ProjectFundingProps) {
 
   const currentMonthLabel = formatMonthArmenian(funding.currentMonth.month);
   const isRecurring = funding.donationType === "recurring";
+  const requiredAmount = funding.requiredAmount;
 
   // Calculate progress percentage
   const gatheredAmount = isRecurring
     ? funding.currentMonth.recurring.amount
     : funding.allTime.oneTime.amount;
   const progressPercent =
-    funding.requiredAmount > 0
-      ? Math.min((gatheredAmount / funding.requiredAmount) * 100, 100)
+    requiredAmount && requiredAmount > 0
+      ? Math.min((gatheredAmount / requiredAmount) * 100, 100)
       : 0;
 
   return (
@@ -45,7 +46,7 @@ export function ProjectFunding({ funding }: ProjectFundingProps) {
               {currentMonthLabel} ▪️ {funding.currentMonth.recurring.count}{" "}
               բաժանորդ
             </p>
-            {funding.requiredAmount > 0 && (
+            {requiredAmount && requiredAmount > 0 && (
               <>
                 <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
                   <div
@@ -54,7 +55,7 @@ export function ProjectFunding({ funding }: ProjectFundingProps) {
                   />
                 </div>
                 <p className="text-xs text-gray-500">
-                  Ամսական նպատակ՝ {formatCurrency(funding.requiredAmount)} AMD (
+                  Ամսական նպատակ՝ {formatCurrency(requiredAmount)} AMD (
                   {progressPercent.toFixed(0)}%)
                 </p>
               </>
@@ -77,7 +78,7 @@ export function ProjectFunding({ funding }: ProjectFundingProps) {
             <p className="text-sm text-gray-500 mb-3">
               Միանվագ աջակցություններ ▪️ {funding.allTime.oneTime.count} աջակից
             </p>
-            {funding.requiredAmount > 0 && (
+            {requiredAmount && requiredAmount > 0 && (
               <>
                 <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
                   <div
@@ -86,8 +87,8 @@ export function ProjectFunding({ funding }: ProjectFundingProps) {
                   />
                 </div>
                 <p className="text-xs text-gray-500">
-                  Ընդհանուր նպատակ՝ {formatCurrency(funding.requiredAmount)} AMD
-                  ({progressPercent.toFixed(0)}%)
+                  Ընդհանուր նպատակ՝ {formatCurrency(requiredAmount)} AMD (
+                  {progressPercent.toFixed(0)}%)
                 </p>
               </>
             )}
