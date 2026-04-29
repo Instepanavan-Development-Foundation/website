@@ -12,6 +12,7 @@ export const metadata = {
 export default async function Home() {
   const { data: projects }: { data: IProject[] } = await getData({
     type: "projects",
+    sort: ["isFeatured:desc", "createdAt:desc"],
     populate: {
       image: { fields: ["url"] },
       blogs: {

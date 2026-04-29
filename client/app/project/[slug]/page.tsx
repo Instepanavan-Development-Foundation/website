@@ -125,8 +125,8 @@ export default async function ProjectPage({ params }: IParams) {
         </div>
 
         {/* Right: image card */}
-        <div className="relative">
-          <div className="bg-cream-100 rounded-[28px] p-1.5 overflow-hidden">
+        <div className="relative shadow-black/5">
+          <div className="bg-cream-100 rounded-[28px] p-1.5 overflow-hidden shadow-none">
             <div className="rounded-[22px] overflow-hidden aspect-[4/3] bg-cream-200">
               {hasImage ? (
                 <Carousel image={project.image} slider={project.slider} />
