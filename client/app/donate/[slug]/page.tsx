@@ -430,7 +430,10 @@ function DonationFormClient({ project }: { project: IProject }) {
               <Progress
                 aria-label="Funding progress"
                 className="h-2 mb-1"
-                color="default"
+                classNames={{
+                  indicator: "bg-white",
+                  track: "bg-white/30",
+                }}
                 value={progressPercentage}
               />
               <div className="flex justify-end">
