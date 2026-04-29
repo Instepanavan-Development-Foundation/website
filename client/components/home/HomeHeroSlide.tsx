@@ -4,12 +4,8 @@ import { InLogo } from "@/components/icons/InLogo";
 import { IProject } from "@/src/models/project";
 import getMediaUrl from "@/src/helpers/getMediaUrl";
 
-const formatCompact = (n: number) => {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `${(n / 1_000).toFixed(0)}K`;
-
-  return n.toLocaleString("hy-AM");
-};
+const formatCompact = (n: number) =>
+  Math.round(n).toLocaleString("fr-FR");
 
 interface HomeHeroSlideProps {
   project?: IProject;

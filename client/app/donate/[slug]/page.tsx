@@ -620,7 +620,7 @@ function DonationFormClient({ project }: { project: IProject }) {
             </span>
           </div>
           <Button
-            className="w-full py-7 text-lg font-medium shadow-lg"
+            className="w-full h-auto py-4 text-lg font-medium shadow-lg whitespace-normal leading-tight"
             color="primary"
             isDisabled={isSubmitting}
             isLoading={isSubmitting}
