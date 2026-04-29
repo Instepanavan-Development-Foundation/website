@@ -3,6 +3,7 @@
 ## Images
 
 - [ ] Implement image resizing in Strapi using `jimp` (pure JS, no native deps). On upload, generate `thumbnail` (156px), `small` (500px), `medium` (750px), `large` (1000px) variants stored in Strapi's `formats` field. Sharp cannot be used — production VPS (AMD Phenom II) lacks SSE4.1/AVX2. See [`docs/images.md`](docs/images.md).
+- [ ] Fix sharp on the server so Next.js image optimization works. Currently disabled via `unoptimized: true` in [next.config.js](client/next.config.js) — production VPS (AMD Phenom II) lacks SSE4.1/AVX2 which sharp requires.
 
 ## Multi-Instance / Portability
 

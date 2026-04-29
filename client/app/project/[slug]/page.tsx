@@ -95,7 +95,7 @@ export default async function ProjectPage({ params }: IParams) {
       )}
 
       {/* ── Hero ── */}
-      <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-start mb-12 md:mb-16">
+      <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center mb-12 md:mb-16">
 
         {/* Left: text */}
         <div className="flex flex-col">
@@ -119,7 +119,7 @@ export default async function ProjectPage({ params }: IParams) {
             {project.description}
           </p>
 
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-3 justify-center">
             <ContributionBox project={project} />
           </div>
         </div>
