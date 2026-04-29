@@ -141,7 +141,7 @@ export default async function ProjectPage({ params }: IParams) {
 
           {/* Stat badge */}
           {gatheredAmount > 0 && (
-            <div className="absolute -top-4 -right-4 bg-white rounded-[20px] p-4 shadow-[0_12px_32px_rgba(0,0,0,0.08)] border border-cream-200">
+            <div className="absolute -top-4 -right-4 bg-white rounded-[20px] p-4 shadow-[0_12px_32px_rgba(0,0,0,0.08)] border border-cream-200 z-10">
               <div className="text-[11px] text-ink-meta mb-1">Հավաքված</div>
               <div className="text-2xl font-semibold text-primary tracking-tight leading-none">
                 {formatCurrency(gatheredAmount)}
