@@ -14,8 +14,8 @@ export const formatCurrency = (amount: number, currency: string = "AMD") => {
 };
 
 const formatCompact = (n: number) => {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `${(n / 1_000).toFixed(0)}K`;
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)} միլիոն`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(0)} հազար`;
 
   return n.toLocaleString("hy-AM");
 };

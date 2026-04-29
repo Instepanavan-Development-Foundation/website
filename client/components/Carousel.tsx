@@ -14,12 +14,11 @@ export default function Carousel({ slider, image }: ICarouselProps) {
   // Single image case
   if (!slider && image) {
     return (
-      <div className="w-full">
+      <div className="w-full h-full">
         <Image
           alt={image.name}
-          className="w-full object-cover h-96"
-          radius="lg"
-          shadow="sm"
+          className="w-full h-full object-cover"
+          radius="none"
           src={getMediaUrl(image)}
           width="100%"
         />
@@ -56,9 +55,8 @@ export default function Carousel({ slider, image }: ICarouselProps) {
         <Image
           key={image.id}
           alt={image.name}
-          className="w-full object-cover h-96"
-          radius="lg"
-          shadow="sm"
+          className="w-full h-full object-cover"
+          radius="none"
           src={getMediaUrl(image)}
           width="100%"
         />,

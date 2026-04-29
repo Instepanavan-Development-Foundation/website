@@ -1,6 +1,5 @@
-import { Card, CardBody, CardFooter } from "@heroui/card";
-import { Button } from "@heroui/button";
 import { Paperclip } from "lucide-react";
+import Link from "next/link";
 
 import getData from "@/src/helpers/getData";
 import { IStaticPage } from "@/src/models/stat-page";
@@ -18,9 +17,7 @@ export async function generateMetadata({ params }: IParams) {
 
   const [staticPage] = data;
 
-  if (!staticPage) {
-    return null;
-  }
+  if (!staticPage) return null;
 
   return {
     title: staticPage.title,
@@ -41,37 +38,36 @@ export default async function StaticPage({ params }: IParams) {
 
   const [staticPage] = data;
 
-  if (!staticPage) {
-    return <NotFound />;
-  }
+  if (!staticPage) return <NotFound />;
 
   return (
-    <div className="container mx-auto">
-      <h1 className="text-5xl font-bold text-center mb-10">
+    <div className="max-w-3xl mx-auto py-10 md:py-14">
+      <h1 className="text-4xl md:text-5xl font-semibold tracking-tight text-ink leading-[1.05] mb-6">
         {staticPage.title}
       </h1>
-      <Card>
-        <CardBody>
-          <div className="prose max-w-none">
-            <ModifiedMarkdown>{staticPage.description}</ModifiedMarkdown>
+
+      <div className="bg-cream-100 rounded-[28px] p-8 md:p-10">
+        <div className="prose prose-lg max-w-none text-ink-body [&_h2]:text-ink [&_h2]:font-semibold [&_h3]:text-ink [&_a]:text-primary [&_a]:no-underline [&_a:hover]:underline">
+          <ModifiedMarkdown>{staticPage.description}</ModifiedMarkdown>
+        </div>
+
+        {staticPage.attachments && staticPage.attachments.length > 0 && (
+          <div className="mt-8 pt-6 border-t border-cream-200 flex flex-wrap gap-3">
+            {staticPage.attachments.map((attachment) => (
+              <Link
+                key={attachment.id || attachment.documentId}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium text-ink bg-white border border-cream-200 hover:border-primary hover:text-primary transition-colors shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
+                href={getMediaSrc(attachment)}
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                <Paperclip className="w-4 h-4 shrink-0" />
+                {attachment.name}
+              </Link>
+            ))}
           </div>
-        </CardBody>
-        <CardFooter className="flex flex-row flex-wrap gap-2">
-          {staticPage.attachments?.map((attachment) => (
-            <Button
-              key={attachment.id || attachment.documentId}
-              as="a"
-              className="btn btn-success"
-              href={getMediaSrc(attachment)}
-              rel="noopener noreferrer"
-              target="_blank"
-            >
-              <Paperclip className="w-4 h-4" />
-              {attachment.name}
-            </Button>
-          ))}
-        </CardFooter>
-      </Card>
+        )}
+      </div>
     </div>
   );
 }

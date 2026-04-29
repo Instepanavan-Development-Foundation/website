@@ -20,6 +20,8 @@ export default function Supporters({
   const [limit, setLimit] = useState(LIMIT);
   const slicedContributors = contributors.slice(0, limit);
 
+  if (!contributors.length) return null;
+
   return (
     <div className="container mb-16" id="contributors">
       <h2 className="text-3xl font-bold mb-8">Աջակիցներ</h2>

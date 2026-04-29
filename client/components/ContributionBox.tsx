@@ -43,7 +43,7 @@ export const ContributionBox = ({ project }: { project: IProject }) => {
     return (
       <Link
         className={buttonStyles({
-          color: "success",
+          color: "primary",
           radius: "full",
           variant: "shadow",
           size: "lg",
@@ -61,7 +61,7 @@ export const ContributionBox = ({ project }: { project: IProject }) => {
     return (
       <Link
         className={buttonStyles({
-          color: "success",
+          color: "primary",
           radius: "full",
           variant: "shadow",
           size: "lg",
@@ -76,7 +76,7 @@ export const ContributionBox = ({ project }: { project: IProject }) => {
   // No fundraising setup - show contact modal
   return (
     <>
-      <Button color="success" size="lg" onPress={onOpen}>
+      <Button color="primary" size="lg" onPress={onOpen}>
         Կապնվել աջակցելու համար
       </Button>
       <Modal isOpen={isOpen} onOpenChange={onOpenChange}>

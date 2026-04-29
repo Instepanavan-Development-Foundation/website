@@ -31,14 +31,14 @@ export default function HomeHero({
           </div>
 
           <h1 className="mt-5 font-semibold leading-[1.05] tracking-tightest text-ink text-[clamp(40px,6vw,72px)]">
-            Ամեն մի <span className="text-primary">քայլ</span> դեպի ավելի լավ
-            Ստեփանավան։
+            Ստեփանավանը <span className="text-primary">փոխվում</span> է — և դա
+            ձեր ձեռքերով է։
           </h1>
 
           <p className="mt-6 text-[17px] leading-relaxed text-ink-body max-w-[520px]">
-            Մենք բաց և թափանցիկ համայնքային հիմնադրամ ենք՝ գրադարաններ,
-            երիտասարդական կենտրոններ, մարդասիրական օգնություն։ Ամեն
-            նախաձեռնություն՝ հրապարակային հաշվետվությամբ։
+            Բաց, թափանցիկ, հաշվետու։ Համայնքային հիմնադրամ, որ գրադարաններ,
+            երիտասարդական կենտրոններ ու մարդասիրական ծրագրեր է կյանքի կոչում
+            — ամեն ծախս հրապարակային։
           </p>
 
           <div className="mt-8 flex flex-wrap gap-3">
