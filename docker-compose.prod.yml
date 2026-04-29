@@ -48,8 +48,12 @@ services:
     environment:
       DATABASE_URL: "postgresql://hatchet:hatchet@hatchet_postgres:5432/hatchet"
       SERVER_AUTH_COOKIE_DOMAIN: "localhost"
+      SERVER_GRPC_BIND_ADDRESS: "0.0.0.0"
+      SERVER_GRPC_BROADCAST_ADDRESS: "hatchet:7070"
+      SERVER_GRPC_INSECURE: "t"
     volumes:
       - ./hatchet-data:/data
+      - ./hatchet-config:/config
     depends_on:
       hatchet_postgres:
         condition: service_healthy

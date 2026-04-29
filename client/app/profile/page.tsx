@@ -886,11 +886,6 @@ export default function MyProfile() {
                   <h3 className="text-lg font-semibold">
                     Պահպանված վճարման եղանակներ
                   </h3>
-                  <p className="text-sm text-default-500">
-                    Կառավարեք ձեր պահպանված քարտերը և վճարման եղանակները։ Այս
-                    եղանակներն օգտագործվում են նախկինում կատարված վճարումների
-                    համար։
-                  </p>
                 </div>
 
                 {paymentMethodError && (
@@ -948,10 +943,6 @@ export default function MyProfile() {
                     <h3 className="text-lg font-semibold mb-2">
                       Վճարման եղանակներ չկան
                     </h3>
-                    <p className="text-default-500 mb-4">
-                      Դուք դեռ չունեք պահպանված վճարման եղանակներ։ Նրանք ավտոմատ
-                      կպահպանվեն, երբ կատարեք ձեր առաջին աջակցությունը։
-                    </p>
                   </div>
                 )}
               </div>

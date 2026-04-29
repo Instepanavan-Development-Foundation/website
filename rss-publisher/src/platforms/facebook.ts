@@ -14,7 +14,7 @@ export async function publishToFacebook(item: RssItem): Promise<void> {
 
   if (item.imageUrls.length > 1) {
     const photoIds = await Promise.all(
-      item.imageUrls.slice(0, 10).map(async (url) => {
+      item.imageUrls.slice(0, 4).map(async (url) => {
         const res = await axios.post(`https://graph.facebook.com/v21.0/${pageId}/photos`, null, {
           params: {
             url,
@@ -53,17 +53,17 @@ export async function publishToFacebook(item: RssItem): Promise<void> {
     postId = res.data.id;
   }
 
-  // Post the link as a comment
-  if (postId) {
-    try {
-      await axios.post(`https://graph.facebook.com/v21.0/${postId}/comments`, null, {
-        params: {
-          message: `🔗 Կարդալ սկզբնաղբյուրում: ${item.link}`,
-          access_token: accessToken,
-        },
-      });
-    } catch (err) {
-      console.error("Facebook comment failed:", err);
-    }
-  }
+  // Commented out — posting link in comments may hurt FB ranking
+  // if (postId) {
+  //   try {
+  //     await axios.post(`https://graph.facebook.com/v21.0/${postId}/comments`, null, {
+  //       params: {
+  //         message: `🔗 Կարդալ սկզբնաղբյուրում: ${item.link}`,
+  //         access_token: accessToken,
+  //       },
+  //     });
+  //   } catch (err) {
+  //     console.error("Facebook comment failed:", err);
+  //   }
+  // }
 }

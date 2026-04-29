@@ -5,7 +5,7 @@ import { Input } from "@heroui/input";
 import { Spinner } from "@heroui/spinner";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
-import { useEffect, useState, FormEvent } from "react";
+import { FormEvent, useEffect, useState } from "react";
 
 import { getToken, setToken } from "@/src/services/userService";
 
@@ -13,10 +13,10 @@ export default function MagicLinkVerifyPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [error, setError] = useState("");
+  const [returnUrl, setReturnUrl] = useState<string | null>(null);
   const [isNewUser, setIsNewUser] = useState(false);
   const [fullName, setFullName] = useState("");
   const [savingName, setSavingName] = useState(false);
-  const [returnUrl, setReturnUrl] = useState<string | null>(null);
 
   useEffect(() => {
     async function verifyToken() {
@@ -44,18 +44,15 @@ export default function MagicLinkVerifyPage() {
           return;
         }
 
-        // Store JWT
         setToken(data.jwt);
-
-        // Notify navbar
         window.dispatchEvent(new CustomEvent("loginStateChanged"));
 
         if (data.isNewUser) {
-          // Show name input for new users
           setIsNewUser(true);
+        } else if (retUrl) {
+          router.replace(decodeURIComponent(retUrl));
         } else {
-          // Existing user — redirect immediately
-          redirectToDestination(retUrl);
+          router.replace("/");
         }
       } catch {
         setError("Սերվերի սխալ");

@@ -2,8 +2,8 @@ import Parser from "rss-parser";
 
 const parser = new Parser({
   customFields: {
-    item: ["images"],
-  }
+    item: [["image", "images", { keepArray: true }]],
+  },
 });
 
 export interface RssItem {
@@ -22,13 +22,11 @@ export async function fetchRss(url: string): Promise<RssItem[]> {
   return feed.items.map(item => {
     const imageUrls: string[] = [];
     
-    // Parse custom images field
+    // Parse custom images field (array of URLs)
     if ((item as any).images && Array.isArray((item as any).images)) {
-      // The parser usually flattens nested objects or keeps them as-is depending on structure
-      // We expect the array we built in Strapi
-      (item as any).images.forEach((imgObj: any) => {
-        if (imgObj.image && imgObj.image.url) {
-          imageUrls.push(imgObj.image.url);
+      (item as any).images.forEach((url: string) => {
+        if (typeof url === "string" && url.trim()) {
+          imageUrls.push(url.trim());
         }
       });
     }

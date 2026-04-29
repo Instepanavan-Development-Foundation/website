@@ -2,6 +2,7 @@
 # Database volumes
 postgres/
 hatchet-data/
+hatchet-config/
 
 # Uploaded files
 server-data/

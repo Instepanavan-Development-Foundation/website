@@ -89,9 +89,12 @@ async function handlePublish(
       })
     );
 
+    const dateSuffix = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+    const slug = session.draftSlug ? `${session.draftSlug}-${dateSuffix}` : undefined;
+
     const blog = await createBlog({
       content: session.draftText,
-      slug: session.draftSlug || undefined,
+      slug,
       imageIds,
       tagNames: session.suggestedTags,
       projectDocumentId: session.selectedProject?.documentId ?? null,
