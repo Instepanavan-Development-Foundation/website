@@ -392,7 +392,7 @@ function DonationFormClient({ project }: { project: IProject }) {
   };
 
   // Calculate progress percentage
-  const progressPercentage = project.requiredAmount
+  const progressPercentage = project.requiredAmount && project.gatheredAmount
     ? Math.min(
         100,
         Math.round((project.gatheredAmount / project.requiredAmount) * 100),
@@ -417,11 +417,11 @@ function DonationFormClient({ project }: { project: IProject }) {
             </div>
           </div>
 
-          {project.gatheredAmount && project.requiredAmount && (
+          {project.gatheredAmount != null && project.requiredAmount != null && (
             <div className="text-white">
               <div className="flex justify-between items-center mb-1">
                 <span className="text-sm font-medium text-white/90">
-                  Հավաքված է {project.gatheredAmount.toLocaleString()} ֏
+                  Հավաքված է {(project.gatheredAmount || 0).toLocaleString()} ֏
                 </span>
                 <span className="text-sm font-medium text-white/90">
                   Նպատակ՝ {project.requiredAmount.toLocaleString()} ֏

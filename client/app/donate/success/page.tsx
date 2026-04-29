@@ -364,7 +364,7 @@ export default function DonationSuccessPage() {
                       Ձեր ազդեցությունը
                     </h2>
 
-                    {funding && funding.requiredAmount > 0 && (
+                    {funding && funding.requiredAmount != null && funding.requiredAmount > 0 && (
                       <>
                         <div className="w-full mb-6">
                           <div className="flex justify-between mb-2 text-sm">

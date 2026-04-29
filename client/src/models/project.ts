@@ -4,8 +4,8 @@ import { IImage, IMediaFormat } from "./media";
 
 export interface IProject {
   documentId: string;
-  gatheredAmount: number;
-  requiredAmount: number;
+  gatheredAmount: number | null;
+  requiredAmount: number | null;
   defaultContact: string;
   fundraisingURL: string;
   events: string | TrustedHTML;

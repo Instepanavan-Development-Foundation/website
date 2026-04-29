@@ -75,7 +75,7 @@ export const Navbar = () => {
                 width={40}
               />
             )}
-            <span className="font-semibold text-[15px] tracking-tight text-ink">
+            <span className="font-semibold text-[15px] tracking-tight text-ink text-wrap">
               {siteConfig.logoTitle || "Ինստեփանավան"}
             </span>
           </NextLink>
