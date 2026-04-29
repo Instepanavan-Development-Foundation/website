@@ -59,8 +59,15 @@ export default async function ProjectPage({ params }: IParams) {
 
   const funding = await getProjectFunding(project.documentId);
 
-  const gatheredAmount = funding?.gatheredAmount ?? project.gatheredAmount ?? 0;
-  const requiredAmount = funding?.requiredAmount ?? project.requiredAmount ?? 0;
+  let gatheredAmount = 0;
+  if (funding) {
+    if (funding.donationType === "recurring") {
+      gatheredAmount = funding.currentMonth.recurring.amount;
+    } else {
+      gatheredAmount = funding.allTime.oneTime.amount;
+    }
+  }
+  const requiredAmount = funding?.requiredAmount ?? 0;
   const percentComplete = requiredAmount > 0
     ? Math.min(Math.round((gatheredAmount / requiredAmount) * 100), 100)
     : 0;
