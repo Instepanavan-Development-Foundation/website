@@ -21,7 +21,6 @@ export const config = {
   // Empty set = no filter, accept all chats
   allowedChatIds: new Set<number>(parsedChatIds),
   googleApiKey: required("GOOGLE_API_KEY"),
-  openaiApiKey: required("OPENAI_API_KEY"),
   strapiBaseUrl: optional("STRAPI_BASE_URL", "http://localhost:1337"),
   strapiApiToken: required("STRAPI_API_TOKEN"),
   mediaBufferSeconds: parseInt(optional("MEDIA_BUFFER_SECONDS", "5"), 10),

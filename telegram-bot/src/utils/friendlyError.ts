@@ -18,14 +18,6 @@ export function friendlyError(err: unknown): string {
   if (status === 429 && message.includes("RESOURCE_EXHAUSTED"))
     return "⚠️ Gemini daily quota exceeded. Enable billing at aistudio.google.com or wait until tomorrow.";
 
-  // OpenAI
-  if (code === "insufficient_quota" || (status === 429 && message.includes("quota")))
-    return "⚠️ OpenAI quota exceeded. Top up at platform.openai.com/settings/billing";
-  if (status === 429)
-    return "⚠️ OpenAI rate limit hit. Please wait a moment and try again.";
-  if ((status === 401 || status === 403) && message.toLowerCase().includes("openai"))
-    return "⚠️ OpenAI API key is invalid. Check OPENAI_API_KEY in .env";
-
   // Strapi
   if (message.includes("STRAPI") || message.includes("api/blogs") || message.includes("api/upload"))
     return "⚠️ Failed to publish to Strapi. Check STRAPI_API_TOKEN or server status.";

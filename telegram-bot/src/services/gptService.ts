@@ -1,9 +1,7 @@
-import OpenAI from "openai";
+import { GoogleGenAI } from "@google/genai";
 import { config } from "../config";
 
-const client = new OpenAI({
-  apiKey: config.openaiApiKey,
-});
+const genai = new GoogleGenAI({ apiKey: config.googleApiKey });
 
 const SYSTEM_PROMPT = `You are a content writer for Instepanavan (Ինստեփանավան), an Armenian charitable foundation focused on community development, education, and humanitarian aid in Armenia.
 
@@ -35,10 +33,11 @@ WRITING STYLE:
 - Do NOT add hashtags, links, or calls to action in the text
 
 CONTRIBUTOR RULES:
-- If the content mentions or involves a specific person from the contributors list, include their full name
-- If someone is mentioned who is NOT in the list, include their name anyway — they will be created as a new contributor
-- If no specific person is mentioned, return an empty array
-- Only tag real people involved in the activity, not generic references
+- Only include contributors who are explicitly mentioned by name in the transcript or image descriptions
+- Never infer or guess contributors based on context, roles, or implied involvement
+- If someone is explicitly named and matches the contributors list, use their full name from the list
+- If someone is explicitly named but NOT in the list, include their name anyway — they will be created as a new contributor
+- If no one is mentioned by name, return an empty array
 
 SLUG RULES:
 - Generate a short, readable URL slug in English (2-4 words)
@@ -49,8 +48,9 @@ SLUG RULES:
 TAG RULES:
 - Suggest 1-3 tags that best describe the content
 - Prefer tags from the existing list when they fit
-- If no existing tag fits well, invent a short relevant one in English (lowercase)
+- If no existing tag fits well, invent a short relevant one (can be in Armenian or English, lowercase)
 - Tags should be short keywords, not phrases
+- If the edit instruction explicitly names tags (e.g. prefixed with #), use exactly those tags
 
 EDITING MODE:
 When given an existing post and an edit instruction, rewrite it according to the instruction while preserving the factual content. Return the same JSON format.`;
@@ -60,6 +60,19 @@ export interface DraftResult {
   slug: string;
   tags: string[];
   contributors: string[]; // full names — matched or new
+}
+
+async function callGemini(contents: { role: "user" | "model"; parts: { text: string }[] }[]): Promise<string> {
+  const response = await genai.models.generateContent({
+    model: "gemini-2.5-flash",
+    config: {
+      systemInstruction: SYSTEM_PROMPT,
+      responseMimeType: "application/json",
+      temperature: 0.7,
+    },
+    contents,
+  });
+  return response.text?.trim() ?? "{}";
 }
 
 export async function generateDraft(
@@ -87,18 +100,8 @@ export async function generateDraft(
     parts.push("Project: " + projectName);
   }
 
-  const response = await client.chat.completions.create({
-    model: "gpt-5.4-mini-2026-03-17",
-    response_format: { type: "json_object" },
-    temperature: 0.7,
-    messages: [
-      { role: "system", content: SYSTEM_PROMPT },
-      { role: "user", content: parts.join("\n\n") },
-    ],
-  });
-
-  const content = response.choices[0]?.message?.content ?? "{}";
-  const parsed = JSON.parse(content) as Partial<DraftResult>;
+  const raw = await callGemini([{ role: "user", parts: [{ text: parts.join("\n\n") }] }]);
+  const parsed = JSON.parse(raw) as Partial<DraftResult>;
 
   return {
     text: parsed.text ?? "",
@@ -128,24 +131,17 @@ export async function editDraft(
     `Edit instruction: ${editInstruction}`,
   ].join("\n\n");
 
-  const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [
-    { role: "system", content: SYSTEM_PROMPT },
-    ...editHistory.map((h) => ({
-      role: h.role as "user" | "assistant",
-      content: h.content,
-    })),
-    { role: "user", content: currentState },
-  ];
+  // Convert edit history to Gemini's role format (assistant → model)
+  const historyContents: { role: "user" | "model"; parts: { text: string }[] }[] = editHistory.map((h) => ({
+    role: h.role === "assistant" ? "model" : "user",
+    parts: [{ text: h.content }],
+  }));
 
-  const response = await client.chat.completions.create({
-    model: "gpt-5.4-mini-2026-03-17",
-    response_format: { type: "json_object" },
-    temperature: 0.7,
-    messages,
-  });
-
-  const content = response.choices[0]?.message?.content ?? "{}";
-  const parsed = JSON.parse(content) as Partial<DraftResult>;
+  const raw = await callGemini([
+    ...historyContents,
+    { role: "user", parts: [{ text: currentState }] },
+  ]);
+  const parsed = JSON.parse(raw) as Partial<DraftResult>;
 
   return {
     text: parsed.text ?? existing.text,
