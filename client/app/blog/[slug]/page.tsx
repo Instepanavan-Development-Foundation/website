@@ -4,6 +4,7 @@ import { BlogPost } from "@/components/BlogPost";
 import NotFound from "@/components/NotFound";
 import getData from "@/src/helpers/getData";
 import getMediaSrc from "@/src/helpers/getMediaUrl";
+import getProjectFunding from "@/src/helpers/getProjectFunding";
 import { IBlog } from "@/src/models/blog";
 import { IParams } from "@/src/models/params";
 
@@ -69,7 +70,7 @@ export default async function BlogPage({ params }: IParams) {
       images: { fields: ["url"] },
       contribution: { populate: ["contributor.avatar"] },
       attachments: { fields: ["url", "name"] },
-      project: { fields: ["name", "slug"] },
+      project: { fields: ["documentId", "name", "slug", "isArchived"] },
     },
     filters: { slug },
   });
@@ -78,6 +79,21 @@ export default async function BlogPage({ params }: IParams) {
 
   if (!blog) {
     return <NotFound />;
+  }
+
+  let showDonateButton = false;
+
+  if (blog.project?.documentId && !blog.project.isArchived) {
+    const funding = await getProjectFunding(blog.project.documentId);
+
+    if (funding?.requiredAmount) {
+      const gathered =
+        funding.donationType === "recurring"
+          ? funding.currentMonth.recurring.amount
+          : funding.allTime.oneTime.amount;
+
+      showDonateButton = gathered < funding.requiredAmount;
+    }
   }
 
   const relatedBlogs = blog.project
@@ -100,7 +116,7 @@ export default async function BlogPage({ params }: IParams) {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <BlogPost {...blog} isLink={false} />
+      <BlogPost {...blog} isLink={false} showDonateButton={showDonateButton} />
 
       {relatedBlogs.length > 0 && (
         <div className="mt-12">

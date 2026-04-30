@@ -21,4 +21,5 @@ export interface IBlog {
   createdAt: string;
   attachments: IMediaFormat[] | null;
   isLink?: boolean;
+  showDonateButton?: boolean;
 }

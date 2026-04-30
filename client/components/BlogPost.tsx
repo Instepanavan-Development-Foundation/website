@@ -2,7 +2,7 @@
 
 import { Card, CardBody } from "@heroui/card";
 import { Chip } from "@heroui/chip";
-import { Paperclip, Bookmark } from "lucide-react";
+import { Paperclip, Bookmark, Heart } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Image } from "@heroui/image";
 import Link from "next/link";
@@ -40,6 +40,7 @@ export function BlogPost({
   project,
   slug,
   isLink = true,
+  showDonateButton = false,
 }: IBlog) {
   const numberOfImagesShown = 1;
   const [open, setOpen] = useState(false);
@@ -148,7 +149,7 @@ export function BlogPost({
 
             {/* Project */}
             {project && (
-              <div className="flex -space-x-2 mb-4">
+              <div className="flex items-center gap-3 mb-4 flex-wrap">
                 <Link
                   className="line-clamp-2"
                   color="secondary"
@@ -156,6 +157,15 @@ export function BlogPost({
                 >
                   {project.name}
                 </Link>
+                {showDonateButton && (
+                  <a
+                    className="inline-flex items-center gap-1.5 border-2 border-primary text-primary px-4 py-1.5 rounded-full text-[13px] font-medium hover:bg-primary hover:text-white transition-colors"
+                    href={`/donate/${project.slug}`}
+                  >
+                    <Heart className="w-3.5 h-3.5 fill-current" />
+                    Աջակցել նախագծին
+                  </a>
+                )}
               </div>
             )}
 
