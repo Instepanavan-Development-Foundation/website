@@ -10,12 +10,11 @@ export async function publishToFacebook(item: RssItem): Promise<void> {
   }
 
   const message = item.content;
-  let postId = "";
 
   if (item.imageUrls.length > 1) {
     const photoIds = await Promise.all(
       item.imageUrls.slice(0, 4).map(async (url) => {
-        const res = await axios.post(`https://graph.facebook.com/v21.0/${pageId}/photos`, null, {
+        const res = await axios.post(`https://graph.facebook.com/v25.0/${pageId}/photos`, null, {
           params: {
             url,
             published: false,
@@ -26,44 +25,26 @@ export async function publishToFacebook(item: RssItem): Promise<void> {
       })
     );
 
-    const res = await axios.post(`https://graph.facebook.com/v21.0/${pageId}/feed`, {
+    await axios.post(`https://graph.facebook.com/v25.0/${pageId}/feed`, {
       message,
       attached_media: photoIds,
       access_token: accessToken,
     });
-    postId = res.data.id;
 
   } else if (item.imageUrls.length === 1) {
-    const res = await axios.post(`https://graph.facebook.com/v21.0/${pageId}/photos`, null, {
+    await axios.post(`https://graph.facebook.com/v25.0/${pageId}/photos`, null, {
       params: {
         url: item.imageUrls[0],
         caption: message,
         access_token: accessToken,
       },
     });
-    // In photo posts, the ID returned is the photo ID, but it acts as a post ID for comments
-    postId = res.data.id;
   } else {
-    const res = await axios.post(`https://graph.facebook.com/v21.0/${pageId}/feed`, null, {
+    await axios.post(`https://graph.facebook.com/v25.0/${pageId}/feed`, null, {
       params: {
         message,
         access_token: accessToken,
       },
     });
-    postId = res.data.id;
   }
-
-  // Commented out — posting link in comments may hurt FB ranking
-  // if (postId) {
-  //   try {
-  //     await axios.post(`https://graph.facebook.com/v21.0/${postId}/comments`, null, {
-  //       params: {
-  //         message: `🔗 Կարդալ սկզբնաղբյուրում: ${item.link}`,
-  //         access_token: accessToken,
-  //       },
-  //     });
-  //   } catch (err) {
-  //     console.error("Facebook comment failed:", err);
-  //   }
-  // }
 }
