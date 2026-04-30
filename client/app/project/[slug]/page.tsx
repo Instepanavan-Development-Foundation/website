@@ -100,18 +100,18 @@ export default async function ProjectPage({ params }: IParams) {
         {/* Left: text */}
         <div className="flex flex-col">
           {/* Status pill */}
-          <div className={`self-start inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold mb-6 ${
+          <div className={`self-end inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold mb-1 border ${
             isUrgent
-              ? "bg-ink text-white"
+              ? "bg-white border-ink text-ink"
               : project.isArchived
-                ? "bg-cream-200 text-ink-muted"
-                : "bg-cream-100 text-primary"
+                ? "bg-white border-cream-200 text-ink-muted"
+                : "bg-white border-primary text-primary"
           }`}>
-            <span className={`w-1.5 h-1.5 rounded-full ${isUrgent ? "bg-white" : project.isArchived ? "bg-ink-meta" : "bg-primary"}`} />
+            <span className={`w-1 h-1 rounded-full ${isUrgent ? "bg-ink" : project.isArchived ? "bg-cream-200" : "bg-primary"}`} />
             {statusTag}
           </div>
 
-          <h1 className="text-4xl md:text-5xl lg:text-[56px] font-semibold leading-[1.05] tracking-tight text-ink mb-5">
+          <h1 className="text-2xl md:text-5xl lg:text-[56px] font-semibold tracking-tight text-ink">
             {project.name}
           </h1>
 
