@@ -38,13 +38,13 @@ export default async function TrustedByContributors() {
                 showArrow={true}
               >
                 <Link
-                  className="flex shrink-0 flex-col items-center px-4 transform hover:scale-105 transition-transform duration-200"
+                  className="flex shrink-0 flex-col items-center px-2 md:px-4 transform hover:scale-105 transition-transform duration-200"
                   href={`/contributor/${contributor.slug}`}
                 >
                   <Avatar
                     className="object-contain border-2 border-white shadow-[0_4px_12px_rgba(0,0,0,0.06)]"
                     contributor={contributor}
-                    height={88}
+                    height={64}
                   />
                 </Link>
               </Tooltip>
