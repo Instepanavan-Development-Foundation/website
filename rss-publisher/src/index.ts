@@ -13,7 +13,12 @@ const logger = pino({
 });
 
 const RSS_FEED_URL = process.env.RSS_FEED_URL;
-const POLLING_INTERVAL = parseInt(process.env.POLLING_INTERVAL_MS || "300000");
+const BASE_POLLING_INTERVAL = parseInt(process.env.POLLING_INTERVAL_MS || "300000");
+
+function getNextPollingInterval(): number {
+  const jitter = Math.random() * BASE_POLLING_INTERVAL * 0.2; // ±10% jitter
+  return BASE_POLLING_INTERVAL + jitter - BASE_POLLING_INTERVAL * 0.1;
+}
 
 async function poll() {
   if (!RSS_FEED_URL) {
@@ -65,7 +70,7 @@ async function poll() {
   }
 }
 
-logger.info(`Starting RSS Publisher... Polling ${RSS_FEED_URL} every ${POLLING_INTERVAL / 1000}s`);
+logger.info(`Starting RSS Publisher... Polling ${RSS_FEED_URL} every ${BASE_POLLING_INTERVAL / 1000}s (±10% jitter)`);
 
 // Initialize Database Table
 initDb();
@@ -73,5 +78,13 @@ initDb();
 // Run immediately on start
 poll();
 
-// Then every interval
-setInterval(poll, POLLING_INTERVAL);
+// Schedule next poll with jitter
+function scheduleNextPoll() {
+  const nextInterval = getNextPollingInterval();
+  setTimeout(() => {
+    poll();
+    scheduleNextPoll();
+  }, nextInterval);
+}
+
+scheduleNextPoll();
