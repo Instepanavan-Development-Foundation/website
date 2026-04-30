@@ -10,6 +10,7 @@ export async function publishToFacebook(item: RssItem): Promise<void> {
   }
 
   const message = item.content;
+  let postId = "";
 
   if (item.imageUrls.length > 1) {
     const photoIds = await Promise.all(
@@ -25,26 +26,43 @@ export async function publishToFacebook(item: RssItem): Promise<void> {
       })
     );
 
-    await axios.post(`https://graph.facebook.com/v25.0/${pageId}/feed`, {
+    const res = await axios.post(`https://graph.facebook.com/v25.0/${pageId}/feed`, {
       message,
       attached_media: photoIds,
       access_token: accessToken,
     });
+    postId = res.data.id;
 
   } else if (item.imageUrls.length === 1) {
-    await axios.post(`https://graph.facebook.com/v25.0/${pageId}/photos`, null, {
+    const res = await axios.post(`https://graph.facebook.com/v25.0/${pageId}/photos`, null, {
       params: {
         url: item.imageUrls[0],
         caption: message,
         access_token: accessToken,
       },
     });
+    postId = res.data.id;
   } else {
-    await axios.post(`https://graph.facebook.com/v25.0/${pageId}/feed`, null, {
+    const res = await axios.post(`https://graph.facebook.com/v25.0/${pageId}/feed`, null, {
       params: {
         message,
         access_token: accessToken,
       },
     });
+    postId = res.data.id;
+  }
+
+  if (postId && item.link) {
+    const delay = (10 + Math.random() * 10) * 60 * 1000;
+    setTimeout(async () => {
+      try {
+        await axios.post(`https://graph.facebook.com/v25.0/${postId}/comments`, null, {
+          params: {
+            message: `Կարդալ սկզբնաղբյուրում: ${item.link}`,
+            access_token: accessToken,
+          },
+        });
+      } catch {}
+    }, delay);
   }
 }
