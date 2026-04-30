@@ -24,7 +24,7 @@ async function withRetry<T>(fn: () => Promise<T>, retries = 3, delayMs = 2000): 
 export async function transcribeVoice(audioBuffer: Buffer): Promise<string> {
   return withRetry(async () => {
     const response = await genai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-3-flash-preview",
       contents: [
         {
           parts: [
@@ -48,7 +48,7 @@ export async function transcribeVoice(audioBuffer: Buffer): Promise<string> {
 export async function describeImage(imageBuffer: Buffer): Promise<string> {
   return withRetry(async () => {
     const response = await genai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-3-flash-preview",
       contents: [
         {
           parts: [
