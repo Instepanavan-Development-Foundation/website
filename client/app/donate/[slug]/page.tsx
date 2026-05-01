@@ -639,7 +639,7 @@ function DonationFormClient({ project }: { project: IProject }) {
             isDisabled={isSubmitting}
             isLoading={isSubmitting}
             size="lg"
-            onPress={handleSubmit}
+            type="submit"
           >
             {isSubmitting
               ? "Մշակվում է..."
