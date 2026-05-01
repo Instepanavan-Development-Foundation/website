@@ -9,10 +9,6 @@ import { Divider } from "@heroui/divider";
 import { Progress } from "@heroui/progress";
 import {
   Heart,
-  Twitter,
-  Facebook,
-  Copy,
-  Check,
   ArrowRight,
   Award,
   Gift,
@@ -36,8 +32,7 @@ export default function DonationSuccessPage() {
   const projectSlug = searchParams.get("slug") || "";
 
   const [showConfetti, setShowConfetti] = useState(true);
-  const [copied, setCopied] = useState(false);
-  const [impactBadge, setImpactBadge] = useState("");
+const [impactBadge, setImpactBadge] = useState("");
   const [showBadgeAnimation, setShowBadgeAnimation] = useState(false);
   const [showThankYouMessage, setShowThankYouMessage] = useState(false);
   const [donationRank, setDonationRank] = useState(0);
@@ -183,17 +178,6 @@ export default function DonationSuccessPage() {
       }
     }
   }, [funding]);
-
-  const handleCopyLink = () => {
-    const url = window.location.href;
-
-    navigator.clipboard.writeText(url);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  const shareUrl = typeof window !== "undefined" ? window.location.href : "";
-  const shareText = `Ես աջակցեցի ${amount} ֏ ${projectName}! Միացեք ինձ և աջակցեք այս կարևոր նախաձեռնությանը:`;
 
   // Get badge icon based on impact level
   const getBadgeIcon = () => {
@@ -398,60 +382,6 @@ export default function DonationSuccessPage() {
                       </>
                     )}
 
-                    <Divider className="my-4 w-full" />
-
-                    <div className="w-full">
-                      <h3 className="text-lg font-semibold mb-4 text-center">
-                        Կիսվեք Ձեր ազդեցությամբ
-                      </h3>
-
-                      <div className="flex flex-wrap gap-2 justify-center mb-4">
-                        <motion.div
-                          whileHover={{ scale: 1.05, y: -3 }}
-                          whileTap={{ scale: 0.95 }}
-                        >
-                          <Button
-                            as="a"
-                            className="bg-[#1DA1F2] text-white"
-                            href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`}
-                            rel="noopener noreferrer"
-                            startContent={<Twitter size={18} />}
-                            target="_blank"
-                          >
-                            Twitter
-                          </Button>
-                        </motion.div>
-                        <motion.div
-                          whileHover={{ scale: 1.05, y: -3 }}
-                          whileTap={{ scale: 0.95 }}
-                        >
-                          <Button
-                            as="a"
-                            className="bg-[#4267B2] text-white"
-                            href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`}
-                            rel="noopener noreferrer"
-                            startContent={<Facebook size={18} />}
-                            target="_blank"
-                          >
-                            Facebook
-                          </Button>
-                        </motion.div>
-                        <motion.div
-                          whileHover={{ scale: 1.05, y: -3 }}
-                          whileTap={{ scale: 0.95 }}
-                        >
-                          <Button
-                            className="bg-default-100"
-                            startContent={
-                              copied ? <Check size={18} /> : <Copy size={18} />
-                            }
-                            onClick={handleCopyLink}
-                          >
-                            {copied ? "Պատճենված է" : "Պատճենել հղումը"}
-                          </Button>
-                        </motion.div>
-                      </div>
-                    </div>
                   </div>
                 </Card>
               </motion.div>
