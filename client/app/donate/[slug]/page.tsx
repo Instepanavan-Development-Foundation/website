@@ -37,15 +37,12 @@ import { Skeleton } from "@heroui/skeleton";
 // }
 
 export default function DonatePage({ params }: IParams) {
-  const [slug, setSlug] = useState<string>("");
   const [project, setProject] = useState<IProject | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadData() {
       const resolvedParams = await params;
-
-      setSlug(resolvedParams.slug);
 
       const { data }: { data: IProject[] } = await getData({
         type: "projects",
@@ -128,11 +125,15 @@ export default function DonatePage({ params }: IParams) {
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
             {project.name}
           </h1>
-          <p className="text-white/90 text-lg max-w-2xl line-clamp-2">
-            {project.description}
-          </p>
         </div>
       </div>
+
+      {/* Project description */}
+      {project.description && (
+        <p className="text-default-600 mb-6 leading-relaxed">
+          {project.description}
+        </p>
+      )}
 
       {/* Donation Form */}
       <DonationFormClient project={project} />
@@ -177,7 +178,7 @@ function ErrorMessage() {
 }
 
 // Client-side donation form component
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@heroui/button";
 import { Input } from "@heroui/input";
 import { Card, CardBody, CardHeader, CardFooter } from "@heroui/card";
@@ -220,6 +221,19 @@ function DonationFormClient({ project }: { project: IProject }) {
   const [paymentMethods, setPaymentMethods] = useState<IPaymentMethod[]>([]);
   const [loadingPaymentMethods, setLoadingPaymentMethods] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  // Auto-submit after returning from login via OTP, but only when there's no saved card to choose from
+  useEffect(() => {
+    if (
+      searchParams.get("proceed") === "1" &&
+      isAuthenticated() &&
+      !loadingPaymentMethods &&
+      selectedPaymentMethod === "new"
+    ) {
+      formRef.current?.requestSubmit();
+    }
+  }, [loadingPaymentMethods, selectedPaymentMethod, searchParams]);
 
   // Load payment methods
   useEffect(() => {
@@ -403,7 +417,7 @@ function DonationFormClient({ project }: { project: IProject }) {
     <Card className="w-full shadow-xl border-none overflow-visible mb-16">
       {/* Header with progress */}
       <CardHeader className="flex flex-col p-0">
-        <div className="bg-gradient-to-r from-primary-600 to-primary-500 p-6 rounded-t-xl w-full">
+        <div className="bg-linear-to-r from-primary-600 to-primary-500 p-6 rounded-t-xl w-full">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Heart className="w-5 h-5 text-white" />
@@ -447,7 +461,7 @@ function DonationFormClient({ project }: { project: IProject }) {
       </CardHeader>
 
       <CardBody className="px-6 py-6">
-        <form onSubmit={handleSubmit}>
+        <form ref={formRef} onSubmit={handleSubmit}>
           {/* Amount Input */}
           <div>
             <h3 className="text-lg font-semibold mb-3">Ընտրեք գումարը</h3>
@@ -611,7 +625,7 @@ function DonationFormClient({ project }: { project: IProject }) {
 
       <Divider />
 
-      <CardFooter className="px-6 py-6 bg-gradient-to-r from-primary-50 to-primary-100">
+      <CardFooter className="px-6 py-6 bg-linear-to-r from-primary-50 to-primary-100">
         <div className="w-full">
           <div className="flex justify-between items-center mb-4">
             <span className="text-lg text-default-700">Ընդհանուր գումար</span>
@@ -625,7 +639,7 @@ function DonationFormClient({ project }: { project: IProject }) {
             isDisabled={isSubmitting}
             isLoading={isSubmitting}
             size="lg"
-            onClick={handleSubmit}
+            onPress={handleSubmit}
           >
             {isSubmitting
               ? "Մշակվում է..."

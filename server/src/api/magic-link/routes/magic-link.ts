@@ -20,5 +20,15 @@ export default {
         auth: false,
       },
     },
+    {
+      method: "POST",
+      path: "/magic-link/verify-otp",
+      handler: "magic-link.verifyOtp",
+      config: {
+        policies: [],
+        middlewares: [],
+        auth: false,
+      },
+    },
   ],
 };

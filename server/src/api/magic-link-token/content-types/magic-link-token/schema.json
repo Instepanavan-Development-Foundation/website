@@ -28,6 +28,9 @@
     "used": {
       "type": "boolean",
       "default": false
+    },
+    "otp": {
+      "type": "string"
     }
   }
 }
