@@ -636,6 +636,7 @@ function DonationFormClient({ project }: { project: IProject }) {
             isLoading={isSubmitting}
             size="lg"
             type="submit"
+            onClick={() => formRef.current?.requestSubmit()}
           >
             {isSubmitting
               ? "Մշակվում է..."
