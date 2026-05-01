@@ -227,9 +227,14 @@ function DonationFormClient({ project }: { project: IProject }) {
       !loadingPaymentMethods &&
       selectedPaymentMethod === "new"
     ) {
+      // Remove proceed=1 from URL to prevent re-submission on back button
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete("proceed");
+      window.history.replaceState(null, "", `${pathname}?${params.toString()}`);
+
       formRef.current?.requestSubmit();
     }
-  }, [loadingPaymentMethods, selectedPaymentMethod, searchParams]);
+  }, [loadingPaymentMethods, selectedPaymentMethod, searchParams, pathname]);
 
   // Load payment methods
   useEffect(() => {
