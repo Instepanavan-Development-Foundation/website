@@ -37,7 +37,6 @@ import { Skeleton } from "@heroui/skeleton";
 // }
 
 export default function DonatePage({ params }: IParams) {
-  const { isLoading: authLoading } = useAuth("/login");
   const [slug, setSlug] = useState<string>("");
   const [project, setProject] = useState<IProject | null>(null);
   const [loading, setLoading] = useState(true);
@@ -64,12 +63,10 @@ export default function DonatePage({ params }: IParams) {
       setLoading(false);
     }
 
-    if (!authLoading) {
-      loadData();
-    }
-  }, [params, authLoading]);
+    loadData();
+  }, [params]);
 
-  if (authLoading || loading) {
+  if (loading) {
     return (
       <section className="flex flex-col px-4 max-w-5xl mx-auto py-16">
         <div className="text-center">Բեռնում...</div>
@@ -105,6 +102,16 @@ export default function DonatePage({ params }: IParams) {
 
   return (
     <section className="flex flex-col px-4 max-w-5xl mx-auto">
+      {/* Back to project */}
+      <div className="pt-6 pb-2">
+        <Link
+          className="inline-flex items-center gap-1 text-sm text-default-500 hover:text-default-800 transition-colors"
+          href={`/project/${project.slug}`}
+        >
+          ← {project.name}
+        </Link>
+      </div>
+
       {/* Hero Banner */}
       <div className="relative w-full h-64 md:h-40 mb-8 rounded-xl overflow-hidden">
         <Image
@@ -181,7 +188,6 @@ import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { Image } from "@heroui/image";
 
-import { useAuth } from "@/src/hooks/useAuth";
 import getMediaSrc from "@/src/helpers/getMediaUrl";
 import NotFound from "@/components/NotFound";
 import { IParams } from "@/src/models/params";
@@ -191,6 +197,7 @@ import getPaymentMethods, {
   IPaymentMethod,
 } from "@/src/helpers/getPaymentMethods";
 import { initPayment } from "@/src/helpers/initPayment";
+import { getToken, isAuthenticated } from "@/src/services/userService";
 
 // Preset donation amounts
 const presetAmounts = [3000, 5000, 10000, 20000, 50000];
@@ -290,18 +297,21 @@ function DonationFormClient({ project }: { project: IProject }) {
       return;
     }
 
+    // Check authentication before proceeding to payment
+    const jwt = getToken();
+
+    if (!isAuthenticated()) {
+      const returnUrl = `/donate/${project.slug}?amount=${amount}`;
+
+      router.push(`/login?returnUrl=${encodeURIComponent(returnUrl)}`);
+
+      return;
+    }
+
     setIsSubmitting(true);
 
     // If "new card" is selected, redirect to Ameriabank payment page
     if (selectedPaymentMethod === "new") {
-      const jwt =
-        typeof window !== "undefined" ? localStorage.getItem("jwt") : null;
-
-      if (!jwt) {
-        router.push("/login");
-
-        return;
-      }
 
       // Get user email
       const userResponse = await fetch(
@@ -338,16 +348,6 @@ function DonationFormClient({ project }: { project: IProject }) {
     }
 
     // Existing card flow - pay with saved card
-    const jwt =
-      typeof window !== "undefined" ? localStorage.getItem("jwt") : null;
-
-    if (!jwt) {
-      setIsSubmitting(false);
-      router.push("/login");
-
-      return;
-    }
-
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/payment/pay-with-saved-card`,
