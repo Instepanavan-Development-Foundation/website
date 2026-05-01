@@ -121,19 +121,15 @@ export default function DonatePage({ params }: IParams) {
           src={getMediaSrc(project.image)}
           width="100%"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end p-6">
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
+        <div className="absolute inset-0 z-10 bg-linear-to-t from-black via-black/70 to-transparent flex flex-col justify-end p-6">
+          <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">
             {project.name}
           </h1>
+          <p className="text-white text-base leading-relaxed max-w-3xl">
+            {project.description}
+          </p>
         </div>
       </div>
-
-      {/* Project description */}
-      {project.description && (
-        <p className="text-default-600 mb-6 leading-relaxed">
-          {project.description}
-        </p>
-      )}
 
       {/* Donation Form */}
       <DonationFormClient project={project} />
