@@ -110,32 +110,40 @@ export default {
         );
       }
 
-      // Guard against duplicate saves for the same paymentId
-      const existing = await strapi.db.query('api::payment-log.payment-log').findOne({
-        where: { paymentId, success: true },
-      });
-      if (existing) {
+      // Advisory lock per paymentId prevents concurrent double-saves from the same redirect
+      const trx = await strapi.db.connection.transaction();
+      try {
+        await trx.raw('SELECT pg_advisory_xact_lock(hashtext(?))', [paymentId]);
+
+        const existing = await trx('payment_logs')
+          .where({ payment_id: paymentId, success: true })
+          .first();
+
+        if (existing) {
+          await trx.commit();
+          const paymentDetails = await service.getPaymentDetails(paymentId);
+          return ctx.send({ success: true, amount: paymentDetails?.Amount }, 200);
+        }
+
         const paymentDetails = await service.getPaymentDetails(paymentId);
-        return ctx.send({ success: true, amount: paymentDetails?.Amount }, 200);
+        if (!paymentDetails.PaymentID) {
+          paymentDetails.PaymentID = paymentId;
+        }
+
+        await service.savePayment({
+          paymentDetails,
+          projectDocumentId,
+          userId: user.id,
+          userDocumentId: fullUser.documentId,
+        });
+
+        await trx.commit();
+
+        return ctx.send({ success: true, amount: paymentDetails.Amount }, 200);
+      } catch (txError) {
+        await trx.rollback();
+        throw txError;
       }
-
-      const paymentDetails = await service.getPaymentDetails(paymentId);
-      // Ensure PaymentID is in the details (GetPaymentDetails may not return it)
-      if (!paymentDetails.PaymentID) {
-        paymentDetails.PaymentID = paymentId;
-      }
-
-      await service.savePayment({
-        paymentDetails,
-        projectDocumentId,
-        userId: user.id,
-        userDocumentId: fullUser.documentId
-      });
-
-      return ctx.send({
-        success: true,
-        amount: paymentDetails.Amount
-      }, 200);
     } catch (error) {
       console.error("ERROR in getPaymentDetails:", error);
       return ctx.send({ errorMessage: error.message }, 500);
@@ -152,8 +160,7 @@ export default {
         return ctx.unauthorized('Invalid admin API key');
       }
 
-      const projectPayment =
-        await service.getProjectPaymentWithMethod(projectPaymentId);
+      const projectPayment = await service.getProjectPaymentWithMethod(projectPaymentId);
 
       if (!projectPayment.project) {
         throw new Error("No project found");
@@ -163,70 +170,48 @@ export default {
         throw new Error("Project donation type is not recurring");
       }
 
-      // find payment log for this month with projectPaymentId, success: true,
-      const projectPaymentLogForThisMonth =
-        await service.getProjectPaymentLogForThisMonth(projectPaymentId);
-      if (projectPaymentLogForThisMonth) {
-        return ctx.send(
-          {
-            message: `The payment was already processed this month`,
-          },
-          203
-        );
-      }
-      // if payment is in progress, skipping the payment
-      if (projectPayment.isPaymentInProgress) {
-        throw Error(
-          `Project Payment with projectPaymentId ${projectPaymentId}  is in progress`
-        );
-      }
-
-      await service.updateProjectPaymentIsPaymentInProgress(
-        projectPaymentId,
-        true
-      );
+      await service.updateProjectPaymentIsPaymentInProgress(projectPaymentId, true);
 
       const orderId = await service.getOrderId();
       if (!orderId) {
-        return ctx.send({ errorMessage: "Failed to get latest orderId" }, 500);
+        throw new Error("Failed to get latest orderId");
       }
 
       const bindingParams = typeof projectPayment.payment_method.params === 'string'
         ? JSON.parse(projectPayment.payment_method.params)
         : projectPayment.payment_method.params;
 
-      const paymentDetails = await service.makeBindingPayment({
-        projectPayment: {
-          Amount: projectPayment.amount,
+      // Atomically acquire lock, check if already processed, charge bank, and create log
+      // CRITICAL: The bank charge happens WITHIN the lock to prevent concurrent double-charges
+      const result = await service.doRecurringPaymentWithAtomicLock({
+        projectPaymentId,
+        projectPaymentData: {
+          amount: projectPayment.amount,
           CardHolderID: bindingParams.CardHolderID,
           currency: projectPayment.currency,
+          userDocumentId: projectPayment.payment_method?.userDocumentId,
+          projectDocumentId: projectPayment.project.documentId,
+          projectSlug: projectPayment.project.slug,
+          projectName: projectPayment.project.name,
         },
         orderId,
       });
 
-      // Check if payment was actually successful
-      const isSuccess = paymentDetails.ResponseCode === process.env.SUCCESS_RESPONSE_CODE;
+      await service.updateProjectPaymentIsPaymentInProgress(projectPaymentId, false);
 
-      await service.createPaymentLog({
-        paymentDetails,
-        projectPaymentId,
-        success: isSuccess,
-        userDocumentId: projectPayment.payment_method?.userDocumentId,
-        projectDocumentId: projectPayment.project.documentId,
-        projectName: projectPayment.project.name,
-      });
-
-      await service.updateProjectPaymentIsPaymentInProgress(
-        projectPaymentId,
-        false
-      );
+      if (result.alreadyProcessed) {
+        return ctx.send(
+          { message: "The payment was already processed this month" },
+          203
+        );
+      }
 
       // If payment failed, return error with details
-      if (!isSuccess) {
+      if (!result.isSuccess) {
         return ctx.send(
           {
-            errorMessage: `Payment failed: ${paymentDetails.Description || 'Unknown error'}`,
-            responseCode: paymentDetails.ResponseCode,
+            errorMessage: `Payment failed: ${result.paymentDetails.Description || 'Unknown error'}`,
+            responseCode: result.paymentDetails.ResponseCode,
           },
           400
         );
@@ -239,11 +224,12 @@ export default {
         200
       );
     } catch (error) {
-      console.log(error);
-      await service.updateProjectPaymentIsPaymentInProgress(
-        projectPaymentId,
-        false
-      );
+      console.error("[PAYMENT_ERROR]", error);
+      try {
+        await service.updateProjectPaymentIsPaymentInProgress(projectPaymentId, false);
+      } catch (e) {
+        console.error("Failed to update payment in progress flag:", e);
+      }
       return ctx.send({ errorMessage: error.message }, 500);
     }
   },
@@ -382,21 +368,35 @@ export default {
         return ctx.send({ error: "Payment is not eligible for cancellation" }, 400);
       }
 
-      // Check 72-hour window
       const hoursElapsed = (Date.now() - new Date(log.createdAt).getTime()) / (1000 * 60 * 60);
       if (hoursElapsed > 72) {
         return ctx.send({ error: "Cancel window expired (72 hours). Use refund instead." }, 400);
       }
 
-      // Extract PaymentID
       const paymentId = log.paymentId;
       if (!paymentId) {
         return ctx.send({ error: "No PaymentID found for this log" }, 400);
       }
 
+      // Optimistic lock: atomically claim the cancel slot before calling the bank
+      const claimed = await strapi.db.connection.raw(
+        `UPDATE payment_logs SET payment_status = 'cancelling'
+         WHERE document_id = ? AND payment_status NOT IN ('cancelled','refunded','cancelling')
+         RETURNING id`,
+        [paymentLogDocumentId]
+      );
+      if (!claimed.rows.length) {
+        return ctx.send({ error: "Already cancelled or concurrent cancel in progress" }, 409);
+      }
+
       const result = await service.cancelPayment(paymentId);
 
       if (result.ResponseCode !== process.env.SUCCESS_RESPONSE_CODE) {
+        // Roll back the optimistic claim so retries are possible
+        await strapi.db.connection.raw(
+          `UPDATE payment_logs SET payment_status = 'completed' WHERE document_id = ?`,
+          [paymentLogDocumentId]
+        );
         return ctx.send({
           error: "Cancel failed",
           details: result.ResponseMessage || result.ResponseCode,
@@ -447,37 +447,49 @@ export default {
         return ctx.send({ error: "Payment is already cancelled/refunded" }, 400);
       }
 
-      const refundedSoFar = log.refundedAmount || 0;
-      const remaining = log.amount - refundedSoFar;
-
-      if (amount > remaining) {
-        return ctx.send({ error: `Refund amount exceeds remaining (${remaining})` }, 400);
-      }
-
-      // Extract PaymentID
       const paymentId = log.paymentId;
       if (!paymentId) {
         return ctx.send({ error: "No PaymentID found for this log" }, 400);
       }
 
+      // Optimistic lock: atomically claim the refund amount before calling the bank.
+      // The WHERE guard (refunded_amount + amount <= log_amount) prevents concurrent
+      // requests from over-refunding even if both pass the earlier read-based check.
+      const claimed = await strapi.db.connection.raw(
+        `UPDATE payment_logs
+         SET refunded_amount = refunded_amount + ?
+         WHERE document_id = ?
+           AND payment_status NOT IN ('cancelled', 'refunded')
+           AND refunded_amount + ? <= amount
+         RETURNING id, refunded_amount, amount`,
+        [amount, paymentLogDocumentId, amount]
+      );
+      if (!claimed.rows.length) {
+        return ctx.send({ error: "Refund amount exceeds remaining or payment already fully refunded" }, 409);
+      }
+
+      const { refunded_amount: newRefundedAmount, amount: totalAmount } = claimed.rows[0];
+      const isFullRefund = newRefundedAmount >= totalAmount;
+
       const result = await service.refundPayment(paymentId, amount);
 
       if (result.ResponseCode !== process.env.SUCCESS_RESPONSE_CODE) {
+        // Roll back the optimistic increment
+        await strapi.db.connection.raw(
+          `UPDATE payment_logs SET refunded_amount = refunded_amount - ? WHERE document_id = ?`,
+          [amount, paymentLogDocumentId]
+        );
         return ctx.send({
           error: "Refund failed",
           details: result.ResponseMessage || result.ResponseCode,
         }, 400);
       }
 
-      const newRefundedAmount = refundedSoFar + amount;
-      const isFullRefund = newRefundedAmount >= log.amount;
-
       await strapi.documents('api::payment-log.payment-log').update({
         documentId: paymentLogDocumentId,
         data: {
           paymentStatus: isFullRefund ? 'refunded' : 'partial_refund',
           success: isFullRefund ? false : log.success,
-          refundedAmount: newRefundedAmount,
         } as any,
       });
 
@@ -485,7 +497,7 @@ export default {
         success: true,
         message: isFullRefund ? "Full refund processed" : "Partial refund processed",
         refundedAmount: newRefundedAmount,
-        remaining: log.amount - newRefundedAmount,
+        remaining: totalAmount - newRefundedAmount,
       }, 200);
     } catch (error) {
       console.error("ERROR in refundPayment:", error);

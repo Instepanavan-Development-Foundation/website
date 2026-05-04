@@ -18,7 +18,13 @@ export default {
    * This gives you an opportunity to set up your data model,
    * run jobs, or perform some special logic.
    */
-  bootstrap({ strapi }: { strapi: Core.Strapi }) {
+  async bootstrap({ strapi }: { strapi: Core.Strapi }) {
+    await strapi.db.connection.raw(
+      "CREATE SEQUENCE IF NOT EXISTS payment_order_id_seq START 1"
+    );
+    await strapi.db.connection.raw(
+      "ALTER TABLE payment_logs ADD COLUMN IF NOT EXISTS order_id VARCHAR(255)"
+    );
     initQueue(strapi);
   },
 };

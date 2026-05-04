@@ -5,6 +5,7 @@ import {
   PROJECT_PAYMENT_API,
 } from "../constants/apis";
 import { CURRENCIES } from "../constants/currencies";
+import bankingService from "./banking";
 
 const service = {
   savePayment: async ({ paymentDetails, projectDocumentId, projectPaymentId, userId, userDocumentId, existingPaymentMethodId }) => {
@@ -66,8 +67,6 @@ const service = {
       throw new Error(`Project missing name: ${projectDocumentId}`);
     }
 
-    const newGatheredAmount = currentProject.gatheredAmount + paymentDetails.Amount;
-
     await service.createProjectPayment({
       paymentDetails,
       projectPaymentMethod,
@@ -75,14 +74,22 @@ const service = {
       userDocumentId,
     });
 
-    await service.updateProjectData({
-      projectDocumentId,
-      data: {
-        gatheredAmount: newGatheredAmount,
-        isArchived:
-          newGatheredAmount >= currentProject.requiredAmount,
-      },
-    });
+    // Use live sum from payment_logs (the authoritative source per architecture)
+    // to check archive threshold — avoids both the lost-update race and the
+    // gatheredAmount field that CLAUDE.md explicitly forbids using for display
+    const { rows } = await strapi.db.connection.raw(
+      `SELECT COALESCE(SUM(pl.amount), 0) AS total
+       FROM payment_logs pl
+       WHERE pl.project_document_id = ? AND pl.success = true`,
+      [projectDocumentId]
+    );
+    const totalRaised = Number(rows[0].total);
+    if (totalRaised >= currentProject.requiredAmount) {
+      await service.updateProjectData({
+        projectDocumentId,
+        data: { isArchived: true },
+      });
+    }
 
     // Notify admin of new donation (fire-and-forget)
     service.sendDonationNotification({
@@ -241,7 +248,7 @@ const service = {
             fields: ["params", "userDocumentId"],
           },
           project: {
-            fields: ["documentId", "donationType", "name"],
+            fields: ["documentId", "donationType", "name", "slug"],
           },
         },
       });
@@ -262,61 +269,273 @@ const service = {
     });
   },
   getProjectPaymentLogForThisMonth: async (projectPaymentId) => {
-    const currentDate = new Date();
-    const startOfMonth = new Date(
-      currentDate.getFullYear(),
-      currentDate.getMonth(),
-      1
-    );
-    const endOfMonth = new Date(
-      currentDate.getFullYear(),
-      currentDate.getMonth() + 1,
-      0
-    );
+    // CRITICAL: Use Armenia timezone (UTC+4) for month boundary, not server local time
+    const armeniaTimeStr = new Date().toLocaleString('en-US', { timeZone: 'Asia/Yerevan' });
+    const currentDate = new Date(armeniaTimeStr);
+    const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+    // Use exclusive upper bound to avoid midnight off-by-one on last day of month
+    const startOfNextMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
 
     // First check: Has this payment succeeded THIS MONTH?
     const successLogs = await strapi.documents(PAYMENT_LOG_API).findMany({
       filters: {
-        project_payment: {
-          documentId: projectPaymentId,
-        },
+        project_payment: { documentId: projectPaymentId },
         success: true,
         createdAt: {
           $gte: startOfMonth.toISOString(),
-          $lte: endOfMonth.toISOString(),
+          $lt: startOfNextMonth.toISOString(),
         },
       },
     });
 
-    // If successful payment this month, don't retry
     if (successLogs.length > 0) {
       return successLogs[0];
     }
 
-    // Second check: Has this payment FAILED in the last 10 days?
-    const tenDaysAgo = new Date(currentDate);
-    tenDaysAgo.setDate(tenDaysAgo.getDate() - 10);
-
+    // Second check: Has this payment FAILED THIS MONTH?
+    // Scoped to current month — cross-month failures must not block a new billing period
     const recentFailedLogs = await strapi.documents(PAYMENT_LOG_API).findMany({
       filters: {
-        project_payment: {
-          documentId: projectPaymentId,
-        },
+        project_payment: { documentId: projectPaymentId },
         success: false,
         createdAt: {
-          $gte: tenDaysAgo.toISOString(),
+          $gte: startOfMonth.toISOString(),
+          $lt: startOfNextMonth.toISOString(),
         },
       },
     });
 
-    // If failed in last 10 days, skip (don't spam failed attempts)
     if (recentFailedLogs.length > 0) {
       return recentFailedLogs[0];
     }
 
-    // No successful payment this month AND no failed attempt in last 10 days = OK to process
     return null;
   },
+  checkAndCreatePaymentLogWithLock: async (
+    projectPaymentId: string,
+    paymentDetails: any,
+    success: boolean,
+    userDocumentId?: string,
+    projectDocumentId?: string,
+    projectName?: string
+  ) => {
+    // Start a database transaction with row-level lock
+    const trx = await strapi.db.connection.transaction();
+
+    try {
+      // Acquire exclusive lock on the project_payment row
+      const projectPaymentRecord = await trx('project_payments')
+        .where({ document_id: projectPaymentId })
+        .forUpdate()
+        .first();
+
+      if (!projectPaymentRecord) {
+        await trx.rollback();
+        throw new Error('Project payment not found');
+      }
+
+      // CRITICAL: Use Armenia timezone (UTC+4) for month boundary, not server local time
+      const armeniaTimeStr = new Date().toLocaleString('en-US', { timeZone: 'Asia/Yerevan' });
+      const currentDate = new Date(armeniaTimeStr);
+      const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+      const startOfNextMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
+
+      // Check success logs this month
+      const successLog = await trx('payment_logs')
+        .innerJoin('payment_logs_project_payment_lnk', 'payment_logs.id', 'payment_logs_project_payment_lnk.payment_log_id')
+        .where('payment_logs_project_payment_lnk.project_payment_id', projectPaymentRecord.id)
+        .andWhere('payment_logs.success', true)
+        .andWhere('payment_logs.created_at', '>=', startOfMonth.toISOString())
+        .andWhere('payment_logs.created_at', '<', startOfNextMonth.toISOString())
+        .first();
+
+      if (successLog) {
+        await trx.rollback();
+        return { alreadyProcessed: true };
+      }
+
+      const threeDaysAgo = new Date(currentDate);
+      threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+
+      const recentFailedLog = await trx('payment_logs')
+        .innerJoin('payment_logs_project_payment_lnk', 'payment_logs.id', 'payment_logs_project_payment_lnk.payment_log_id')
+        .where('payment_logs_project_payment_lnk.project_payment_id', projectPaymentRecord.id)
+        .andWhere('payment_logs.success', false)
+        .andWhere('payment_logs.created_at', '>=', threeDaysAgo.toISOString())
+        .first();
+
+      if (recentFailedLog) {
+        await trx.rollback();
+        return { alreadyProcessed: true };
+      }
+
+      // Not processed yet - create payment log WITHIN this transaction
+      // This ensures atomicity: lock check + log creation are atomic
+      const { CURRENCIES } = await import('../constants/currencies');
+      const documentId = require('crypto').randomBytes(12).toString('hex').slice(0, 24);
+      const now = new Date().toISOString();
+
+      const logIdResult = await trx('payment_logs').insert({
+        document_id: documentId,
+        amount: paymentDetails.Amount,
+        currency: CURRENCIES[paymentDetails.Currency ?? process.env.CURRENCY_AM] ?? 'AMD',
+        details: JSON.stringify(paymentDetails || {}),
+        success: success,
+        payment_id: paymentDetails.PaymentID || null,
+        order_id: paymentDetails.OrderId || null,
+        payment_status: success ? 'completed' : null,
+        user_document_id: userDocumentId || null,
+        project_document_id: projectDocumentId || null,
+        project_name: projectName || null,
+        created_at: now,
+        updated_at: now,
+      }).returning('id');
+
+      // Knex .returning('id') returns an array of objects: [{ id: 116 }]
+      const logId = (logIdResult as any)[0].id;
+
+      // Create the link between payment_log and project_payment
+      if (logId && projectPaymentRecord) {
+        await trx('payment_logs_project_payment_lnk').insert({
+          payment_log_id: logId,
+          project_payment_id: projectPaymentRecord.id,
+        });
+      }
+
+      // Commit the entire transaction atomically
+      await trx.commit();
+      return { alreadyProcessed: false, logCreated: true };
+    } catch (error) {
+      await trx.rollback();
+      throw error;
+    }
+  },
+
+  doRecurringPaymentWithAtomicLock: async ({
+    projectPaymentId,
+    projectPaymentData,
+    orderId,
+  }: {
+    projectPaymentId: string;
+    projectPaymentData: any;
+    orderId: string;
+  }) => {
+    // Start a database transaction with row-level lock
+    const trx = await strapi.db.connection.transaction();
+
+    try {
+      // Acquire exclusive lock on the project_payment row
+      const projectPaymentRecord = await trx('project_payments')
+        .where({ document_id: projectPaymentId })
+        .forUpdate()
+        .first();
+
+      if (!projectPaymentRecord) {
+        await trx.rollback();
+        throw new Error('Project payment not found');
+      }
+
+      // CRITICAL: Use Armenia timezone (UTC+4) for month boundary, not server local time
+      const armeniaTimeStr = new Date().toLocaleString('en-US', { timeZone: 'Asia/Yerevan' });
+      const currentDate = new Date(armeniaTimeStr);
+      const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+      // Use < startOfNextMonth instead of <= endOfMonth to avoid midnight off-by-one
+      const startOfNextMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
+
+      // Check success logs this month
+      const successLog = await trx('payment_logs')
+        .innerJoin('payment_logs_project_payment_lnk', 'payment_logs.id', 'payment_logs_project_payment_lnk.payment_log_id')
+        .where('payment_logs_project_payment_lnk.project_payment_id', projectPaymentRecord.id)
+        .andWhere('payment_logs.success', true)
+        .andWhere('payment_logs.created_at', '>=', startOfMonth.toISOString())
+        .andWhere('payment_logs.created_at', '<', startOfNextMonth.toISOString())
+        .first();
+
+      if (successLog) {
+        await trx.rollback();
+        return { alreadyProcessed: true, reason: 'success_this_month', charged: false, logCreated: false };
+      }
+
+      // Block same-cron-run retries: if payment failed in the last 3 days, skip.
+      // 3 days < 10-day interval between cron runs (4th, 14th, 24th), so the 14th cron
+      // sees the 4th's failure as old enough and retries.
+      const threeDaysAgo = new Date(currentDate);
+      threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+
+      const recentFailedLog = await trx('payment_logs')
+        .innerJoin('payment_logs_project_payment_lnk', 'payment_logs.id', 'payment_logs_project_payment_lnk.payment_log_id')
+        .where('payment_logs_project_payment_lnk.project_payment_id', projectPaymentRecord.id)
+        .andWhere('payment_logs.success', false)
+        .andWhere('payment_logs.created_at', '>=', threeDaysAgo.toISOString())
+        .first();
+
+      if (recentFailedLog) {
+        await trx.rollback();
+        return { alreadyProcessed: true, reason: 'failed_recently', charged: false, logCreated: false };
+      }
+
+      // CRITICAL: Charge the bank while still holding the lock
+      // This prevents concurrent requests from both charging before any creates a log
+      const paymentDetails = await bankingService.makeBindingPayment({
+        projectPayment: {
+          Amount: projectPaymentData.amount,
+          CardHolderID: projectPaymentData.CardHolderID,
+          currency: projectPaymentData.currency,
+        },
+        orderId,
+        projectDocumentId: projectPaymentData.projectDocumentId,
+        projectSlug: projectPaymentData.projectSlug,
+      });
+
+      const isSuccess = paymentDetails.ResponseCode === process.env.SUCCESS_RESPONSE_CODE;
+
+      // Create payment log WITHIN this transaction
+      const { CURRENCIES } = await import('../constants/currencies');
+      const documentId = require('crypto').randomBytes(12).toString('hex').slice(0, 24);
+      const now = new Date().toISOString();
+
+      const logIdResult = await trx('payment_logs').insert({
+        document_id: documentId,
+        amount: paymentDetails.Amount,
+        currency: CURRENCIES[paymentDetails.Currency ?? process.env.CURRENCY_AM] ?? 'AMD',
+        details: JSON.stringify(paymentDetails || {}),
+        success: isSuccess,
+        payment_id: paymentDetails.PaymentID || null,
+        order_id: paymentDetails.OrderId || null,
+        payment_status: isSuccess ? 'completed' : null,
+        user_document_id: projectPaymentData.userDocumentId || null,
+        project_document_id: projectPaymentData.projectDocumentId || null,
+        project_name: projectPaymentData.projectName || null,
+        created_at: now,
+        updated_at: now,
+      }).returning('id');
+
+      const logId = (logIdResult as any)[0].id;
+
+      // Create the link between payment_log and project_payment
+      if (logId && projectPaymentRecord) {
+        await trx('payment_logs_project_payment_lnk').insert({
+          payment_log_id: logId,
+          project_payment_id: projectPaymentRecord.id,
+        });
+      }
+
+      // Commit the entire transaction atomically
+      await trx.commit();
+
+      return {
+        alreadyProcessed: false,
+        charged: true,
+        logCreated: true,
+        paymentDetails,
+        isSuccess,
+      };
+    } catch (error) {
+      await trx.rollback();
+      throw error;
+    }
+  },
+
   sendDonationNotification: async ({
     amount,
     currency,

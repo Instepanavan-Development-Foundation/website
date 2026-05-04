@@ -12,6 +12,7 @@ interface ProcessPaymentInput {
 }
 const axiosClient = axios.create({
   baseURL: process.env.BASE_URL,
+  timeout: 30000,
 });
 
 const PROJECT_PAYMENT_CREATE_EVENT = "project-payment:create";
@@ -64,11 +65,6 @@ upper?.task({
 // Main recurring payments workflow
 const recurringPaymentsTask = hatchet?.workflow({
   name: "recurring-payments-monthly",
-  onCrons: [
-    "0 0 4 * *",  // Run at midnight UTC on the 4th (4:00 AM Armenia)
-    "0 0 14 * *", // Run at midnight UTC on the 14th (4:00 AM Armenia)
-    "0 0 24 * *", // Run at midnight UTC on the 24th (4:00 AM Armenia)
-  ],
 });
 
 recurringPaymentsTask?.task({
@@ -155,7 +151,10 @@ export async function startRecurringPaymentSystem(strapi: Core.Strapi): Promise<
     workflows: [recurringPaymentsTask, upper],
   });
 
-  worker.start();
+  worker.start().catch(err => {
+    strapiGlobal.log.error("Recurring payments worker crashed:", err);
+    process.exit(1);
+  });
 
   try {
     await recurringPaymentsTask.cron('monthly-payments-4th', '0 0 4 * *', {});

@@ -10,7 +10,7 @@
     "dev": "strapi develop",
     "start": "strapi start",
     "strapi": "strapi",
-    "test": "jest"
+    "test": "npm run build && jest --forceExit"
   },
   "dependencies": {
     "@hatchet-dev/typescript-sdk": "^1.10.5",

@@ -84,7 +84,7 @@ This document describes the payment system architecture for the Instepanavan don
 
 **Process:**
 1. Validates required fields: `amount`, `projectDocumentId`, `email`
-2. Generates unique `orderId` (random between `MIN_ORDER_ID` and `MAX_ORDER_ID`)
+2. Generates unique `orderId` via PostgreSQL sequence (`SELECT nextval('payment_order_id_seq')`) — collision-free even under concurrent load
 3. Creates payment parameters including unique `CardHolderID`:
    ```
    CardHolderID = `${email}_${projectDocumentId}_${uuid}`
@@ -348,7 +348,7 @@ upper?.task({
 
 **Endpoint:** `POST /api/payment/do-recurring-payment`
 
-**⚠️ Security Warning:** No authentication currently implemented
+**Auth:** Requires `x-admin-api-key` header matching `ADMIN_API_KEY` env var (Hatchet sends this automatically).
 
 **Request Body:**
 ```json
@@ -357,17 +357,11 @@ upper?.task({
 }
 ```
 
-**Process:** [controllers/payment.ts:69-146](controllers/payment.ts#L69-L146)
+**Process:** [controllers/payment.ts](controllers/payment.ts)
 
 #### Step 1: Fetch Project Payment with Binding
 ```javascript
-const projectPayment = await strapi.documents("api::project-payment.project-payment").findOne({
-  documentId: "payment123",
-  populate: {
-    payment_method: { fields: ["params"] },
-    project: { fields: ["donationType"] }
-  }
-});
+const projectPayment = await service.getProjectPaymentWithMethod(projectPaymentId);
 ```
 
 #### Step 2: Validate Project Type
@@ -377,66 +371,48 @@ if (projectPayment.project.donationType !== "recurring") {
 }
 ```
 
-#### Step 3: Check for Duplicate Payment
-Prevents charging the same payment multiple times in the same month.
-
+#### Step 3: Generate OrderID
 ```javascript
-const thisMonthLog = await getProjectPaymentLogForThisMonth(projectPaymentId);
-if (thisMonthLog) {
-  return { message: "The payment was already processed this month" };
-}
+const orderId = await service.getOrderId();
+// → SELECT nextval('payment_order_id_seq') — atomically unique, no collisions
 ```
 
-**Implementation:** [services/strapi.ts:224-252](services/strapi.ts#L224-L252)
+#### Step 4: Atomic Lock + Charge + Log (single transaction)
 
-#### Step 4: Set Payment Lock
+This is the core of double-charge prevention. Everything happens inside one PostgreSQL transaction:
+
 ```javascript
-if (projectPayment.isPaymentInProgress) {
-  throw Error("Payment is in progress");
-}
-await updateProjectPaymentIsPaymentInProgress(projectPaymentId, true);
-```
-
-#### Step 5: Generate New OrderID
-```javascript
-const orderId = await getOrderId(); // Random between MIN_ORDER_ID and MAX_ORDER_ID
-```
-
-#### Step 6: Call Ameriabank Binding Payment
-```javascript
-const url = `${process.env.PAYMENT_API_BASE_URL}/MakeBindingPayment`;
-
-const params = {
-  ClientID: process.env.CLIENT_ID,
-  Username: process.env.PAYMENT_USERNAME,
-  Password: process.env.PAYMENT_PASSWORD,
-  Amount: projectPayment.amount,
-  OrderID: orderId,
-  Currency: projectPayment.currency,
-  CardHolderID: bindingData.CardHolderID, // From saved payment method
-  Description: projectPayment.name,
-  Timeout: 900,
-  PaymentType: 6
-};
-
-const response = await axios.post(url, params);
-```
-
-**Implementation:** [services/banking.ts:137-152](services/banking.ts#L137-L152)
-
-#### Step 7: Log Transaction
-```javascript
-await createPaymentLog({
-  paymentDetails: response.data,
+const result = await service.doRecurringPaymentWithAtomicLock({
   projectPaymentId,
-  success: true
+  projectPaymentData: { ... },
+  orderId,
 });
 ```
 
-#### Step 8: Release Lock
-```javascript
-await updateProjectPaymentIsPaymentInProgress(projectPaymentId, false);
+**Inside `doRecurringPaymentWithAtomicLock`** ([services/strapi.ts](services/strapi.ts)):
+
 ```
+BEGIN TRANSACTION
+  SELECT ... FROM project_payments WHERE document_id = ? FOR UPDATE
+  ↑ Concurrent requests BLOCK HERE until the first commits
+
+  IF success log exists this month → ROLLBACK, return alreadyProcessed
+  IF failed log exists within last 3 days → ROLLBACK, return alreadyProcessed
+  
+  makeBindingPayment(...)   ← bank charged while lock is held
+  
+  INSERT INTO payment_logs  ← log written while lock is held
+  INSERT INTO payment_logs_project_payment_lnk
+COMMIT
+```
+
+The `FOR UPDATE` row lock on `project_payments` ensures that when 10 concurrent requests arrive (e.g. Hatchet cron fires twice), only one proceeds. The others wait, then see the log from the first and return `alreadyProcessed: true`.
+
+#### Step 5: Return Result
+
+- `200` — payment charged and logged successfully
+- `203` — already processed this month (idempotent, not an error)
+- `400` — bank declined (logged, will retry on next cron date)
 
 ---
 
@@ -768,55 +744,76 @@ On each initialization, the system deletes all existing cron jobs before creatin
 
 ---
 
-## Security Considerations
+## Concurrency & Double-Charge Protection
 
-### ❌ Critical Issues
+### Recurring Payments (cron-triggered)
 
-1. **No Authentication on Recurring Payment Endpoints**
-   - `/do-recurring-payment` - Anyone can trigger charges
-   - `/trigger-all-payments` - Public access to cron trigger
-   - **TODO:** Add admin-only authentication ([controllers/payment.ts:68](controllers/payment.ts#L68), [controllers/payment.ts:148](controllers/payment.ts#L148))
+The guard uses a **PostgreSQL `SELECT ... FOR UPDATE` row lock** on the `project_payments` row, held for the entire duration of the bank charge and log write. This means:
 
-2. **Missing User Association**
-   - Payment methods not linked to users ([services/strapi.ts:131](services/strapi.ts#L131))
-   - No email tracking for recurring payments ([../../../queue/workflow.ts:95](../../../queue/workflow.ts#L95))
+- 10 concurrent requests for the same subscription → only 1 charges the bank, 9 block at the lock and return `alreadyProcessed`
+- Hatchet cron firing twice (the May 4 incident) → same protection, no double-charge
 
-3. **Hardcoded Payment Type**
-   - All payments marked as "recurring" regardless of actual type ([services/strapi.ts:84](services/strapi.ts#L84))
-   - Should respect project's `donationType` field
+**Retry schedule** (cron runs on 4th, 14th, 24th):
+- ✅ Successful payment this month → blocked for the rest of the month
+- ✅ Failed payment within last 3 days → blocked (prevents same-cron-run retry spam)
+- ✅ Failed payment older than 3 days → allowed (user may have received salary, card updated)
+- ✅ Payment from last month → allowed (monthly billing resets)
+
+### One-Time Payments (`get-payment-details`)
+
+Uses `pg_advisory_xact_lock(hashtext(paymentId))` — a transaction-scoped advisory lock keyed on the Ameriabank `PaymentID`. Two browser tabs redirecting back simultaneously are serialized: the second sees the log already saved by the first and returns the amount without re-saving.
+
+### Cancel & Refund (admin panel)
+
+Both use **optimistic atomic UPDATE** before calling the bank:
+- Cancel: `UPDATE ... SET payment_status = 'cancelling' WHERE NOT IN ('cancelled','refunded','cancelling')` → returns 409 if already claimed
+- Refund: `UPDATE ... SET refunded_amount = refunded_amount + ? WHERE refunded_amount + ? <= amount` → prevents over-refund even with concurrent admin clicks
 
 ---
 
-### ⚠️ Potential Issues
+## Security Considerations
 
-1. **Race Condition Risk**
-   - `isPaymentInProgress` lock prevents overlapping charges
-   - Multiple cron triggers could still queue duplicate events
-   - Monthly check helps but not foolproof
+### ✅ Fixed
 
-2. **OrderID Collision**
-   - Random generation between MIN/MAX could theoretically collide
-   - Retry logic exists but may need improvement ([services/banking.ts:90-99](services/banking.ts#L90-L99))
+1. **Authentication on recurring payment endpoints**
+   - `/do-recurring-payment` — requires `x-admin-api-key` header
+   - `/trigger-all-payments` — requires `x-admin-api-key` header
+   - Hatchet worker sends the key automatically ([../../../queue/workflow.ts](../../../queue/workflow.ts))
 
-3. **Sensitive Data in Logs**
-   - Full payment details logged to console
-   - Consider sanitizing before logging
+2. **Double-charge race condition** — fixed via `FOR UPDATE` lock (see above)
+
+3. **OrderID collisions** — fixed via PostgreSQL sequence (atomic, no repeats ever)
+
+4. **One-time payment double-save** — fixed via advisory lock in `getPaymentDetails`
+
+5. **Cancel/refund TOCTOU** — fixed via atomic conditional UPDATE
+
+---
+
+### ⚠️ Known Gaps
+
+1. **`payWithSavedCard` has no idempotency guard**
+   - User double-clicking "Pay with saved card" sends two concurrent requests
+   - Both can charge the bank and create two payment logs
+   - Low priority (user-initiated, authenticated), tracked in TODO.md
+
+2. **Crash between bank charge and log commit**
+   - If the server crashes after `makeBindingPayment` succeeds but before `COMMIT`, the next cron run sees no log and charges again
+   - Fix requires pre-writing a pending log; tracked in TODO.md
+
+3. **Cancel/refund exception rollback**
+   - If the bank API *throws* (network timeout) rather than returning a non-success code, the optimistic claim stays stuck
+   - Intentionally deferred; manually fixable via DB update
 
 ---
 
 ### ✅ Good Practices
 
-1. **Graceful Degradation**
-   - System continues to work if Hatchet is not configured
-   - Clear warnings in logs
-
-2. **Duplicate Payment Prevention**
-   - Monthly payment log check
-   - Payment in progress flag
-
-3. **Audit Trail**
-   - All transactions logged in `payment-log`
-   - Success/failure tracked
+1. **Graceful degradation** — system continues for one-time payments if Hatchet is not configured
+2. **Audit trail** — all transactions (success and failure) logged in `payment-log`
+3. **Armenia timezone** — month boundaries computed in UTC+4, not server local time
+4. **30-second HTTP timeouts** — all Ameriabank API calls have explicit timeouts
+5. **Worker crash handling** — Hatchet worker crash triggers `process.exit(1)` for clean restart
 
 ---
 
@@ -835,9 +832,8 @@ PAYMENT_PASSWORD=your_api_password
 # Payment Settings
 CURRENCY_AM=051                    # Armenian Dram currency code
 SUCCESS_RESPONSE_CODE=00           # Ameriabank success response code
-MIN_ORDER_ID=3831001              # Minimum OrderID for random generation
-MAX_ORDER_ID=3832000              # Maximum OrderID for random generation
 PAYMENT_TIMEOUT=900               # Payment timeout in seconds (15 minutes)
+# OrderIDs are now generated via PostgreSQL sequence — MIN/MAX_ORDER_ID no longer needed
 
 # Application URLs
 BACK_URL=https://instepanavan.am/payment-success
@@ -953,12 +949,29 @@ A single button appears in the payment-log edit view panel ([server/src/admin/ap
 
 ## Testing
 
+### Automated Regression Tests
+
+```bash
+cd server && npm test -- --testPathPatterns=duplicate-payment-guard
+```
+
+Covers:
+- 10 concurrent requests → bank charged exactly once (May 4 incident regression)
+- Failed payment on 4th → retried on 14th (salary scenario)
+- Successful payment → blocked for rest of month
+- Last month's success → does not block this month
+- Failure < 3 days ago → blocked (same cron window)
+- Failure > 3 days ago → allowed (next cron window)
+- 50 concurrent `getOrderId()` calls → all unique
+- Two tabs redirecting simultaneously → only one payment log saved
+
 ### Manual Testing Endpoints
 
 #### Test Recurring Payment for Single Project
 ```bash
 curl -X POST http://localhost:1337/api/payment/trigger-all-payments \
   -H "Content-Type: application/json" \
+  -H "x-admin-api-key: $ADMIN_API_KEY" \
   -d '{"projectDocumentId": "abc123"}'
 ```
 
@@ -966,6 +979,7 @@ curl -X POST http://localhost:1337/api/payment/trigger-all-payments \
 ```bash
 curl -X POST http://localhost:1337/api/payment/trigger-all-payments \
   -H "Content-Type: application/json" \
+  -H "x-admin-api-key: $ADMIN_API_KEY" \
   -d '{}'
 ```
 
@@ -973,6 +987,7 @@ curl -X POST http://localhost:1337/api/payment/trigger-all-payments \
 ```bash
 curl -X POST http://localhost:1337/api/payment/do-recurring-payment \
   -H "Content-Type: application/json" \
+  -H "x-admin-api-key: $ADMIN_API_KEY" \
   -d '{"projectPaymentId": "payment123"}'
 ```
 
@@ -1006,19 +1021,44 @@ curl -X POST http://localhost:1337/api/payment/do-recurring-payment \
 1. **Check Ameriabank credentials:**
    - Verify `CLIENT_ID`, `PAYMENT_USERNAME`, `PAYMENT_PASSWORD`
 
-2. **Check OrderID range:**
-   - Verify `MIN_ORDER_ID` and `MAX_ORDER_ID` are valid
+2. **Check OrderID sequence exists:**
+   ```bash
+   docker exec strapi_postgres_dev psql -U strapi -d instepanavan -c \
+     "SELECT last_value FROM payment_order_id_seq;"
+   ```
 
 3. **Review logs:**
    - Check console output for Ameriabank API errors
 
 ### Duplicate Payments
 
-1. **Check monthly log query:**
-   - Review `getProjectPaymentLogForThisMonth` logic
+1. **Check if the FOR UPDATE lock is working:**
+   ```bash
+   # Run the regression test suite
+   cd server && npm test -- --testPathPatterns=duplicate-payment-guard
+   ```
 
-2. **Verify `isPaymentInProgress` flag:**
-   - Ensure flag is properly reset after processing
+2. **Check payment_logs for this subscription this month:**
+   ```bash
+   docker exec strapi_postgres_dev psql -U strapi -d instepanavan -c \
+     "SELECT id, success, created_at FROM payment_logs
+      JOIN payment_logs_project_payment_lnk lnk ON lnk.payment_log_id = payment_logs.id
+      JOIN project_payments pp ON pp.id = lnk.project_payment_id
+      WHERE pp.document_id = '<projectPaymentId>'
+      AND created_at >= date_trunc('month', now())
+      ORDER BY created_at DESC;"
+   ```
+
+3. **Clear logs for a subscription (dev/test only):**
+   ```bash
+   docker exec strapi_postgres_dev psql -U strapi -d instepanavan -c \
+     "DELETE FROM payment_logs WHERE id IN (
+       SELECT payment_log_id FROM payment_logs_project_payment_lnk
+       WHERE project_payment_id = (
+         SELECT id FROM project_payments WHERE document_id = '<projectPaymentId>'
+       )
+     );"
+   ```
 
 ---
 

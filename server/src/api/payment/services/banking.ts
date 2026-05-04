@@ -114,6 +114,7 @@ const paymentService = {
 
       const response = await axios.post(url, paymentService.getParams(params), {
         headers: { "Content-Type": "application/json" },
+        timeout: 30000,
       });
 
       if (response.data.PaymentID) {
@@ -123,32 +124,8 @@ const paymentService = {
         };
       }
 
-      // Retry only on OrderID collision, return error for other cases
-      console.log(
-        "Payment initialization failed:",
-        JSON.stringify(response.data, null, 2)
-      );
+      console.log("Payment initialization failed:", JSON.stringify(response.data, null, 2));
 
-      // Check if error is OrderID collision (you may need to adjust the error code)
-      // For now, only retry on specific error codes that indicate OrderID collision
-      const isOrderIdCollision = response.data.ResponseCode === "08204";
-
-      if (isOrderIdCollision) {
-        const newOrderId = paymentService.getOrderId();
-        return await paymentService.getPaymentUrl({
-          amount,
-          projectDocumentId,
-          projectSlug,
-          projectName,
-          currencyCode,
-          paymentMethod,
-          lang,
-          orderId: newOrderId,
-          email,
-        });
-      }
-
-      // Return error for all other cases
       return {
         url: null,
         errorMessage: parseAmeriabankError(response.data.ResponseCode, response.data.ResponseMessage),
@@ -163,30 +140,23 @@ const paymentService = {
     }
   },
   getPaymentDetails: async (paymentId: string) => {
-    try {
-      const url = `${process.env.PAYMENT_API_BASE_URL}/GetPaymentDetails`;
-      const response = await axios.post(
-        url,
-        {
-          PaymentID: paymentId,
-          Username: process.env.PAYMENT_USERNAME,
-          Password: process.env.PAYMENT_PASSWORD,
-        },
-        { headers: { "Content-Type": "application/json" } }
-      );
-
-      return response.data;
-    } catch (e) {
-      console.log(
-        "something went wrong in getPaymentDetails",
-        JSON.stringify(e, null, 2)
-      );
-      return null;
-    }
+    const url = `${process.env.PAYMENT_API_BASE_URL}/GetPaymentDetails`;
+    const response = await axios.post(
+      url,
+      {
+        PaymentID: paymentId,
+        Username: process.env.PAYMENT_USERNAME,
+        Password: process.env.PAYMENT_PASSWORD,
+      },
+      { headers: { "Content-Type": "application/json" }, timeout: 30000 }
+    );
+    return response.data;
   },
-  getOrderId: () => {
-    // Use timestamp mod 1e9 to stay within safe integer bounds (~year 2033)
-    return Date.now() % 1_000_000_000;
+  getOrderId: async () => {
+    const result = await (strapi as any).db.connection.raw(
+      "SELECT nextval('payment_order_id_seq') AS order_id"
+    );
+    return Number(result.rows[0].order_id);
   },
   makeBindingPayment: async ({ projectPayment, orderId, projectDocumentId, projectSlug }) => {
     const { Amount, CardHolderID, currency } = projectPayment;
@@ -221,7 +191,7 @@ const paymentService = {
       PaymentID: paymentId,
       Username: process.env.PAYMENT_USERNAME,
       Password: process.env.PAYMENT_PASSWORD,
-    }, { headers: { "Content-Type": "application/json" } });
+    }, { headers: { "Content-Type": "application/json" }, timeout: 30000 });
     return response.data;
   },
   refundPayment: async (paymentId: string, amount: number) => {
@@ -231,7 +201,7 @@ const paymentService = {
       Username: process.env.PAYMENT_USERNAME,
       Password: process.env.PAYMENT_PASSWORD,
       Amount: amount,
-    }, { headers: { "Content-Type": "application/json" } });
+    }, { headers: { "Content-Type": "application/json" }, timeout: 30000 });
     return response.data;
   },
 };

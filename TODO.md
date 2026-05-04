@@ -20,6 +20,7 @@
   - Include error details and instructions to update payment method
   - Link to payment method update page
 - [ ] Handle refund logic
+- [ ] **Crash-between-charge-and-log gap** — if the server crashes after `makeBindingPayment` succeeds but before the payment log is committed, the next cron run sees no log and charges the user again. Fix requires pre-writing a `pending` log entry before charging the bank, then resolving it via Ameriabank's `GetPaymentDetails` on recovery. See `doRecurringPaymentWithAtomicLock` in `server/src/api/payment/services/strapi.ts`.
 - [x] Fix Payment log, when payment is removed logs are invisible — backfilled `userDocumentId` on old logs in prod DB
 
 ## Profile / Auth
