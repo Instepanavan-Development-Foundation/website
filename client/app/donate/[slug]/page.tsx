@@ -274,7 +274,13 @@ function DonationFormClient({ project }: { project: IProject }) {
     async function loadFunding() {
       try {
         const fundingData = await getProjectFunding(project.documentId);
-        setFunding(fundingData);
+        if (!fundingData) return;
+
+        const gatheredAmount = fundingData.donationType === "recurring"
+          ? fundingData.currentMonth.recurring.amount
+          : fundingData.allTime.oneTime.amount;
+
+        setFunding({ gatheredAmount, requiredAmount: fundingData.requiredAmount ?? 0 });
       } catch (error) {
         console.error("Failed to load funding data:", error);
         setFunding(null);

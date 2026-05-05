@@ -148,22 +148,32 @@ export function BlogPost({
             </div>
 
             {/* Project */}
-            {project && (
+            {(project || !isLink) && (
               <div className="flex items-center gap-3 mb-4 flex-wrap">
-                <Link
-                  className="line-clamp-2"
-                  color="secondary"
-                  href={`/project/${project.slug}`}
-                >
-                  {project.name}
-                </Link>
-                {showDonateButton && (
+                {project && (
+                  <Link
+                    className="line-clamp-2"
+                    color="secondary"
+                    href={`/project/${project.slug}`}
+                  >
+                    {project.name}
+                  </Link>
+                )}
+                {showDonateButton ? (
                   <a
                     className="inline-flex items-center gap-1.5 border-2 border-primary text-primary px-4 py-1.5 rounded-full text-[13px] font-medium hover:bg-primary hover:text-white transition-colors"
                     href={`/donate/${project.slug}`}
                   >
                     <Heart className="w-3.5 h-3.5 fill-current" />
                     Աջակցել նախագծին
+                  </a>
+                ) : !isLink && (
+                  <a
+                    className="inline-flex items-center gap-1.5 border-2 border-primary text-primary px-4 py-1.5 rounded-full text-[13px] font-medium hover:bg-primary hover:text-white transition-colors"
+                    href={process.env.NEXT_PUBLIC_DONATE_URL}
+                  >
+                    <Heart className="w-3.5 h-3.5 fill-current" />
+                    Աջակցել մեզ
                   </a>
                 )}
               </div>
