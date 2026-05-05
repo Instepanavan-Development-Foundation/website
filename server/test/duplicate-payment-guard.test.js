@@ -536,6 +536,363 @@ describe("Recurring payment duplicate guard (regression: May 4 double-charge)", 
   );
 
   it(
+    "uses Asia/Yerevan timezone for month boundary, not UTC",
+    async () => {
+      const ppId = await createFreshProjectPayment(strapi, projectDocumentId, "tz-yerevan");
+
+      // Build a timestamp that is "this month in Yerevan, but previous month in UTC".
+      // Yerevan = UTC+4, so 00:01 of day 1 of a Yerevan month maps to 20:01 UTC of the
+      // last day of the previous UTC month — a boundary case where UTC-based math would
+      // mis-classify the log as "previous month" and let the bank be charged again.
+      const armeniaTimeStr = new Date().toLocaleString("en-US", { timeZone: "Asia/Yerevan" });
+      const armeniaTime = new Date(armeniaTimeStr);
+      const yerevanYear = armeniaTime.getFullYear();
+      const yerevanMonth = armeniaTime.getMonth();
+      const boundaryUtcMs = Date.UTC(yerevanYear, yerevanMonth, 1, 0, 1, 0) - 4 * 60 * 60 * 1000;
+      const ts = new Date(boundaryUtcMs).toISOString();
+      console.log(`\n  Inserting success log at ${ts} (this month Yerevan, last month UTC)`);
+
+      const ppRecord = await strapi.db.connection("project_payments")
+        .where({ document_id: ppId }).first();
+      const docId = crypto.randomBytes(12).toString("hex").slice(0, 24);
+      const [row] = await strapi.db.connection("payment_logs").insert({
+        document_id: docId, amount: 1000, currency: "AMD", details: "{}",
+        success: true, created_at: ts, updated_at: ts,
+      }).returning("id");
+      await strapi.db.connection("payment_logs_project_payment_lnk").insert({
+        payment_log_id: row.id ?? row, project_payment_id: ppRecord.id,
+      });
+
+      let bankCharged = 0;
+      const orig = bankingService.makeBindingPayment;
+      bankingService.makeBindingPayment = async () => {
+        bankCharged++;
+        return { ResponseCode: process.env.SUCCESS_RESPONSE_CODE || "00", Amount: 1000, OrderId: `o-${Date.now()}`, PaymentID: `p-${Date.now()}` };
+      };
+
+      try {
+        const req = makeRecurringRequest(strapi, ppId, projectDocumentId);
+        const result = await req(0);
+        console.log(`  alreadyProcessed=${result.alreadyProcessed}, bankCharged=${bankCharged}`);
+
+        // Guard must treat the boundary log as same-month (Yerevan) and block. If the
+        // production code regressed to UTC, the log would look like "previous month"
+        // and this test would catch the double-charge regression.
+        expect(result.alreadyProcessed).toBe(true);
+        expect(bankCharged).toBe(0);
+      } finally {
+        bankingService.makeBindingPayment = orig;
+      }
+    },
+    120000
+  );
+
+  it(
+    "does not serialize concurrent payments for different project_payment rows",
+    async () => {
+      const ppA = await createFreshProjectPayment(strapi, projectDocumentId, "parallel-a");
+      const ppB = await createFreshProjectPayment(strapi, projectDocumentId, "parallel-b");
+
+      const SLOW_MS = 500;
+      let inFlight = 0;
+      let maxInFlight = 0;
+      const orig = bankingService.makeBindingPayment;
+      bankingService.makeBindingPayment = async () => {
+        inFlight++;
+        maxInFlight = Math.max(maxInFlight, inFlight);
+        await new Promise((r) => setTimeout(r, SLOW_MS));
+        inFlight--;
+        return { ResponseCode: process.env.SUCCESS_RESPONSE_CODE || "00", Amount: 1000, OrderId: `o-${Date.now()}`, PaymentID: `p-${Date.now()}` };
+      };
+
+      try {
+        const reqA = makeRecurringRequest(strapi, ppA, projectDocumentId);
+        const reqB = makeRecurringRequest(strapi, ppB, projectDocumentId);
+
+        const start = Date.now();
+        const [resA, resB] = await Promise.all([reqA(0), reqB(0)]);
+        const duration = Date.now() - start;
+        console.log(`\n  Two different ppIds in parallel: ${duration}ms (sequential would be ${SLOW_MS * 2}ms), maxInFlight=${maxInFlight}`);
+
+        expect(resA.logCreated).toBe(true);
+        expect(resB.logCreated).toBe(true);
+        // Row-level lock must NOT serialize unrelated rows — both bank calls overlap.
+        expect(maxInFlight).toBe(2);
+        // Wall time should be close to one slow call, not two.
+        expect(duration).toBeLessThan(SLOW_MS * 2);
+      } finally {
+        bankingService.makeBindingPayment = orig;
+      }
+    },
+    120000
+  );
+
+  it(
+    "throws cleanly for a non-existent projectPaymentId without leaking locks",
+    async () => {
+      const paymentService = strapi.service("api::payment.payment");
+
+      await expect(
+        paymentService.doRecurringPaymentWithAtomicLock({
+          projectPaymentId: "this-doc-id-does-not-exist-xyz",
+          projectPaymentData: {
+            amount: 1000, CardHolderID: "TEST", currency: "AMD",
+            userDocumentId: "u", projectDocumentId, projectName: "T",
+          },
+          orderId: `order-${Date.now()}`,
+        })
+      ).rejects.toThrow("Project payment not found");
+
+      // After the throw, a real ppId should still be processable — proves no stuck
+      // connection or leaked transaction from the failed lookup.
+      const ppId = await createFreshProjectPayment(strapi, projectDocumentId, "after-bogus");
+      let bankCharged = 0;
+      const orig = bankingService.makeBindingPayment;
+      bankingService.makeBindingPayment = async () => {
+        bankCharged++;
+        return { ResponseCode: process.env.SUCCESS_RESPONSE_CODE || "00", Amount: 1000, OrderId: `o-${Date.now()}`, PaymentID: `p-${Date.now()}` };
+      };
+
+      try {
+        const req = makeRecurringRequest(strapi, ppId, projectDocumentId);
+        const result = await req(0);
+        expect(result.error).toBeNull();
+        expect(result.logCreated).toBe(true);
+        expect(bankCharged).toBe(1);
+      } finally {
+        bankingService.makeBindingPayment = orig;
+      }
+    },
+    120000
+  );
+
+  it(
+    "10-concurrent winner produces exactly one log row matching the bank charge",
+    async () => {
+      const ppId = await createFreshProjectPayment(strapi, projectDocumentId, "winner-coherence");
+
+      const bankCharges = [];
+      const orig = bankingService.makeBindingPayment;
+      bankingService.makeBindingPayment = async () => {
+        const paymentId = `p-${crypto.randomBytes(8).toString("hex")}`;
+        const orderId = `o-${crypto.randomBytes(8).toString("hex")}`;
+        bankCharges.push({ paymentId, orderId });
+        return { ResponseCode: process.env.SUCCESS_RESPONSE_CODE || "00", Amount: 1000, OrderId: orderId, PaymentID: paymentId };
+      };
+
+      try {
+        const req = makeRecurringRequest(strapi, ppId, projectDocumentId);
+        await Promise.all(Array.from({ length: 10 }, (_, i) => req(i)));
+
+        expect(bankCharges.length).toBe(1);
+
+        const ppRecord = await strapi.db.connection("project_payments")
+          .where({ document_id: ppId }).first();
+        const logs = await strapi.db.connection("payment_logs")
+          .innerJoin(
+            "payment_logs_project_payment_lnk",
+            "payment_logs.id",
+            "payment_logs_project_payment_lnk.payment_log_id"
+          )
+          .where("payment_logs_project_payment_lnk.project_payment_id", ppRecord.id);
+
+        console.log(`\n  Bank charges: ${bankCharges.length}, log rows: ${logs.length}`);
+        expect(logs.length).toBe(1);
+        expect(logs[0].payment_id).toBe(bankCharges[0].paymentId);
+        expect(logs[0].order_id).toBe(bankCharges[0].orderId);
+        expect(logs[0].success).toBe(true);
+        expect(logs[0].payment_status).toBe("completed");
+      } finally {
+        bankingService.makeBindingPayment = orig;
+      }
+    },
+    120000
+  );
+
+  it(
+    "blocks failure exactly at the 3-day boundary, allows just past it",
+    async () => {
+      // Just inside the window: 3 days minus 1 hour ago — must block
+      const ppInside = await createFreshProjectPayment(strapi, projectDocumentId, "boundary-in");
+      const insideRec = await strapi.db.connection("project_payments")
+        .where({ document_id: ppInside }).first();
+      const insideTs = new Date(Date.now() - (3 * 24 * 60 * 60 * 1000) + 60 * 60 * 1000).toISOString();
+      const insideDocId = crypto.randomBytes(12).toString("hex").slice(0, 24);
+      const [insideRow] = await strapi.db.connection("payment_logs").insert({
+        document_id: insideDocId, amount: 1000, currency: "AMD", details: "{}",
+        success: false, created_at: insideTs, updated_at: insideTs,
+      }).returning("id");
+      await strapi.db.connection("payment_logs_project_payment_lnk").insert({
+        payment_log_id: insideRow.id ?? insideRow, project_payment_id: insideRec.id,
+      });
+
+      // Just outside the window: 3 days plus 1 hour ago — must allow retry
+      const ppOutside = await createFreshProjectPayment(strapi, projectDocumentId, "boundary-out");
+      const outsideRec = await strapi.db.connection("project_payments")
+        .where({ document_id: ppOutside }).first();
+      const outsideTs = new Date(Date.now() - (3 * 24 * 60 * 60 * 1000) - 60 * 60 * 1000).toISOString();
+      const outsideDocId = crypto.randomBytes(12).toString("hex").slice(0, 24);
+      const [outsideRow] = await strapi.db.connection("payment_logs").insert({
+        document_id: outsideDocId, amount: 1000, currency: "AMD", details: "{}",
+        success: false, created_at: outsideTs, updated_at: outsideTs,
+      }).returning("id");
+      await strapi.db.connection("payment_logs_project_payment_lnk").insert({
+        payment_log_id: outsideRow.id ?? outsideRow, project_payment_id: outsideRec.id,
+      });
+
+      let bankCharged = 0;
+      const orig = bankingService.makeBindingPayment;
+      bankingService.makeBindingPayment = async () => {
+        bankCharged++;
+        return { ResponseCode: process.env.SUCCESS_RESPONSE_CODE || "00", Amount: 1000, OrderId: `o-${Date.now()}`, PaymentID: `p-${Date.now()}` };
+      };
+
+      try {
+        const reqIn = makeRecurringRequest(strapi, ppInside, projectDocumentId);
+        const reqOut = makeRecurringRequest(strapi, ppOutside, projectDocumentId);
+
+        const inResult = await reqIn(0);
+        const outResult = await reqOut(0);
+        console.log(`\n  Inside window (~3d-1h): blocked=${inResult.alreadyProcessed}`);
+        console.log(`  Outside window (~3d+1h): blocked=${outResult.alreadyProcessed}, logCreated=${outResult.logCreated}`);
+
+        expect(inResult.alreadyProcessed).toBe(true);
+        expect(outResult.alreadyProcessed).toBe(false);
+        expect(outResult.logCreated).toBe(true);
+        expect(bankCharged).toBe(1);
+      } finally {
+        bankingService.makeBindingPayment = orig;
+      }
+    },
+    120000
+  );
+
+  it(
+    "writes a non-null currency to the log when the bank omits the Currency field",
+    async () => {
+      const ppId = await createFreshProjectPayment(strapi, projectDocumentId, "currency-fallback");
+
+      const orig = bankingService.makeBindingPayment;
+      bankingService.makeBindingPayment = async () => ({
+        ResponseCode: process.env.SUCCESS_RESPONSE_CODE || "00",
+        Amount: 1000,
+        OrderId: `o-${Date.now()}`,
+        PaymentID: `p-${Date.now()}`,
+        // Currency intentionally omitted — exercises the fallback chain at strapi.ts:500
+      });
+
+      try {
+        const req = makeRecurringRequest(strapi, ppId, projectDocumentId);
+        const result = await req(0);
+        expect(result.logCreated).toBe(true);
+
+        const ppRecord = await strapi.db.connection("project_payments")
+          .where({ document_id: ppId }).first();
+        const logs = await strapi.db.connection("payment_logs")
+          .innerJoin(
+            "payment_logs_project_payment_lnk",
+            "payment_logs.id",
+            "payment_logs_project_payment_lnk.payment_log_id"
+          )
+          .where("payment_logs_project_payment_lnk.project_payment_id", ppRecord.id);
+
+        console.log(`\n  Currency fallback resolved to: ${JSON.stringify(logs[0].currency)}`);
+        expect(logs.length).toBe(1);
+        expect(logs[0].currency).toBeTruthy();
+        expect(typeof logs[0].currency).toBe("string");
+      } finally {
+        bankingService.makeBindingPayment = orig;
+      }
+    },
+    120000
+  );
+
+  it(
+    "real getPaymentDetails controller serializes concurrent calls and saves once",
+    async () => {
+      const paymentController = require("../dist/src/api/payment/controllers/payment").default;
+      const paymentService = strapi.service("api::payment.payment");
+
+      // Real user (the controller resolves the user via documents API)
+      const user = await strapi.documents("plugin::users-permissions.user").create({
+        data: {
+          username: `tab-test-${Date.now()}`,
+          email: `tab-test-${Date.now()}@example.com`,
+          password: "TestPass123!",
+          confirmed: true,
+        },
+      });
+
+      const paymentId = `real-pid-${Date.now()}`;
+      const origGetDetails = paymentService.getPaymentDetails;
+      paymentService.getPaymentDetails = async () => ({
+        PaymentID: paymentId,
+        ResponseCode: process.env.SUCCESS_RESPONSE_CODE || "00",
+        Amount: 5000,
+        OrderID: "test-order",
+        CardNumber: "****1234",
+      });
+
+      // Stub savePayment to count invocations and write a single log row
+      // (avoids the heavy real flow that creates payment-method + project-payment).
+      let saveCount = 0;
+      const origSave = paymentService.savePayment;
+      paymentService.savePayment = async ({ paymentDetails }) => {
+        saveCount++;
+        const docId = crypto.randomBytes(12).toString("hex").slice(0, 24);
+        const now = new Date().toISOString();
+        await strapi.db.connection("payment_logs").insert({
+          document_id: docId,
+          amount: paymentDetails.Amount,
+          currency: "AMD",
+          details: JSON.stringify(paymentDetails || {}),
+          success: true,
+          payment_id: paymentDetails.PaymentID,
+          created_at: now,
+          updated_at: now,
+        });
+      };
+
+      try {
+        const buildCtx = () => {
+          const responses = [];
+          return {
+            ctx: {
+              request: { body: { paymentId, projectDocumentId } },
+              state: { user: { id: user.id, documentId: user.documentId } },
+              send: (body, status = 200) => responses.push({ body, status }),
+            },
+            responses,
+          };
+        };
+
+        console.log(`\n  Two browser tabs hitting controller with paymentId=${paymentId}`);
+        const a = buildCtx();
+        const b = buildCtx();
+        await Promise.all([
+          paymentController.getPaymentDetails(a.ctx, () => {}),
+          paymentController.getPaymentDetails(b.ctx, () => {}),
+        ]);
+
+        console.log(`  savePayment invocations: ${saveCount}`);
+        expect(saveCount).toBe(1);
+
+        expect(a.responses.length).toBe(1);
+        expect(b.responses.length).toBe(1);
+        expect(a.responses[0].body.success).toBe(true);
+        expect(b.responses[0].body.success).toBe(true);
+
+        const logs = await strapi.db.connection("payment_logs").where({ payment_id: paymentId });
+        expect(logs.length).toBe(1);
+      } finally {
+        paymentService.getPaymentDetails = origGetDetails;
+        paymentService.savePayment = origSave;
+      }
+    },
+    60000
+  );
+
+  it(
     "getOrderId returns unique IDs under concurrent load",
     async () => {
       const paymentService = strapi.service("api::payment.payment");
