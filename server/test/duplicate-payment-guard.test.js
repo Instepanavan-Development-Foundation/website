@@ -411,6 +411,131 @@ describe("Recurring payment duplicate guard (regression: May 4 double-charge)", 
   );
 
   it(
+    "saves a failed log when the bank declines, and blocks retries within 3 days",
+    async () => {
+      const ppId = await createFreshProjectPayment(strapi, projectDocumentId, "real-decline");
+
+      let bankCharged = 0;
+      const orig = bankingService.makeBindingPayment;
+      bankingService.makeBindingPayment = async () => {
+        bankCharged++;
+        console.log(`  [BANK] Charge #${bankCharged}: DECLINED`);
+        return {
+          ResponseCode: "112",
+          Description: "Card declined",
+          Amount: 1000,
+          OrderId: `o-${Date.now()}`,
+          PaymentID: `p-${Date.now()}`,
+        };
+      };
+
+      try {
+        const req = makeRecurringRequest(strapi, ppId, projectDocumentId);
+
+        // First call: bank declines, log persisted with success=false
+        console.log("\n  Cron run 1: bank declines...");
+        const first = await req(0);
+        expect(first.error).toBeNull();
+        expect(first.logCreated).toBe(true);
+        expect(first.alreadyProcessed).toBe(false);
+        expect(bankCharged).toBe(1);
+
+        // Verify the failure was actually persisted (not just an in-memory return)
+        const ppRecord = await strapi.db.connection("project_payments")
+          .where({ document_id: ppId }).first();
+        const persisted = await strapi.db.connection("payment_logs")
+          .innerJoin(
+            "payment_logs_project_payment_lnk",
+            "payment_logs.id",
+            "payment_logs_project_payment_lnk.payment_log_id"
+          )
+          .where("payment_logs_project_payment_lnk.project_payment_id", ppRecord.id)
+          .select("payment_logs.success", "payment_logs.payment_status");
+        console.log(`  Persisted logs: ${persisted.length}, success=${persisted[0]?.success}, status=${persisted[0]?.payment_status}`);
+        expect(persisted.length).toBe(1);
+        expect(persisted[0].success).toBe(false);
+        expect(persisted[0].payment_status).toBeNull();
+
+        // Subsequent calls within 3 days must be blocked by failed_recently guard
+        console.log("\n  Cron run 1 (immediate retries): must be blocked...");
+        const followUps = await Promise.all(Array.from({ length: 3 }, (_, i) => req(i + 1)));
+        const blocked = followUps.filter((r) => r.alreadyProcessed).length;
+        console.log(`  Blocked: ${blocked}, bank charges total: ${bankCharged}`);
+
+        expect(blocked).toBe(3);
+        expect(bankCharged).toBe(1);
+      } finally {
+        bankingService.makeBindingPayment = orig;
+      }
+    },
+    120000
+  );
+
+  it(
+    "releases the lock after a bank error so the next attempt can proceed",
+    async () => {
+      const ppId = await createFreshProjectPayment(strapi, projectDocumentId, "lock-release");
+
+      let bankAttempts = 0;
+      const orig = bankingService.makeBindingPayment;
+
+      // First attempt: bank throws (simulates network error / timeout mid-transaction)
+      bankingService.makeBindingPayment = async () => {
+        bankAttempts++;
+        console.log(`  [BANK] Attempt #${bankAttempts}: throwing ECONNRESET`);
+        throw new Error("ECONNRESET");
+      };
+
+      try {
+        const req = makeRecurringRequest(strapi, ppId, projectDocumentId);
+
+        console.log("\n  Cron run 1: bank throws mid-transaction...");
+        const failed = await req(0);
+        expect(failed.error).toBe("ECONNRESET");
+        expect(failed.logCreated).toBe(false);
+        expect(bankAttempts).toBe(1);
+
+        // Rollback invariant: no orphan log row, no orphan link
+        const ppRecord = await strapi.db.connection("project_payments")
+          .where({ document_id: ppId }).first();
+        const orphans = await strapi.db.connection("payment_logs")
+          .innerJoin(
+            "payment_logs_project_payment_lnk",
+            "payment_logs.id",
+            "payment_logs_project_payment_lnk.payment_log_id"
+          )
+          .where("payment_logs_project_payment_lnk.project_payment_id", ppRecord.id);
+        console.log(`  Orphan logs after rollback: ${orphans.length} (expected 0)`);
+        expect(orphans.length).toBe(0);
+
+        // Second attempt: bank succeeds. The row lock must have been released by the
+        // rolled-back transaction; otherwise this call would hang or fail.
+        console.log("\n  Cron run 2: bank recovers, lock must be free...");
+        bankingService.makeBindingPayment = async () => {
+          bankAttempts++;
+          console.log(`  [BANK] Attempt #${bankAttempts}: SUCCESS`);
+          return {
+            ResponseCode: process.env.SUCCESS_RESPONSE_CODE || "00",
+            Amount: 1000,
+            OrderId: `o-${Date.now()}`,
+            PaymentID: `p-${Date.now()}`,
+          };
+        };
+
+        const ok = await req(1);
+        console.log(`  Result: logCreated=${ok.logCreated}, alreadyProcessed=${ok.alreadyProcessed}, error=${ok.error}`);
+        expect(ok.error).toBeNull();
+        expect(ok.logCreated).toBe(true);
+        expect(ok.alreadyProcessed).toBe(false);
+        expect(bankAttempts).toBe(2);
+      } finally {
+        bankingService.makeBindingPayment = orig;
+      }
+    },
+    120000
+  );
+
+  it(
     "getOrderId returns unique IDs under concurrent load",
     async () => {
       const paymentService = strapi.service("api::payment.payment");
