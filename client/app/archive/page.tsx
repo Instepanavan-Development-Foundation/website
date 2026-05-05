@@ -39,7 +39,7 @@ export default async function Home() {
       let gatheredAmount = project.gatheredAmount ?? 0;
 
       if (funding) {
-        gatheredAmount = getFundingAmount(funding, true);
+        gatheredAmount = getFundingAmount(funding, true, project.gatheredAmount ?? 0);
       }
 
       return {

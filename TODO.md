@@ -28,4 +28,4 @@
 - [ ] **`PUT /api/users/me` returns 403 ForbiddenError** — endpoint is registered via `strapi-server.ts` extension and permission `plugin::users-permissions.user.updateMe` exists in `up_permissions` for the authenticated role, but Strapi's auth strategy rejects it. Suspect issue with how `config.scope` is derived for dynamically-pushed plugin routes vs. CASL ability check. Name editing in profile is currently broken.
 
 ## BOT
-- [ ] when the contributor is added via bot, the slug should also be auto generated
+- [ ] when the contributor is added via bot, the slug should also be auto generated, also contribution also should be present in the blog

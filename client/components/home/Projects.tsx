@@ -39,7 +39,7 @@ export default async function Projects({
       let gatheredAmount = project.gatheredAmount ?? 0;
 
       if (funding) {
-        gatheredAmount = getFundingAmount(funding, isArchived);
+        gatheredAmount = getFundingAmount(funding, isArchived, project.gatheredAmount ?? 0);
       }
 
       return {

@@ -60,7 +60,7 @@ export default async function ProjectPage({ params }: IParams) {
 
   const funding = await getProjectFunding(project.documentId);
 
-  const gatheredAmount = funding ? getFundingAmount(funding, project.isArchived) : 0;
+  const gatheredAmount = funding ? getFundingAmount(funding, project.isArchived, project.gatheredAmount ?? 0) : (project.gatheredAmount ?? 0);
   const requiredAmount = funding?.requiredAmount ?? 0;
   const percentComplete = requiredAmount > 0
     ? Math.min(Math.round((gatheredAmount / requiredAmount) * 100), 100)
