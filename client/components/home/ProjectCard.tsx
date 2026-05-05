@@ -97,7 +97,10 @@ export function ProjectCard({
             <ContributorsList
               contributions={blogs
                 .map(({ contribution }) => contribution)
-                .flat()}
+                .flat()
+                .filter((c, i, all) =>
+                  i === all.findIndex((x) => x?.contributor?.documentId === c?.contributor?.documentId)
+                )}
             />
           </div>
         )}
