@@ -12,5 +12,6 @@ export interface IProjectFunding {
   };
   allTime: {
     oneTime: FundingBreakdown;
+    recurring: FundingBreakdown;
   };
 }

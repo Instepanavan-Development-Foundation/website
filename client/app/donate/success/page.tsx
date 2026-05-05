@@ -23,6 +23,7 @@ import { getUserAvatarUrl } from "@/src/services/userService";
 import getData from "@/src/helpers/getData";
 import { IProject } from "@/src/models/project";
 import getProjectFunding from "@/src/helpers/getProjectFunding";
+import getFundingAmount from "@/src/helpers/getFundingAmount";
 import { IProjectFunding } from "@/src/models/project-funding";
 
 export default function DonationSuccessPage() {
@@ -155,9 +156,7 @@ const [impactBadge, setImpactBadge] = useState("");
     if (funding) {
       // Get gathered amount based on project type
       const gatheredAmount =
-        funding.donationType === "recurring"
-          ? funding.currentMonth.recurring.amount
-          : funding.allTime.oneTime.amount;
+        getFundingAmount(funding);
 
       if (gatheredAmount > 0) {
         const duration = 2000; // 2 seconds

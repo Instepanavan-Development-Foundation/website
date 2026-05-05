@@ -4,6 +4,7 @@ import getData from "@/src/helpers/getData";
 import { IProject } from "@/src/models/project";
 import { ProjectCard } from "@/components/home/ProjectCard";
 import getProjectFunding from "@/src/helpers/getProjectFunding";
+import getFundingAmount from "@/src/helpers/getFundingAmount";
 
 export const metadata = {
   title: "Արխիվացված նախագծեր",
@@ -38,11 +39,7 @@ export default async function Home() {
       let gatheredAmount = project.gatheredAmount ?? 0;
 
       if (funding) {
-        if (funding.donationType === "recurring") {
-          gatheredAmount = funding.currentMonth.recurring.amount;
-        } else {
-          gatheredAmount = funding.allTime.oneTime.amount;
-        }
+        gatheredAmount = getFundingAmount(funding, true);
       }
 
       return {

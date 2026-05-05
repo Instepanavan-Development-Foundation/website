@@ -42,8 +42,9 @@ export default factories.createCoreService('api::project.project', ({ strapi }) 
       } as any,
     });
 
-    // Calculate current month recurring and all-time one-time
+    // Calculate current month recurring and all-time totals
     let currentMonthRecurring = { amount: 0, count: 0 };
+    let allTimeRecurring = { amount: 0, count: 0 };
     let totalOneTime = { amount: 0, count: 0 };
 
     // Count one-time payments (all time)
@@ -52,8 +53,10 @@ export default factories.createCoreService('api::project.project', ({ strapi }) 
       totalOneTime.count += 1;
     });
 
-    // Count recurring payments (current month only)
+    // Count recurring payments (both current month and all-time)
     recurringPaymentLogs.forEach((log) => {
+      allTimeRecurring.amount += log.amount;
+      allTimeRecurring.count += 1;
       const logDate = new Date(log.createdAt);
       if (logDate >= monthStart && logDate <= monthEnd) {
         currentMonthRecurring.amount += log.amount;
@@ -70,6 +73,7 @@ export default factories.createCoreService('api::project.project', ({ strapi }) 
       },
       allTime: {
         oneTime: totalOneTime,
+        recurring: allTimeRecurring,
       },
     };
   },

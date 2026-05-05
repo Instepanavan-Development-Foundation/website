@@ -11,6 +11,7 @@ export default async function TrustedByContributors() {
     fields: ["id", "fullName", "slug"],
     filters: { isTrustedBy: true },
     populate: { avatar: { fields: ["url"] } },
+    limit: 100,
   });
 
   if (!trustedByContributors.length) {

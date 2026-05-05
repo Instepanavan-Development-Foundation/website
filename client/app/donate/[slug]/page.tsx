@@ -196,6 +196,7 @@ import getPaymentMethods, {
 import { initPayment } from "@/src/helpers/initPayment";
 import { getToken, isAuthenticated } from "@/src/services/userService";
 import getProjectFunding from "@/src/helpers/getProjectFunding";
+import getFundingAmount from "@/src/helpers/getFundingAmount";
 
 // Preset donation amounts
 const presetAmounts = [3000, 5000, 10000, 20000, 50000];
@@ -276,9 +277,7 @@ function DonationFormClient({ project }: { project: IProject }) {
         const fundingData = await getProjectFunding(project.documentId);
         if (!fundingData) return;
 
-        const gatheredAmount = fundingData.donationType === "recurring"
-          ? fundingData.currentMonth.recurring.amount
-          : fundingData.allTime.oneTime.amount;
+        const gatheredAmount = getFundingAmount(fundingData);
 
         setFunding({ gatheredAmount, requiredAmount: fundingData.requiredAmount ?? 0 });
       } catch (error) {

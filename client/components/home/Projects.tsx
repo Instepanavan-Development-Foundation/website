@@ -5,6 +5,7 @@ import { ProjectCard } from "./ProjectCard";
 import { IProject } from "@/src/models/project";
 import getData from "@/src/helpers/getData";
 import getProjectFunding from "@/src/helpers/getProjectFunding";
+import getFundingAmount from "@/src/helpers/getFundingAmount";
 
 export default async function Projects({
   isArchived,
@@ -38,11 +39,7 @@ export default async function Projects({
       let gatheredAmount = project.gatheredAmount ?? 0;
 
       if (funding) {
-        if (funding.donationType === "recurring") {
-          gatheredAmount = funding.currentMonth.recurring.amount;
-        } else {
-          gatheredAmount = funding.allTime.oneTime.amount;
-        }
+        gatheredAmount = getFundingAmount(funding, isArchived);
       }
 
       return {

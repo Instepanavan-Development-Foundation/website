@@ -5,6 +5,7 @@ import NotFound from "@/components/NotFound";
 import getData from "@/src/helpers/getData";
 import getMediaSrc from "@/src/helpers/getMediaUrl";
 import getProjectFunding from "@/src/helpers/getProjectFunding";
+import getFundingAmount from "@/src/helpers/getFundingAmount";
 import { IBlog } from "@/src/models/blog";
 import { IParams } from "@/src/models/params";
 
@@ -87,10 +88,7 @@ export default async function BlogPage({ params }: IParams) {
     const funding = await getProjectFunding(blog.project.documentId);
 
     if (funding?.requiredAmount) {
-      const gathered =
-        funding.donationType === "recurring"
-          ? funding.currentMonth.recurring.amount
-          : funding.allTime.oneTime.amount;
+      const gathered = getFundingAmount(funding);
 
       showDonateButton = gathered < funding.requiredAmount;
     }
