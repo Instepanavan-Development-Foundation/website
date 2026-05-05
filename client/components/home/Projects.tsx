@@ -4,6 +4,7 @@ import { ProjectCard } from "./ProjectCard";
 
 import { IProject } from "@/src/models/project";
 import getData from "@/src/helpers/getData";
+import getProjectFunding from "@/src/helpers/getProjectFunding";
 
 export default async function Projects({
   isArchived,
@@ -30,6 +31,28 @@ export default async function Projects({
 
   if (projects.length === 0) return null;
 
+  // Fetch dynamic funding data for all projects
+  const projectsWithFunding = await Promise.all(
+    projects.map(async (project) => {
+      const funding = await getProjectFunding(project.documentId);
+      let gatheredAmount = project.gatheredAmount ?? 0;
+
+      if (funding) {
+        if (funding.donationType === "recurring") {
+          gatheredAmount = funding.currentMonth.recurring.amount;
+        } else {
+          gatheredAmount = funding.allTime.oneTime.amount;
+        }
+      }
+
+      return {
+        ...project,
+        gatheredAmount,
+        requiredAmount: funding?.requiredAmount ?? project.requiredAmount ?? 0,
+      };
+    }),
+  );
+
   const eyebrow = isArchived ? "ԱՐԽԻՎ" : "ՄԵՐ ՈՒՂԻՆ";
   const heading = isArchived ? "Ավարտված նախագծեր" : "Ակտիվ նախագծեր";
 
@@ -54,7 +77,7 @@ export default async function Projects({
         )}
       </div>
       <div className="flex flex-wrap justify-center gap-5">
-        {projects.map((project, index) => (
+        {projectsWithFunding.map((project, index) => (
           <Link key={index} className="block w-full sm:w-[calc(50%-10px)] lg:w-[calc(33.333%-14px)]" href={`/project/${project.slug}`}>
             <ProjectCard {...project} />
           </Link>

@@ -4,6 +4,7 @@ import Blogs from "@/components/home/Blogs";
 import TrustedByContributors from "@/components/home/TrustedByContributors";
 import Donation from "@/components/home/Donation";
 import getData from "@/src/helpers/getData";
+import getProjectFunding from "@/src/helpers/getProjectFunding";
 import { IProject } from "@/src/models/project";
 
 export default async function Home() {
@@ -27,9 +28,22 @@ export default async function Home() {
     ],
   });
 
+  const featuredProjects = await Promise.all(
+    (mainProjects ?? []).map(async (project) => {
+      const funding = await getProjectFunding(project.documentId);
+      if (!funding) return project;
+
+      const gatheredAmount = funding.donationType === "recurring"
+        ? funding.currentMonth.recurring.amount
+        : funding.allTime.oneTime.amount;
+
+      return { ...project, gatheredAmount, requiredAmount: funding.requiredAmount ?? project.requiredAmount ?? 0 };
+    }),
+  );
+
   return (
     <div className="flex flex-col">
-      <HomeHero featuredProjects={mainProjects ?? []} />
+      <HomeHero featuredProjects={featuredProjects} />
       <Projects isArchived={false} />
       <Blogs />
       <TrustedByContributors />

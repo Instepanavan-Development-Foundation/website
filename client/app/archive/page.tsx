@@ -3,6 +3,7 @@ import Link from "next/link";
 import getData from "@/src/helpers/getData";
 import { IProject } from "@/src/models/project";
 import { ProjectCard } from "@/components/home/ProjectCard";
+import getProjectFunding from "@/src/helpers/getProjectFunding";
 
 export const metadata = {
   title: "Արխիվացված նախագծեր",
@@ -30,6 +31,28 @@ export default async function Home() {
     },
   });
 
+  // Fetch dynamic funding data for all projects
+  const projectsWithFunding = await Promise.all(
+    projects.map(async (project) => {
+      const funding = await getProjectFunding(project.documentId);
+      let gatheredAmount = project.gatheredAmount ?? 0;
+
+      if (funding) {
+        if (funding.donationType === "recurring") {
+          gatheredAmount = funding.currentMonth.recurring.amount;
+        } else {
+          gatheredAmount = funding.allTime.oneTime.amount;
+        }
+      }
+
+      return {
+        ...project,
+        gatheredAmount,
+        requiredAmount: funding?.requiredAmount ?? project.requiredAmount ?? 0,
+      };
+    }),
+  );
+
   return (
     <section className="flex flex-col px-4">
       {/* Projects Section */}
@@ -39,9 +62,9 @@ export default async function Home() {
           {" "}
           Այս նագագծերը ավարտված են, և այլևս չեն թարմացվում։
         </p>
-        {projects.length > 0 ? (
+        {projectsWithFunding.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
-            {projects.map((project, index) => (
+            {projectsWithFunding.map((project, index) => (
               <Link key={index} href={`/project/${project.slug}`}>
                 <ProjectCard key={index} {...project} />
               </Link>

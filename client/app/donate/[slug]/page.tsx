@@ -195,6 +195,7 @@ import getPaymentMethods, {
 } from "@/src/helpers/getPaymentMethods";
 import { initPayment } from "@/src/helpers/initPayment";
 import { getToken, isAuthenticated } from "@/src/services/userService";
+import getProjectFunding from "@/src/helpers/getProjectFunding";
 
 // Preset donation amounts
 const presetAmounts = [3000, 5000, 10000, 20000, 50000];
@@ -217,6 +218,7 @@ function DonationFormClient({ project }: { project: IProject }) {
   const [paymentMethods, setPaymentMethods] = useState<IPaymentMethod[]>([]);
   const [loadingPaymentMethods, setLoadingPaymentMethods] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [funding, setFunding] = useState<{ requiredAmount: number; gatheredAmount: number } | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
 
   // Auto-submit after returning from login via OTP, but only when there's no saved card to choose from
@@ -236,7 +238,7 @@ function DonationFormClient({ project }: { project: IProject }) {
     }
   }, [loadingPaymentMethods, selectedPaymentMethod, searchParams, pathname]);
 
-  // Load payment methods
+  // Load payment methods and funding data
   useEffect(() => {
     async function loadPaymentMethods() {
       const methods = await getPaymentMethods();
@@ -269,8 +271,19 @@ function DonationFormClient({ project }: { project: IProject }) {
       }
     }
 
+    async function loadFunding() {
+      try {
+        const fundingData = await getProjectFunding(project.documentId);
+        setFunding(fundingData);
+      } catch (error) {
+        console.error("Failed to load funding data:", error);
+        setFunding(null);
+      }
+    }
+
     loadPaymentMethods();
     loadDonorCount();
+    loadFunding();
   }, [project.documentId]);
 
   const updateAmountInUrl = (newAmount: number) => {
@@ -407,10 +420,10 @@ function DonationFormClient({ project }: { project: IProject }) {
   };
 
   // Calculate progress percentage
-  const progressPercentage = project.requiredAmount && project.gatheredAmount
+  const progressPercentage = funding && funding.requiredAmount && funding.gatheredAmount
     ? Math.min(
         100,
-        Math.round((project.gatheredAmount / project.requiredAmount) * 100),
+        Math.round((funding.gatheredAmount / funding.requiredAmount) * 100),
       )
     : 0;
 
@@ -432,14 +445,14 @@ function DonationFormClient({ project }: { project: IProject }) {
             </div>
           </div>
 
-          {project.gatheredAmount != null && project.requiredAmount != null && (
+          {funding && funding.requiredAmount != null && funding.gatheredAmount != null && (
             <div className="text-white">
               <div className="flex justify-between items-center mb-1">
                 <span className="text-sm font-medium text-white/90">
-                  Հավաքված է {(project.gatheredAmount || 0).toLocaleString()} ֏
+                  Հավաքված է {(funding.gatheredAmount || 0).toLocaleString()} ֏
                 </span>
                 <span className="text-sm font-medium text-white/90">
-                  Նպատակ՝ {project.requiredAmount.toLocaleString()} ֏
+                  Նպատակ՝ {funding.requiredAmount.toLocaleString()} ֏
                 </span>
               </div>
               <Progress
