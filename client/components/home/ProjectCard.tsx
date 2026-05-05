@@ -99,7 +99,7 @@ export function ProjectCard({
                 .map(({ contribution }) => contribution)
                 .flat()
                 .filter((c, i, all) =>
-                  i === all.findIndex((x) => x?.contributor?.documentId === c?.contributor?.documentId)
+                  i === all.findIndex((x) => x?.contributor?.id === c?.contributor?.id)
                 )}
             />
           </div>
