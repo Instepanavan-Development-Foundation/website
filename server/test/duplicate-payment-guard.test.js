@@ -349,6 +349,44 @@ describe("Recurring payment duplicate guard (regression: May 4 double-charge)", 
   );
 
   it(
+    "does NOT charge a user who signed up mid-month on the next cron run",
+    async () => {
+      // Regression for the Hovsep scenario observed in prod (2026-05-14):
+      // user creates a recurring subscription between cron runs and pays once at signup.
+      // The next cron run (e.g. the 24th) must see that success log and skip the charge.
+      const ppId = await createFreshProjectPayment(strapi, projectDocumentId, "midmonth-signup");
+      // Backdate within the current Yerevan month: pick a day-offset that cannot cross
+      // the month boundary regardless of when the test runs.
+      const armeniaTimeStr = new Date().toLocaleString("en-US", { timeZone: "Asia/Yerevan" });
+      const dayOfYerevanMonth = new Date(armeniaTimeStr).getDate();
+      const safeDaysAgo = Math.max(0, Math.min(10, dayOfYerevanMonth - 1));
+      await insertBackdatedLog(strapi, ppId, { daysAgo: safeDaysAgo, success: true });
+      console.log(`\n  ✓ Inserted mid-month signup success log (${safeDaysAgo} days ago, this Yerevan month)`);
+
+      let bankCharged = 0;
+      const orig = bankingService.makeBindingPayment;
+      bankingService.makeBindingPayment = async () => {
+        bankCharged++;
+        return { ResponseCode: process.env.SUCCESS_RESPONSE_CODE || "00", Amount: 1000, OrderId: `o-${Date.now()}`, PaymentID: `p-${Date.now()}` };
+      };
+
+      try {
+        const req = makeRecurringRequest(strapi, ppId, projectDocumentId);
+        const results = await Promise.all(Array.from({ length: 3 }, (_, i) => req(i)));
+        const blocked = results.filter((r) => r.alreadyProcessed).length;
+        console.log(`  Blocked: ${blocked}, bank charges: ${bankCharged}`);
+
+        // Mid-month signup payment must block subsequent cron runs in the same month
+        expect(blocked).toBe(3);
+        expect(bankCharged).toBe(0);
+      } finally {
+        bankingService.makeBindingPayment = orig;
+      }
+    },
+    120000
+  );
+
+  it(
     "blocks retry if failure was less than 3 days ago (same cron window)",
     async () => {
       const ppId = await createFreshProjectPayment(strapi, projectDocumentId, "recent-fail");
