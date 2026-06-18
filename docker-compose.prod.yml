@@ -119,9 +119,7 @@ services:
       - nginx
 
   telegram-bot:
-    build:
-      context: ./telegram-bot
-      dockerfile: Dockerfile
+    image: telegram-bot
     container_name: instepanavan-telegram-bot
     restart: unless-stopped
     env_file:

@@ -6,6 +6,7 @@ pull:
 build:
 	docker buildx build -t client ./client
 	docker buildx build -t server ./server
+	docker buildx build -t telegram-bot ./telegram-bot
 
 up:
 	docker compose -f docker-compose.prod.yml up -d
