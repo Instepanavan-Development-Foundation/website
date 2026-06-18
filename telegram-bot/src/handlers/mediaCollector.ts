@@ -3,8 +3,7 @@ import { logger } from "../logger";
 import { friendlyError } from "../utils/friendlyError";
 import { sessionStore } from "../state/sessionStore";
 import { downloadFile } from "../utils/telegramMedia";
-import { transcribeVoice, processAllMedia } from "../services/geminiService";
-import { generateDraft } from "../services/gptService";
+import { processAllMedia, transcribeVoice } from "../services/geminiService";
 import { getProjects, getTags, getContributors } from "../services/strapiService";
 import { showProjectKeyboard } from "./projectSelector";
 
@@ -176,16 +175,19 @@ async function triggerProcessing(ctx: Context, chatId: number): Promise<void> {
   await runFullProcessing(ctx, chatId);
 }
 
+// Transcribe voice + fetch Strapi lookup data, then show project keyboard.
+// Draft generation is deferred until after project selection (saves one LLM call,
+// and the project context makes the draft better).
 async function runFullProcessing(ctx: Context, chatId: number): Promise<void> {
   const session = sessionStore.get(chatId);
   if (!session) return;
 
   session.phase = "processing";
-  const processingMsg = await ctx.api.sendMessage(chatId, "Processing...");
+  const voiceToTranscribe = session.transcripts.length > 0 ? [] : session.voiceBuffers;
+  const statusText = voiceToTranscribe.length > 0 ? "Transcribing..." : "⏳";
+  const processingMsg = await ctx.api.sendMessage(chatId, statusText);
 
   try {
-    // If transcripts already populated (voice already transcribed in awaiting_context flow), skip re-transcription
-    const voiceToTranscribe = session.transcripts.length > 0 ? [] : session.voiceBuffers;
 
     const [mediaResult, projects, tags, contributors] = await Promise.all([
       processAllMedia(voiceToTranscribe),
@@ -200,34 +202,15 @@ async function runFullProcessing(ctx: Context, chatId: number): Promise<void> {
     session.allContributors = contributors;
     logger.debug({ tags, contributors: contributors.map((c) => c.fullName) }, "Strapi data loaded");
 
-    // Show voice transcripts only (not typed text — user already knows what they wrote)
+    // Show voice transcripts (edit the "Transcribing..." message), or delete it if no voice
     if (session.transcripts.length > 0) {
       const transcriptText = session.transcripts.map((t) => `🎙 "${t}"`).join("\n");
-      await ctx.api.sendMessage(chatId, transcriptText);
+      await ctx.api.editMessageText(chatId, processingMsg.message_id, transcriptText);
+    } else {
+      await ctx.api.deleteMessage(chatId, processingMsg.message_id);
     }
 
-    // Generate draft
-    const draft = await generateDraft(
-      session.transcripts,
-      session.textInputs,
-      session.allTags,
-      session.allContributors,
-    );
-
-    logger.debug({ tags: draft.tags, contributors: draft.contributors }, "GPT draft generated");
-    session.draftText = draft.text;
-    session.draftSlug = draft.slug;
-    session.suggestedTags = draft.tags;
-    session.suggestedContributors = draft.contributors.map(({ name, text, isFeatured }) => {
-      const existing = contributors.find(
-        (c) => c.fullName.toLowerCase() === name.toLowerCase()
-      );
-      return existing
-        ? { documentId: existing.documentId, fullName: existing.fullName, contributionText: text, isFeatured }
-        : { documentId: "", fullName: name, isNew: true, contributionText: text, isFeatured };
-    });
-
-    await ctx.api.deleteMessage(chatId, processingMsg.message_id);
+    // Show project keyboard — draft is generated after project is selected
     await showProjectKeyboard(ctx, chatId, session);
   } catch (err: unknown) {
     logger.error({ err }, "Processing error");
