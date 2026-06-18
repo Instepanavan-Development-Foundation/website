@@ -50,7 +50,8 @@ export async function publishToMastodon(item: RssItem): Promise<void> {
     throw new Error("Mastodon configuration missing");
   }
 
-  const linkText = `\n\n🔗 Տեսնել կայքում: ${item.link}`;
+  const linkLabel = item.imageUrls.length > MAX_IMAGES ? "Բոլոր նկարները" : "Տեսնել կայքում";
+  const linkText = `\n\n🔗 ${linkLabel}: ${item.link}`;
   const maxContent = MAX_CHARS - linkText.length;
   const content =
     item.content.length > maxContent

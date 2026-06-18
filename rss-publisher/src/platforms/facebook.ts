@@ -10,11 +10,13 @@ export async function publishToFacebook(item: RssItem): Promise<void> {
   }
 
   const message = item.content;
+  const MAX_PHOTOS = 4;
+  const linkLabel = item.imageUrls.length > MAX_PHOTOS ? "Բոլոր նկարները" : "Կարդալ սկզբնաղբյուրում";
   let postId = "";
 
   if (item.imageUrls.length > 1) {
     const photoIds = await Promise.all(
-      item.imageUrls.slice(0, 4).map(async (url) => {
+      item.imageUrls.slice(0, MAX_PHOTOS).map(async (url) => {
         const res = await axios.post(`https://graph.facebook.com/v25.0/${pageId}/photos`, null, {
           params: {
             url,
@@ -58,7 +60,7 @@ export async function publishToFacebook(item: RssItem): Promise<void> {
       try {
         await axios.post(`https://graph.facebook.com/v25.0/${postId}/comments`, null, {
           params: {
-            message: `Կարդալ սկզբնաղբյուրում: ${item.link}`,
+            message: `${linkLabel}: ${item.link}`,
             access_token: accessToken,
           },
         });
