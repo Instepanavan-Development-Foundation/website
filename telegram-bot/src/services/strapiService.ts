@@ -146,7 +146,7 @@ export async function createBlog(params: {
   imageIds: number[];
   tagNames: string[];
   projectDocumentId: string | null;
-  contributorDocumentIds: string[];
+  contributions: { documentId: string; text: string; isFeatured: boolean }[];
 }): Promise<{ documentId: string; slug: string }> {
   const data: Record<string, unknown> = {
     content: params.content,
@@ -164,11 +164,11 @@ export async function createBlog(params: {
     data.project = { connect: [{ documentId: params.projectDocumentId }] };
   }
 
-  if (params.contributorDocumentIds.length > 0) {
-    data.contribution = params.contributorDocumentIds.map((documentId) => ({
+  if (params.contributions.length > 0) {
+    data.contribution = params.contributions.map(({ documentId, text, isFeatured }) => ({
       contributor: { connect: [{ documentId }] },
-      text: "",
-      isFeatured: false,
+      text,
+      isFeatured,
     }));
   }
 

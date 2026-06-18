@@ -125,7 +125,8 @@ export async function handleTextContext(ctx: Context, chatId: number, text: stri
   const session = sessionStore.get(chatId);
   if (!session || session.phase !== "awaiting_context") return;
 
-  session.transcripts.push(text);
+  session.textInputs.push(text);
+  await ctx.reply("✏️ Got it!");
 
   try {
     await runFullProcessing(ctx, chatId);
@@ -134,6 +135,16 @@ export async function handleTextContext(ctx: Context, chatId: number, text: stri
     await ctx.api.sendMessage(chatId, friendlyError(err));
     sessionStore.reset(chatId);
   }
+}
+
+// Called from editHandler to start a session from a plain text message
+export async function handleTextAsInput(ctx: Context, chatId: number, text: string, isFirst: boolean): Promise<void> {
+  const session = sessionStore.getOrCreate(chatId);
+  session.textInputs.push(text);
+  session.phase = "collecting";
+  if (isFirst) await ctx.reply("✏️ Got it! Waiting a moment for more media...");
+  else await ctx.reply("✏️ Added.");
+  scheduleProcessing(ctx, chatId);
 }
 
 function scheduleProcessing(ctx: Context, chatId: number): void {
@@ -146,13 +157,14 @@ async function triggerProcessing(ctx: Context, chatId: number): Promise<void> {
   const session = sessionStore.get(chatId);
   if (!session || session.phase !== "collecting") return;
 
-  if (session.voiceBuffers.length === 0 && session.imageBuffers.length === 0) {
+  const hasContent = session.voiceBuffers.length > 0 || session.imageBuffers.length > 0 || session.textInputs.length > 0;
+  if (!hasContent) {
     sessionStore.reset(chatId);
     return;
   }
 
-  // Image(s) only — ask for context before generating
-  if (session.voiceBuffers.length === 0) {
+  // Image(s) only with no voice or text — ask for context before generating
+  if (session.voiceBuffers.length === 0 && session.textInputs.length === 0) {
     session.phase = "awaiting_context";
     await ctx.api.sendMessage(
       chatId,
@@ -172,31 +184,23 @@ async function runFullProcessing(ctx: Context, chatId: number): Promise<void> {
   const processingMsg = await ctx.api.sendMessage(chatId, "Processing...");
 
   try {
-    // Transcribe voice + describe images + fetch Strapi data in parallel
-    // If transcripts already populated (from awaiting_context flow), skip voice transcription
+    // If transcripts already populated (voice already transcribed in awaiting_context flow), skip re-transcription
     const voiceToTranscribe = session.transcripts.length > 0 ? [] : session.voiceBuffers;
 
     const [mediaResult, projects, tags, contributors] = await Promise.all([
-      processAllMedia(voiceToTranscribe, session.imageBuffers),
+      processAllMedia(voiceToTranscribe),
       getProjects(),
       getTags(),
       getContributors(),
     ]);
 
-    // Merge: pre-populated transcripts (text context) + freshly transcribed voice
     session.transcripts = [...session.transcripts, ...mediaResult.transcripts];
-    session.imageDescriptions = mediaResult.imageDescriptions;
     session.availableProjects = projects;
     session.allTags = tags;
     session.allContributors = contributors;
     logger.debug({ tags, contributors: contributors.map((c) => c.fullName) }, "Strapi data loaded");
 
-    // Warn if image descriptions were skipped
-    if (mediaResult.imageWarning) {
-      await ctx.api.sendMessage(chatId, mediaResult.imageWarning);
-    }
-
-    // Show transcript(s) so user can verify
+    // Show voice transcripts only (not typed text — user already knows what they wrote)
     if (session.transcripts.length > 0) {
       const transcriptText = session.transcripts.map((t) => `🎙 "${t}"`).join("\n");
       await ctx.api.sendMessage(chatId, transcriptText);
@@ -205,7 +209,7 @@ async function runFullProcessing(ctx: Context, chatId: number): Promise<void> {
     // Generate draft
     const draft = await generateDraft(
       session.transcripts,
-      session.imageDescriptions,
+      session.textInputs,
       session.allTags,
       session.allContributors,
     );
@@ -214,14 +218,13 @@ async function runFullProcessing(ctx: Context, chatId: number): Promise<void> {
     session.draftText = draft.text;
     session.draftSlug = draft.slug;
     session.suggestedTags = draft.tags;
-    // Map suggested names to known contributors (or mark as new)
-    session.suggestedContributors = draft.contributors.map((name) => {
+    session.suggestedContributors = draft.contributors.map(({ name, text, isFeatured }) => {
       const existing = contributors.find(
         (c) => c.fullName.toLowerCase() === name.toLowerCase()
       );
       return existing
-        ? { documentId: existing.documentId, fullName: existing.fullName }
-        : { documentId: "", fullName: name, isNew: true };
+        ? { documentId: existing.documentId, fullName: existing.fullName, contributionText: text, isFeatured }
+        : { documentId: "", fullName: name, isNew: true, contributionText: text, isFeatured };
     });
 
     await ctx.api.deleteMessage(chatId, processingMsg.message_id);
@@ -239,8 +242,6 @@ async function runFullProcessing(ctx: Context, chatId: number): Promise<void> {
 export async function retryProcessing(ctx: Context, chatId: number): Promise<void> {
   const session = sessionStore.get(chatId);
   if (!session || session.retryAction !== "processing") return;
-  // Reset transcripts so voice gets re-transcribed if needed
   session.transcripts = [];
-  session.imageDescriptions = [];
   await runFullProcessing(ctx, chatId);
 }

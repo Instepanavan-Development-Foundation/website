@@ -1,4 +1,3 @@
-import { logger } from "../logger";
 import { GoogleGenAI } from "@google/genai";
 import { config } from "../config";
 
@@ -11,7 +10,7 @@ async function withRetry<T>(fn: () => Promise<T>, retries = 3, delayMs = 2000): 
     } catch (err: unknown) {
       const status = (err as { status?: number }).status;
       if (status === 503 && attempt < retries) {
-        logger.warn(`Gemini 503, retrying in ${delayMs}ms (attempt ${attempt}/${retries})...`);
+        console.warn(`Gemini 503, retrying in ${delayMs}ms (attempt ${attempt}/${retries})...`);
         await new Promise((res) => setTimeout(res, delayMs * attempt));
         continue;
       }
@@ -45,52 +44,9 @@ export async function transcribeVoice(audioBuffer: Buffer): Promise<string> {
   });
 }
 
-export async function describeImage(imageBuffer: Buffer): Promise<string> {
-  return withRetry(async () => {
-    const response = await genai.models.generateContent({
-      model: "gemini-3-flash-preview",
-      contents: [
-        {
-          parts: [
-            {
-              inlineData: {
-                mimeType: "image/jpeg",
-                data: imageBuffer.toString("base64"),
-              },
-            },
-            {
-              text: "Describe this image factually in 2-3 sentences. Focus on what is shown: people, activities, location, objects, and mood. This description will be used as context for writing a donation campaign blog post.",
-            },
-          ],
-        },
-      ],
-    });
-    return response.text?.trim() ?? "";
-  });
-}
-
 export async function processAllMedia(
-  voiceBuffers: Buffer[],
-  imageBuffers: Buffer[]
-): Promise<{ transcripts: string[]; imageDescriptions: string[]; imageWarning?: string }> {
-  // Voice transcription is required — let errors propagate
+  voiceBuffers: Buffer[]
+): Promise<{ transcripts: string[] }> {
   const transcripts = await Promise.all(voiceBuffers.map(transcribeVoice));
-
-  // Image description is best-effort — skip on Gemini failure
-  let imageDescriptions: string[] = [];
-  let imageWarning: string | undefined;
-
-  if (imageBuffers.length > 0) {
-    try {
-      imageDescriptions = await Promise.all(imageBuffers.map(describeImage));
-    } catch (err: unknown) {
-      const status = (err as { status?: number }).status;
-      logger.warn({ status }, "Gemini image description failed, skipping");
-      imageWarning = status === 429
-        ? "⚠️ Gemini quota exceeded — image descriptions skipped. Post will be generated from voice only."
-        : "⚠️ Gemini unavailable — image descriptions skipped. Post will be generated from voice only.";
-    }
-  }
-
-  return { transcripts, imageDescriptions, imageWarning };
+  return { transcripts };
 }

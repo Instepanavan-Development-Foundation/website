@@ -77,7 +77,7 @@ export async function handleProjectSelection(ctx: Context): Promise<void> {
   try {
     const draft = await generateDraft(
       session.transcripts,
-      session.imageDescriptions,
+      session.textInputs,
       session.allTags,
       session.allContributors,
       session.selectedProject?.name
@@ -86,13 +86,13 @@ export async function handleProjectSelection(ctx: Context): Promise<void> {
     session.draftText = draft.text;
     session.draftSlug = draft.slug;
     session.suggestedTags = draft.tags;
-    session.suggestedContributors = draft.contributors.map((name) => {
+    session.suggestedContributors = draft.contributors.map(({ name, text, isFeatured }) => {
       const existing = session.allContributors.find(
         (c) => c.fullName.toLowerCase() === name.toLowerCase()
       );
       return existing
-        ? { documentId: existing.documentId, fullName: existing.fullName }
-        : { documentId: "", fullName: name, isNew: true };
+        ? { documentId: existing.documentId, fullName: existing.fullName, contributionText: text, isFeatured }
+        : { documentId: "", fullName: name, isNew: true, contributionText: text, isFeatured };
     });
 
     await ctx.api.deleteMessage(chatId, processingMsg.message_id);

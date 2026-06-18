@@ -4,7 +4,7 @@ import { Session, sessionStore } from "../state/sessionStore";
 import { editDraft } from "../services/gptService";
 import { showDraft } from "./draftReviewer";
 import { friendlyError } from "../utils/friendlyError";
-import { handleTextContext } from "./mediaCollector";
+import { handleTextContext, handleTextAsInput } from "./mediaCollector";
 
 async function runEdit(ctx: Context, chatId: number, session: Session, instruction: string): Promise<void> {
   session.phase = "processing";
@@ -16,32 +16,45 @@ async function runEdit(ctx: Context, chatId: number, session: Session, instructi
         text: session.draftText,
         slug: session.draftSlug,
         tags: session.suggestedTags,
-        contributors: session.suggestedContributors.map((c) => c.fullName),
+        contributors: session.suggestedContributors.map((c) => ({
+          name: c.fullName,
+          text: c.contributionText,
+          isFeatured: c.isFeatured,
+        })),
+        projectName: session.selectedProject?.name,
       },
       instruction,
       session.allTags,
       session.allContributors,
+      session.availableProjects,
       session.editHistory
     );
 
     // Persist edit exchange in history for multi-turn context
     session.editHistory.push(
       { role: "user", content: instruction },
-      { role: "assistant", content: JSON.stringify({ text: result.text, tags: result.tags, contributors: result.contributors }) }
+      { role: "assistant", content: JSON.stringify({ text: result.text, tags: result.tags, contributors: result.contributors, project: result.project ?? null }) }
     );
 
     session.draftText = result.text;
     session.draftSlug = result.slug || session.draftSlug;
     session.suggestedTags = result.tags;
 
-    // Resolve contributor names → documentIds (or mark new)
-    session.suggestedContributors = result.contributors.map((name) => {
+    // Handle project change
+    if (result.project) {
+      const matched = session.availableProjects.find(
+        (p) => p.name.toLowerCase() === result.project!.toLowerCase()
+      );
+      if (matched) session.selectedProject = matched;
+    }
+
+    session.suggestedContributors = result.contributors.map(({ name, text, isFeatured }) => {
       const existing = session.allContributors.find(
         (c) => c.fullName.toLowerCase() === name.toLowerCase()
       );
       return existing
-        ? { documentId: existing.documentId, fullName: existing.fullName }
-        : { documentId: "", fullName: name, isNew: true };
+        ? { documentId: existing.documentId, fullName: existing.fullName, contributionText: text, isFeatured }
+        : { documentId: "", fullName: name, isNew: true, contributionText: text, isFeatured };
     });
 
     const oldDraftMessageId = session.draftMessageId;
@@ -68,28 +81,34 @@ export async function handleText(ctx: Context): Promise<void> {
   const chatId = ctx.chat?.id;
   if (!chatId) return;
 
-  const session = sessionStore.get(chatId);
-  if (!session) return;
+  const text = ctx.message?.text?.trim();
+  if (!text) return;
 
-  // Route text to context handler when waiting for image description
-  if (session.phase === "awaiting_context") {
-    const text = ctx.message?.text?.trim();
-    if (text) await handleTextContext(ctx, chatId, text);
+  const existingSession = sessionStore.get(chatId);
+
+  // Accept text as initial content input (no session yet, or idle)
+  if (!existingSession || existingSession.phase === "idle") {
+    await handleTextAsInput(ctx, chatId, text, true);
     return;
   }
 
-  // Allow direct text edits while reviewing (without pressing Edit button)
-  if (session.phase === "reviewing_draft") {
-    const text = ctx.message?.text?.trim();
-    if (!text) return;
+  const session = existingSession;
+
+  // Add text to ongoing media collection
+  if (session.phase === "collecting") {
+    await handleTextAsInput(ctx, chatId, text, false);
+    return;
+  }
+
+  // Route text as context when waiting for image description
+  if (session.phase === "awaiting_context") {
+    await handleTextContext(ctx, chatId, text);
+    return;
+  }
+
+  // Direct text edits while reviewing or awaiting edit instruction
+  if (session.phase === "reviewing_draft" || session.phase === "awaiting_edit") {
     await runEdit(ctx, chatId, session, text);
     return;
   }
-
-  if (session.phase !== "awaiting_edit") return;
-
-  const instruction = ctx.message?.text?.trim();
-  if (!instruction) return;
-
-  await runEdit(ctx, chatId, session, instruction);
 }

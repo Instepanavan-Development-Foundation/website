@@ -24,7 +24,7 @@ export interface Session {
   voiceBuffers: Buffer[];
   imageBuffers: Buffer[];
   transcripts: string[];
-  imageDescriptions: string[];
+  textInputs: string[];
   draftText: string;
   draftSlug: string;
   suggestedTags: string[];
@@ -32,7 +32,7 @@ export interface Session {
   availableProjects: Project[];
   allTags: string[];
   allContributors: { documentId: string; fullName: string; about: string }[];
-  suggestedContributors: { documentId: string; fullName: string; isNew?: boolean }[];
+  suggestedContributors: { documentId: string; fullName: string; isNew?: boolean; contributionText: string; isFeatured: boolean }[];
   draftMessageId: number | null;
   editHistory: { role: "user" | "assistant"; content: string }[];
   retryAction: "processing" | "draft_after_project" | null;
@@ -45,7 +45,7 @@ function createSession(): Session {
     voiceBuffers: [],
     imageBuffers: [],
     transcripts: [],
-    imageDescriptions: [],
+    textInputs: [],
     draftText: "",
     draftSlug: "",
     suggestedTags: [],

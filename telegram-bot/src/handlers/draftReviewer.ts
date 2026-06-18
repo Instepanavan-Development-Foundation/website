@@ -12,9 +12,13 @@ export function buildDraftText(session: Session): string {
   const tags = session.suggestedTags.map((t) => `#${t}`).join(" ");
   const project = session.selectedProject?.name ?? "None";
   const contributors = session.suggestedContributors.length > 0
-    ? session.suggestedContributors.map((c) => c.isNew ? `${c.fullName} ✨new` : c.fullName).join(", ")
+    ? session.suggestedContributors.map((c) => {
+        const label = c.isNew ? `${c.fullName} ✨new` : c.fullName;
+        return c.contributionText ? `${label}: ${c.contributionText}` : label;
+      }).join("\n  ")
     : "none";
-  return `📝 Draft:\n\n${session.draftText}\n\n🔗 Slug: ${session.draftSlug || "auto"}\n🏷 Tags: ${tags || "none"}\n👤 Contributors: ${contributors}\n📁 Project: ${project}`;
+  const contribLabel = session.suggestedContributors.length > 1 ? "Contributors" : "Contributor";
+  return `📝 Draft:\n\n${session.draftText}\n\n🔗 Slug: ${session.draftSlug || "auto"}\n🏷 Tags: ${tags || "none"}\n👤 ${contribLabel}: ${contributors}\n📁 Project: ${project}`;
 }
 
 export async function showDraft(
@@ -98,7 +102,9 @@ async function handlePublish(
       imageIds,
       tagNames: session.suggestedTags,
       projectDocumentId: session.selectedProject?.documentId ?? null,
-      contributorDocumentIds: resolvedContributors.map((c) => c.documentId).filter(Boolean),
+      contributions: resolvedContributors
+        .filter((c) => c.documentId)
+        .map((c) => ({ documentId: c.documentId, text: c.contributionText, isFeatured: c.isFeatured })),
     });
 
     const frontendUrl = config.strapiBaseUrl.replace(/^https?:\/\/api\./, "https://");
