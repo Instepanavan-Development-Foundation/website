@@ -36,11 +36,7 @@ export default async function Projects({
   const projectsWithFunding = await Promise.all(
     projects.map(async (project) => {
       const funding = await getProjectFunding(project.documentId);
-      let gatheredAmount = project.gatheredAmount ?? 0;
-
-      if (funding) {
-        gatheredAmount = getFundingAmount(funding, isArchived, project.gatheredAmount ?? 0);
-      }
+      const gatheredAmount = funding ? getFundingAmount(funding, isArchived) : 0;
 
       return {
         ...project,
