@@ -11,7 +11,14 @@ export default factories.createCoreController('api::project-payment.project-paym
       return ctx.unauthorized();
     }
 
+    // Only pass through safe query params — never spread the whole ctx.query,
+    // since a client-supplied `filters` key would replace (not AND with) the
+    // ownership filter below and leak every user's subscriptions.
+    const { sort, pagination } = ctx.query;
+
     const entries = await strapi.documents('api::project-payment.project-payment').findMany({
+      sort,
+      pagination,
       filters: {
         payment_method: {
           users_permissions_user: {
@@ -19,7 +26,6 @@ export default factories.createCoreController('api::project-payment.project-paym
           }
         }
       },
-      ...ctx.query
     });
 
     return { data: entries, meta: {} };

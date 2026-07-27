@@ -40,7 +40,21 @@ async function createProject(strapi, { donationType = "one time", slug }) {
   });
 }
 
-// Insert a payment log directly, optionally backdated, optionally linked to a project
+async function createProjectPayment(strapi, { paymentMethodDocumentId, projectDocumentId, amount = 1000 }) {
+  return strapi.documents("api::project-payment.project-payment").create({
+    data: {
+      amount,
+      currency: "AMD",
+      type: "recurring",
+      name: "Test Project Payment",
+      payment_method: paymentMethodDocumentId,
+      project: projectDocumentId,
+    },
+  });
+}
+
+// Insert a payment log directly, optionally backdated, optionally linked to a project.
+// Returns the generated document_id so callers can assert on presence/absence.
 async function insertPaymentLog(strapi, { projectDocumentId, amount, success, daysAgo = 0, userDocumentId = null }) {
   const ts = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000).toISOString();
   const docId = crypto.randomBytes(12).toString("hex").slice(0, 24);
@@ -55,6 +69,7 @@ async function insertPaymentLog(strapi, { projectDocumentId, amount, success, da
     created_at: ts,
     updated_at: ts,
   });
+  return docId;
 }
 
 describe("Payment security and funding display", () => {
@@ -190,6 +205,120 @@ describe("Payment security and funding display", () => {
       } finally {
         bankingService.makeBindingPayment = orig;
       }
+    }, 60000);
+  });
+
+  // ─── payment-method / project-payment find — ownership cannot be bypassed via query ──
+
+  describe("payment-method / project-payment find — attacker-supplied filters cannot override ownership", () => {
+    const paymentMethodController = () =>
+      strapi.controller("api::payment-method.payment-method");
+    const projectPaymentController = () =>
+      strapi.controller("api::project-payment.project-payment");
+
+    it("payment-method find: an always-true filters[] query cannot leak another user's saved card", async () => {
+      const victim = await createUser(strapi, "idor-victim-pm");
+      const attacker = await createUser(strapi, "idor-attacker-pm");
+      const victimPm = await createPaymentMethod(strapi, victim.documentId);
+
+      // The exploit: pass a `filters` key that, if naively spread after the
+      // server's ownership filter, replaces it entirely instead of AND-ing with it.
+      const ctx = {
+        state: { user: { id: attacker.id, documentId: attacker.documentId } },
+        query: { filters: { id: { $gt: 0 } } },
+        unauthorized: () => {},
+      };
+
+      const result = await paymentMethodController().find(ctx);
+
+      expect(result.data.some((e) => e.documentId === victimPm.documentId)).toBe(false);
+    }, 60000);
+
+    it("project-payment find: an always-true filters[] query cannot leak another user's subscription", async () => {
+      const victim = await createUser(strapi, "idor-victim-pp");
+      const attacker = await createUser(strapi, "idor-attacker-pp");
+      const victimPm = await createPaymentMethod(strapi, victim.documentId);
+      const project = await createProject(strapi, { slug: `idor-pp-${Date.now()}` });
+      const victimPayment = await createProjectPayment(strapi, {
+        paymentMethodDocumentId: victimPm.documentId,
+        projectDocumentId: project.documentId,
+      });
+
+      const ctx = {
+        state: { user: { id: attacker.id, documentId: attacker.documentId } },
+        query: { filters: { id: { $gt: 0 } } },
+        unauthorized: () => {},
+      };
+
+      const result = await projectPaymentController().find(ctx);
+
+      expect(result.data.some((e) => e.documentId === victimPayment.documentId)).toBe(false);
+    }, 60000);
+  });
+
+  // ─── payment-log find/findOne — ownership scoping and field allowlist ────────
+
+  describe("payment-log find/findOne — ownership scoping", () => {
+    const paymentLogController = () =>
+      strapi.controller("api::payment-log.payment-log");
+
+    it("returns 401 for unauthenticated requests", async () => {
+      const ctx = {
+        state: { user: null },
+        query: {},
+        unauthorized: () => "UNAUTHORIZED",
+      };
+
+      const result = await paymentLogController().find(ctx);
+      expect(result).toBe("UNAUTHORIZED");
+    });
+
+    it("does not return another user's payment logs", async () => {
+      const victim = await createUser(strapi, "log-victim");
+      const attacker = await createUser(strapi, "log-attacker");
+      const project = await createProject(strapi, { slug: `log-idor-${Date.now()}` });
+
+      const victimLogId = await insertPaymentLog(strapi, {
+        projectDocumentId: project.documentId,
+        amount: 7000,
+        success: true,
+        userDocumentId: victim.documentId,
+      });
+
+      const ctx = {
+        state: { user: { id: attacker.id, documentId: attacker.documentId } },
+        query: {},
+        unauthorized: () => {},
+      };
+
+      const result = await paymentLogController().find(ctx);
+
+      expect(result.data.some((e) => e.documentId === victimLogId)).toBe(false);
+    }, 60000);
+
+    it("the owner sees their own log, but never sensitive fields like details/paymentId", async () => {
+      const owner = await createUser(strapi, "log-owner");
+      const project = await createProject(strapi, { slug: `log-owner-${Date.now()}` });
+
+      const ownLogId = await insertPaymentLog(strapi, {
+        projectDocumentId: project.documentId,
+        amount: 4200,
+        success: true,
+        userDocumentId: owner.documentId,
+      });
+
+      const ctx = {
+        state: { user: { id: owner.id, documentId: owner.documentId } },
+        query: {},
+        unauthorized: () => {},
+      };
+
+      const result = await paymentLogController().find(ctx);
+      const own = result.data.find((e) => e.documentId === ownLogId);
+
+      expect(own).toBeDefined();
+      expect(own.details).toBeUndefined();
+      expect(own.paymentId).toBeUndefined();
     }, 60000);
   });
 

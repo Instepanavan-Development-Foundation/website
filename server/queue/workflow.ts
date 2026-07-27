@@ -3,6 +3,7 @@ import { RateLimitDuration } from "@hatchet-dev/typescript-sdk";
 
 import { Core } from "@strapi/strapi";
 import { hatchet } from "./hatchet-client";
+import { mintAdminToken } from "../src/api/payment/utils/mint-admin-token";
 
 let strapiGlobal: Core.Strapi;
 interface ProcessPaymentInput {
@@ -16,6 +17,15 @@ const axiosClient = axios.create({
 });
 
 const PROJECT_PAYMENT_CREATE_EVENT = "project-payment:create";
+
+async function getSystemAdminToken(): Promise<string> {
+  const userId = process.env.RECURRING_PAYMENTS_ADMIN_USER_ID;
+  if (!userId) {
+    throw new Error("RECURRING_PAYMENTS_ADMIN_USER_ID is not configured");
+  }
+
+  return mintAdminToken(strapiGlobal, userId);
+}
 
 // Single payment processing task
 
@@ -37,10 +47,11 @@ upper?.task({
     const data = { projectPaymentId: documentId };
 
     try {
+      const adminToken = await getSystemAdminToken();
       const response = await axiosClient.post(url, data, {
         headers: {
           "Content-Type": "application/json",
-          "x-admin-api-key": process.env.ADMIN_API_KEY,
+          "Authorization": `Bearer ${adminToken}`,
         },
       });
 

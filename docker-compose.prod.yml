@@ -128,9 +128,7 @@ services:
       - telegram
 
   rss-publisher:
-    build:
-      context: ./rss-publisher
-      dockerfile: Dockerfile
+    image: rss-publisher
     container_name: instepanavan-rss-publisher
     restart: unless-stopped
     env_file:

@@ -26,7 +26,7 @@ export default {
       config: {
         policies: [],
         middlewares: [],
-        auth: false, // Admin auth via ADMIN_API_KEY header in controller
+        auth: false, // Admin JWT verified manually in controller (verifyAdminAuth)
       },
     },
     {
@@ -36,7 +36,7 @@ export default {
       config: {
         policies: [],
         middlewares: [],
-        auth: false, // Admin auth via ADMIN_API_KEY header in controller
+        auth: false, // Admin JWT verified manually in controller (verifyAdminAuth)
       },
     },
     {

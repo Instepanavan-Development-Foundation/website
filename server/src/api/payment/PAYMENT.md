@@ -348,7 +348,7 @@ upper?.task({
 
 **Endpoint:** `POST /api/payment/do-recurring-payment`
 
-**Auth:** Requires `x-admin-api-key` header matching `ADMIN_API_KEY` env var (Hatchet sends this automatically).
+**Auth:** Requires a real admin session token (`Authorization: Bearer <token>`), verified via `verifyAdminAuth` — the same check used by cancel/refund. The Hatchet worker mints its own token in-process for a dedicated admin account (see `RECURRING_PAYMENTS_ADMIN_USER_ID` in `.env`); no static shared secret is involved.
 
 **Request Body:**
 ```json
@@ -776,9 +776,13 @@ Both use **optimistic atomic UPDATE** before calling the bank:
 ### ✅ Fixed
 
 1. **Authentication on recurring payment endpoints**
-   - `/do-recurring-payment` — requires `x-admin-api-key` header
-   - `/trigger-all-payments` — requires `x-admin-api-key` header
-   - Hatchet worker sends the key automatically ([../../../queue/workflow.ts](../../../queue/workflow.ts))
+   - `/do-recurring-payment` and `/trigger-all-payments` both require a real admin
+     session token via `verifyAdminAuth` — same mechanism as cancel/refund
+   - No static shared secret: the Hatchet worker mints its own token in-process for a
+     dedicated admin account ([../../../queue/workflow.ts](../../../queue/workflow.ts),
+     `getSystemAdminToken` / `RECURRING_PAYMENTS_ADMIN_USER_ID`)
+   - Manual triggers use a real admin's own browser session token (see the
+     `trigger-recurring-payment` Claude skill)
 
 2. **Double-charge race condition** — fixed via `FOR UPDATE` lock (see above)
 
@@ -860,7 +864,7 @@ HATCHET_CLIENT_HOST_PORT=localhost:7077
 
 ### High Priority
 
-- [x] **Add authentication to recurring payment endpoints** — Both `doRecurringPayment` and `triggerAllPayments` now check `x-admin-api-key` header against `ADMIN_API_KEY` env var ([controllers/payment.ts:107-110](controllers/payment.ts#L107-L110), [controllers/payment.ts:198-201](controllers/payment.ts#L198-L201))
+- [x] **Add authentication to recurring payment endpoints** — Both `doRecurringPayment` and `triggerAllPayments` now require a real admin session token via `verifyAdminAuth`, same as cancel/refund (no static shared secret anymore — see "Hatchet & Recurring Payments" in [../../../../README.md](../../../../README.md))
 - [x] **Link payment methods to users** — `createProjectPaymentMethod` now saves `userDocumentId` (string) and `users_permissions_user` (numeric) ([services/strapi.ts:132-147](services/strapi.ts#L132-L147))
 - [x] **Fix hardcoded payment type** — Now uses project's `donationType` directly (`"recurring"` or `"one time"`). Project-payment schema enum updated to match ([services/strapi.ts:94](services/strapi.ts#L94))
 - [x] **Add email to project payments** — Now populates user email via project_payment → payment_method → users_permissions_user ([../../../queue/workflow.ts:89-112](../../../queue/workflow.ts#L89-L112))
@@ -874,7 +878,7 @@ HATCHET_CLIENT_HOST_PORT=localhost:7077
 
 ### Low Priority
 
-- [x] **Add authentication check comment** — Hatchet worker now sends `x-admin-api-key` header ([../../../queue/workflow.ts:42](../../../queue/workflow.ts#L42))
+- [x] **Add authentication check comment** — Hatchet worker now mints its own admin session token in-process ([../../../queue/workflow.ts](../../../queue/workflow.ts), `getSystemAdminToken`)
 - [x] **Prevent deletion of historical logs** — Old cron deletion loop removed; crons are now registered with `onCrons` declaratively and handle "already exists" gracefully ([../../../queue/workflow.ts:150-161](../../../queue/workflow.ts#L150-L161))
 
 ---
@@ -967,11 +971,15 @@ Covers:
 
 ### Manual Testing Endpoints
 
+All three now require `Authorization: Bearer <admin-token>` instead of a static key —
+see the `trigger-recurring-payment` Claude skill for how to get a token from your own
+admin session.
+
 #### Test Recurring Payment for Single Project
 ```bash
 curl -X POST http://localhost:1337/api/payment/trigger-all-payments \
   -H "Content-Type: application/json" \
-  -H "x-admin-api-key: $ADMIN_API_KEY" \
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
   -d '{"projectDocumentId": "abc123"}'
 ```
 
@@ -979,7 +987,7 @@ curl -X POST http://localhost:1337/api/payment/trigger-all-payments \
 ```bash
 curl -X POST http://localhost:1337/api/payment/trigger-all-payments \
   -H "Content-Type: application/json" \
-  -H "x-admin-api-key: $ADMIN_API_KEY" \
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
   -d '{}'
 ```
 
@@ -987,7 +995,7 @@ curl -X POST http://localhost:1337/api/payment/trigger-all-payments \
 ```bash
 curl -X POST http://localhost:1337/api/payment/do-recurring-payment \
   -H "Content-Type: application/json" \
-  -H "x-admin-api-key: $ADMIN_API_KEY" \
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
   -d '{"projectPaymentId": "payment123"}'
 ```
 

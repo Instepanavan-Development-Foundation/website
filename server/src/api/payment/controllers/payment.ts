@@ -154,10 +154,10 @@ export default {
     const service = strapi.service(PAYMENT_API);
 
     try {
-      // Check admin API key (for Hatchet internal calls and manual admin triggers)
-      const apiKey = ctx.request.headers['x-admin-api-key'];
-      if (apiKey !== process.env.ADMIN_API_KEY) {
-        return ctx.unauthorized('Invalid admin API key');
+      // Requires a real admin session token (Hatchet mints one for its own system
+      // account per call; manual/test triggers use a real admin's own token)
+      if (!await verifyAdminAuth(ctx)) {
+        return ctx.unauthorized('Invalid admin token');
       }
 
       const projectPayment = await service.getProjectPaymentWithMethod(projectPaymentId);
@@ -234,10 +234,9 @@ export default {
     }
   },
   triggerAllPayments: async (ctx) => {
-    // Check admin API key (for manual admin triggers)
-    const apiKey = ctx.request.headers['x-admin-api-key'];
-    if (apiKey !== process.env.ADMIN_API_KEY) {
-      return ctx.unauthorized('Invalid admin API key');
+    // Requires a real admin session token (see doRecurringPayment)
+    if (!await verifyAdminAuth(ctx)) {
+      return ctx.unauthorized('Invalid admin token');
     }
 
     const { projectDocumentId } = ctx.request.body;

@@ -45,23 +45,27 @@ cd client && npm install && npm run dev
 
 **Testing the queue:**
 ```bash
-# Trigger all recurring payments via Hatchet queue (requires ADMIN_API_KEY)
+# Trigger all recurring payments via Hatchet queue (requires an admin bearer token)
 curl -X POST http://localhost:1337/api/payment/trigger-all-payments \
   -H 'Content-Type: application/json' \
-  -H 'x-admin-api-key: YOUR_ADMIN_API_KEY' \
+  -H 'Authorization: Bearer YOUR_ADMIN_TOKEN' \
   -d '{}'
 ```
 
 **Or process individual payment directly:**
 ```bash
-# Process single recurring payment (requires ADMIN_API_KEY)
+# Process single recurring payment (requires an admin bearer token)
 curl -X POST http://localhost:1337/api/payment/do-recurring-payment \
   -H 'Content-Type: application/json' \
-  -H 'x-admin-api-key: YOUR_ADMIN_API_KEY' \
+  -H 'Authorization: Bearer YOUR_ADMIN_TOKEN' \
   -d '{"projectPaymentId": "PAYMENT_ID"}'
 ```
 
-**Note:** Get `ADMIN_API_KEY` from `server/.env`. These endpoints are secured with API key authentication for admin/internal use only.
+**Note:** These endpoints require a real Strapi admin session token, not a static
+API key — log into `/admin`, grab your session's bearer token from a Network tab
+request, and use that as `YOUR_ADMIN_TOKEN`. The recurring-payments worker mints its
+own token the same way for a dedicated admin account (`RECURRING_PAYMENTS_ADMIN_USER_ID`
+in `server/.env`). See the `trigger-recurring-payment` Claude skill for the full steps.
 
 **View workflow runs:**
 - Hatchet UI: http://localhost:8888

@@ -11,13 +11,19 @@ export default factories.createCoreController('api::payment-method.payment-metho
       return ctx.unauthorized();
     }
 
+    // Only pass through safe query params — never spread the whole ctx.query,
+    // since a client-supplied `filters` key would replace (not AND with) the
+    // ownership filter below and leak every user's payment methods.
+    const { sort, pagination } = ctx.query;
+
     const entries = await strapi.documents('api::payment-method.payment-method').findMany({
+      sort,
+      pagination,
       filters: {
         users_permissions_user: {
           id: user.id
         }
       },
-      ...ctx.query
     });
 
     return { data: entries, meta: {} };
