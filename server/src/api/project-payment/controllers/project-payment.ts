@@ -17,8 +17,8 @@ export default factories.createCoreController('api::project-payment.project-paym
     const { sort, pagination } = ctx.query;
 
     const entries = await strapi.documents('api::project-payment.project-payment').findMany({
-      sort,
-      pagination,
+      sort: sort as any,
+      pagination: pagination as any,
       filters: {
         payment_method: {
           users_permissions_user: {

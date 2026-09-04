@@ -21,8 +21,8 @@ export default factories.createCoreController('api::payment-log.payment-log', ({
     const { sort, pagination } = ctx.query;
 
     const entries = await strapi.documents('api::payment-log.payment-log').findMany({
-      sort,
-      pagination,
+      sort: sort as any,
+      pagination: pagination as any,
       filters: {
         userDocumentId: user.documentId,
       } as any,
