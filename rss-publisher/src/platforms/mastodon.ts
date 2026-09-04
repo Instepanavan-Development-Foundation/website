@@ -21,9 +21,10 @@ function resolveInstanceUrl(rawUrl: string): string {
 async function uploadMedia(instanceUrl: string, accessToken: string, imageUrl: string): Promise<string> {
   const imageRes = await axios.get(imageUrl, { responseType: "arraybuffer" });
   const form = new FormData();
+  const contentType = imageRes.headers["content-type"];
   form.append("file", Buffer.from(imageRes.data), {
     filename: "image.jpg",
-    contentType: imageRes.headers["content-type"] || "image/jpeg",
+    contentType: typeof contentType === "string" ? contentType : "image/jpeg",
   });
 
   const res = await axios.post(`${instanceUrl}/api/v2/media`, form, {

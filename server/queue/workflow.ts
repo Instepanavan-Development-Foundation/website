@@ -6,6 +6,7 @@ import { hatchet } from "./hatchet-client";
 import { mintAdminToken } from "../src/api/payment/utils/mint-admin-token";
 
 let strapiGlobal: Core.Strapi;
+let workerGlobal: Awaited<ReturnType<NonNullable<typeof hatchet>["worker"]>> | undefined;
 interface ProcessPaymentInput {
   amount: number;
   documentId: string;
@@ -16,7 +17,14 @@ const axiosClient = axios.create({
   timeout: 30000,
 });
 
-const PROJECT_PAYMENT_CREATE_EVENT = "project-payment:create";
+// Under Jest, multiple test files run as separate processes but all talk to the
+// same live Hatchet server. Without a per-process suffix, they'd register the same
+// worker/workflow names and Hatchet could dispatch a job from one file's test data
+// to another file's (already-torn-down) process. process.pid is unique per process,
+// even when Jest reuses a worker slot sequentially across files.
+const TEST_SUFFIX = process.env.JEST_WORKER_ID ? `-test-${process.pid}` : "";
+
+const PROJECT_PAYMENT_CREATE_EVENT = `project-payment:create${TEST_SUFFIX}`;
 
 async function getSystemAdminToken(): Promise<string> {
   const userId = process.env.RECURRING_PAYMENTS_ADMIN_USER_ID;
@@ -30,14 +38,16 @@ async function getSystemAdminToken(): Promise<string> {
 // Single payment processing task
 
 const upper = hatchet?.workflow({
-  name: "upper",
+  name: `upper${TEST_SUFFIX}`,
   on: {
     event: PROJECT_PAYMENT_CREATE_EVENT,
   },
 });
 
 upper?.task({
-  name: "upper",
+  // Cast: the SDK's .task() overload resolution depends on `name` being the
+  // literal "upper" type; the runtime value is still suffixed for uniqueness.
+  name: `upper${TEST_SUFFIX}` as "upper",
   fn: async (input, ctx) => {
     const { amount, documentId, email } = input as ProcessPaymentInput;
 
@@ -75,11 +85,12 @@ upper?.task({
 
 // Main recurring payments workflow
 const recurringPaymentsTask = hatchet?.workflow({
-  name: "recurring-payments-monthly",
+  name: `recurring-payments-monthly${TEST_SUFFIX}`,
 });
 
 recurringPaymentsTask?.task({
-  name: "process-recurring-payments",
+  // Same cast rationale as the `upper` task above.
+  name: `process-recurring-payments${TEST_SUFFIX}` as "process-recurring-payments",
   fn: async (input: { projectDocumentId?: string } = {}) => {
     const { projectDocumentId } = input || {};
 
@@ -158,29 +169,46 @@ export async function startRecurringPaymentSystem(strapi: Core.Strapi): Promise<
 
   strapiGlobal = strapi;
 
-  const worker = await hatchet.worker("recurring-payments-worker", {
+  const worker = await hatchet.worker(`recurring-payments-worker${TEST_SUFFIX}`, {
     workflows: [recurringPaymentsTask, upper],
   });
+  workerGlobal = worker;
 
   worker.start().catch(err => {
     strapiGlobal.log.error("Recurring payments worker crashed:", err);
     process.exit(1);
   });
 
-  try {
-    await recurringPaymentsTask.cron('monthly-payments-4th', '0 0 4 * *', {});
-    await recurringPaymentsTask.cron('monthly-payments-14th', '0 0 14 * *', {});
-    await recurringPaymentsTask.cron('monthly-payments-24th', '0 0 24 * *', {});
-    console.log("✅ Recurring payments: Crons registered (4th, 14th, 24th at 00:00 UTC = 04:00 AM Armenia)");
-  } catch (error) {
-    if (error.message.includes("already exists")) {
-      console.log("✅ Recurring payments: Crons active (4th, 14th, 24th)");
-    } else {
-      console.error("⚠️ Cron registration failed (manual trigger only)");
+  // Crons are time-based and irrelevant to test execution — skip registering them
+  // under Jest so every test run doesn't leave behind a uniquely-suffixed orphan cron.
+  if (!TEST_SUFFIX) {
+    try {
+      await recurringPaymentsTask.cron('monthly-payments-4th', '0 0 4 * *', {});
+      await recurringPaymentsTask.cron('monthly-payments-14th', '0 0 14 * *', {});
+      await recurringPaymentsTask.cron('monthly-payments-24th', '0 0 24 * *', {});
+      console.log("✅ Recurring payments: Crons registered (4th, 14th, 24th at 00:00 UTC = 04:00 AM Armenia)");
+    } catch (error) {
+      if (error.message.includes("already exists")) {
+        console.log("✅ Recurring payments: Crons active (4th, 14th, 24th)");
+      } else {
+        console.error("⚠️ Cron registration failed (manual trigger only)");
+      }
     }
   }
 
   return true;
+}
+
+// Gracefully unregisters the worker from Hatchet and waits for in-flight tasks to
+// finish. Needed between test files sharing one live Hatchet instance — otherwise a
+// leftover worker from a previous file keeps processing events against that file's
+// already-torn-down DB connection.
+export async function stopRecurringPaymentSystem(): Promise<void> {
+  if (!workerGlobal) {
+    return;
+  }
+  await workerGlobal.stop();
+  workerGlobal = undefined;
 }
 
 // For manual Running
