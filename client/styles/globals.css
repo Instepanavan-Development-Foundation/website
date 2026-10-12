@@ -1,5 +1,184 @@
 @import "tailwindcss";
-@config "../tailwind.config.mjs";
+@import "@heroui/styles";
+@plugin "@tailwindcss/typography";
+
+/*
+ * Dark mode is class-based only (next-themes adds `.dark` to <html>), matching
+ * the previous `darkMode: "class"` config. HeroUI v3's own `dark` variant also
+ * falls back to prefers-color-scheme, which would restyle `dark:` utilities for
+ * visitors with an OS dark theme even though the site is light-only.
+ */
+@custom-variant dark (&:where(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *));
+
+/* ---------------------------------------------------------------------------
+ * Site design tokens (previously tailwind.config.mjs theme.extend)
+ * ------------------------------------------------------------------------- */
+@theme inline {
+  --font-sans: var(--font-inter), var(--font-noto-armenian), system-ui, sans-serif;
+  --font-armenian: var(--font-noto-armenian), system-ui, sans-serif;
+}
+
+@theme {
+  --color-cream-50: #fffbf5;
+  --color-cream-100: #fff4eb;
+  --color-cream-200: #f5eadb;
+  --color-cream-300: #f0dfca;
+
+  --color-ink: #1f1712;
+  --color-ink-body: #4a3e32;
+  --color-ink-muted: #6b5e4e;
+  --color-ink-meta: #8a7e6e;
+
+  --tracking-tightest: -0.035em;
+  --tracking-tighter2: -0.025em;
+
+  /*
+   * Brand colour scales carried over from the HeroUI v2 theme. HeroUI v3 only
+   * ships semantic tokens (accent, default, success, ...) without numbered
+   * shades, but the site's own markup uses classes such as `bg-primary-100`
+   * and `text-default-500`, so the exact v2 values are kept here.
+   */
+  --color-primary: #e65a2a;
+  --color-primary-foreground: #ffffff;
+  --color-primary-50: #fff4eb;
+  --color-primary-100: #ffe7d2;
+  --color-primary-200: #ffcdaa;
+  --color-primary-300: #ffb088;
+  --color-primary-400: #ff8a5c;
+  --color-primary-500: #e65a2a;
+  --color-primary-600: #c94516;
+  --color-primary-700: #a1350f;
+  --color-primary-800: #7a2608;
+  --color-primary-900: #4f1804;
+
+  --color-default-50: #fffbf5;
+  --color-default-100: #fff4eb;
+  --color-default-200: #f5eadb;
+  --color-default-300: #f0dfca;
+  --color-default-400: #8a7e6e;
+  --color-default-500: #6b5e4e;
+  --color-default-600: #4a3e32;
+  --color-default-700: #3a2f25;
+  --color-default-800: #2a221b;
+  --color-default-900: #1f1712;
+
+  /* v2 merged partial overrides into its default palette, hence the mix. */
+  --color-success-50: #fff4eb;
+  --color-success-100: hsl(145.71 61.4% 88.82%);
+  --color-success-200: hsl(146.2 61.74% 77.45%);
+  --color-success-300: hsl(145.79 62.57% 66.47%);
+  --color-success-400: hsl(146.01 62.45% 55.1%);
+  --color-success-500: #e65a2a;
+  --color-success-600: hsl(146.01 79.89% 35.1%);
+  --color-success-700: hsl(145.79 79.26% 26.47%);
+  --color-success-800: hsl(146.2 79.78% 17.45%);
+  --color-success-900: hsl(145.71 77.78% 8.82%);
+
+  --color-warning-50: hsl(54.55 91.67% 95.29%);
+  --color-warning-100: hsl(37.14 91.3% 90.98%);
+  --color-warning-200: hsl(37.14 91.3% 81.96%);
+  --color-warning-300: hsl(36.96 91.24% 73.14%);
+  --color-warning-400: hsl(37.01 91.26% 64.12%);
+  --color-warning-500: hsl(37.03 91.27% 55.1%);
+  --color-warning-600: hsl(37.01 74.22% 44.12%);
+  --color-warning-700: hsl(36.96 73.96% 33.14%);
+  --color-warning-800: hsl(37.14 75% 21.96%);
+  --color-warning-900: hsl(37.14 75% 10.98%);
+
+  --color-danger-50: #ffeeea;
+  --color-danger-100: hsl(340 91.84% 90.39%);
+  --color-danger-200: hsl(339.33 90% 80.39%);
+  --color-danger-300: hsl(339.11 90.6% 70.78%);
+  --color-danger-400: hsl(339 90% 60.78%);
+  --color-danger-500: #c8367e;
+  --color-danger-600: hsl(339 86.54% 40.78%);
+  --color-danger-700: hsl(339.11 85.99% 30.78%);
+  --color-danger-800: hsl(339.33 86.54% 20.39%);
+  --color-danger-900: hsl(340 84.91% 10.39%);
+
+  /* v2 layout tokens (radius small/medium/large, shadow small/medium) */
+  --radius-small: 10px;
+  --radius-medium: 16px;
+  --radius-large: 20px;
+  --shadow-small:
+    0px 0px 5px 0px rgb(0 0 0 / 0.02), 0px 2px 10px 0px rgb(0 0 0 / 0.06),
+    0px 0px 1px 0px rgb(0 0 0 / 0.3);
+  --shadow-medium:
+    0px 0px 15px 0px rgb(0 0 0 / 0.03), 0px 2px 30px 0px rgb(0 0 0 / 0.08),
+    0px 0px 1px 0px rgb(0 0 0 / 0.3);
+}
+
+/* ---------------------------------------------------------------------------
+ * HeroUI v3 light theme, ported from the v2 heroui() plugin config.
+ * Unlayered so it wins over the layered @heroui/styles defaults. Dark mode
+ * keeps HeroUI's built-in dark theme, as v2 did (the site never enables it).
+ * ------------------------------------------------------------------------- */
+:root:not(.dark):not([data-theme="dark"]) {
+  --background: #ffffff;
+  --foreground: #1f1712;
+
+  --surface: #ffffff; /* v2 content1 */
+  --surface-secondary: #fffbf5; /* v2 content2 */
+  --surface-tertiary: #fff4eb; /* v2 content3 */
+  --overlay: #ffffff;
+
+  --muted: #6b5e4e;
+
+  --default: #fff4eb;
+  --default-foreground: #1f1712;
+
+  --accent: #e65a2a; /* v2 primary */
+  --accent-foreground: #ffffff;
+
+  --success: #e65a2a;
+  --success-foreground: #ffffff;
+  --warning: hsl(37.03 91.27% 55.1%);
+  --warning-foreground: #000000;
+  --danger: #c8367e;
+  --danger-foreground: #ffffff;
+
+  --border: #f5eadb; /* v2 divider */
+  --separator: #f5eadb;
+  --focus: #e65a2a;
+  --link: #e65a2a;
+
+  /* v2 "flat" form fields: cream fill, no shadow, 16px radius */
+  --field-background: #fff4eb;
+  --field-hover: #f5eadb;
+  --field-focus: #fff4eb;
+  --field-shadow: 0 0 0 0 transparent;
+  --field-radius: 16px;
+}
+
+/* ---------------------------------------------------------------------------
+ * Component overrides that keep the v2 look
+ * ------------------------------------------------------------------------- */
+@layer components {
+  /* v2 Card: unpadded root with padded sections, clipped 20px corners */
+  .card {
+    gap: 0;
+    padding: 0;
+    overflow: hidden;
+    border-radius: var(--radius-large);
+    box-shadow: var(--shadow-medium);
+  }
+
+  .card__header,
+  .card__content,
+  .card__footer {
+    padding: 0.75rem;
+  }
+
+  .card__header {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .card__content {
+    text-align: left;
+    overflow-wrap: break-word;
+  }
+}
 
 :root {
     --almost-black: rgba(0, 0, 0, 0.85);

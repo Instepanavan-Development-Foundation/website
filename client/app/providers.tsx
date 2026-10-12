@@ -4,9 +4,9 @@ import type { ThemeProviderProps } from "next-themes";
 
 import * as React from "react";
 import { useEffect } from "react";
-import { HeroUIProvider } from "@heroui/system";
 import { useRouter, usePathname } from "next/navigation";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
+import { RouterProvider } from "react-aria-components";
 
 function ScrollToTop() {
   const pathname = usePathname();
@@ -35,9 +35,11 @@ export function Providers({ children, themeProps }: ProvidersProps) {
   const router = useRouter();
 
   return (
-    <HeroUIProvider navigate={router.push}>
+    // HeroUI v3 needs no provider; React Aria's RouterProvider keeps client-side
+    // navigation for components rendered with an `href` (was HeroUIProvider).
+    <RouterProvider navigate={router.push}>
       <ScrollToTop />
       <NextThemesProvider {...themeProps}>{children}</NextThemesProvider>
-    </HeroUIProvider>
+    </RouterProvider>
   );
 }
