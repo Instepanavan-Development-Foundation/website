@@ -1,5 +1,4 @@
-import { Tooltip } from "@heroui/tooltip";
-
+import { ClientTooltip } from "@/components/ClientTooltip";
 import { IContribution } from "@/src/models/blog";
 import { Avatar } from "@/components/Avatar";
 
@@ -28,10 +27,16 @@ export function ContributorsList({
               width={32}
             />
           );
+
           return (
             <div key={idx} className="relative">
               {contribution.text ? (
-                <Tooltip content={contribution.text}>{avatar}</Tooltip>
+                <ClientTooltip
+                  content={contribution.text}
+                  triggerClassName="flex"
+                >
+                  {avatar}
+                </ClientTooltip>
               ) : (
                 avatar
               )}

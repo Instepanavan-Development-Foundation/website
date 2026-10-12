@@ -1,5 +1,5 @@
 @import "tailwindcss";
-@config "../tailwind.config.js";
+@config "../tailwind.config.mjs";
 
 :root {
     --almost-black: rgba(0, 0, 0, 0.85);

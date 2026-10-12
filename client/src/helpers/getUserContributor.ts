@@ -1,6 +1,6 @@
-import getData from "./getData";
-
 import { IContributor } from "@/src/models/contributor";
+
+import getData from "./getData";
 
 export async function getUserContributor(
   userEmail: string,

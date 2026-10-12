@@ -1,7 +1,8 @@
 import { heroui } from "@heroui/theme";
+import typography from "@tailwindcss/typography";
 
 /** @type {import('tailwindcss').Config} */
-module.exports = {
+const config = {
   content: [
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
@@ -10,7 +11,12 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["var(--font-inter)", "var(--font-noto-armenian)", "system-ui", "sans-serif"],
+        sans: [
+          "var(--font-inter)",
+          "var(--font-noto-armenian)",
+          "system-ui",
+          "sans-serif",
+        ],
         armenian: ["var(--font-noto-armenian)", "system-ui", "sans-serif"],
         mono: ["var(--font-mono)", "ui-monospace", "monospace"],
       },
@@ -118,6 +124,8 @@ module.exports = {
         },
       },
     }),
-    require("@tailwindcss/typography"),
+    typography,
   ],
 };
+
+export default config;

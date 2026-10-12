@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 
-import HomeHeroSlide from "./HomeHeroSlide";
-
 import EmblaCarousel from "@/components/EmblaCarousel";
 import { IProject } from "@/src/models/project";
+
+import HomeHeroSlide from "./HomeHeroSlide";
 
 interface HomeHeroProps {
   featuredProjects: IProject[];
@@ -31,13 +31,14 @@ export default function HomeHero({
           </div>
 
           <h1 className="mt-5 font-semibold leading-[1.05] tracking-tightest text-ink text-[clamp(40px,6vw,72px)]">
-            Ստեփանավանը <span className="text-primary">փոխվում</span> է — ձեր ձեռքերով։
+            Ստեփանավանը <span className="text-primary">փոխվում</span> է — ձեր
+            ձեռքերով։
           </h1>
 
           <p className="mt-6 text-[17px] leading-relaxed text-ink-body max-w-[520px]">
             Բաց, թափանցիկ, հաշվետու։ Համայնքային հիմնադրամ, որ գրադարաններ,
-            երիտասարդական կենտրոններ ու մարդասիրական ծրագրեր է կյանքի կոչում
-            — ամեն ծախս հրապարակային։
+            երիտասարդական կենտրոններ ու մարդասիրական ծրագրեր է կյանքի կոչում —
+            ամեն ծախս հրապարակային։
           </p>
 
           <div className="mt-8 flex flex-wrap gap-3">
@@ -63,10 +64,10 @@ export default function HomeHero({
             hasMany ? (
               <EmblaCarousel
                 autoplay
-                autoplayDelay={6000}
                 loop
-                showArrows={false}
                 showDots
+                autoplayDelay={6000}
+                showArrows={false}
               >
                 {projects.map((p) => (
                   <HomeHeroSlide key={p.documentId} project={p} />

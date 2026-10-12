@@ -1,20 +1,12 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useSyncExternalStore } from "react";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@heroui/button";
 import { Card } from "@heroui/card";
 import { Avatar } from "@heroui/avatar";
-import { Divider } from "@heroui/divider";
 import { Progress } from "@heroui/progress";
-import {
-  Heart,
-  ArrowRight,
-  Award,
-  Gift,
-  Star,
-  Trophy,
-} from "lucide-react";
+import { Heart, ArrowRight, Award, Gift, Star, Trophy } from "lucide-react";
 import Link from "next/link";
 import Confetti from "react-confetti";
 import { motion, AnimatePresence } from "framer-motion";
@@ -26,6 +18,24 @@ import getProjectFunding from "@/src/helpers/getProjectFunding";
 import getFundingAmount from "@/src/helpers/getFundingAmount";
 import { IProjectFunding } from "@/src/models/project-funding";
 
+// Impact badge and rank for a donation amount (pure, derived from the URL param)
+function getImpact(amount: string): { badge: string; rank: number } {
+  const amountNum = parseInt(amount);
+
+  if (amountNum >= 50000) return { badge: "Չեմպիոն", rank: 1 };
+  if (amountNum >= 20000) return { badge: "Հերոս", rank: 2 };
+  if (amountNum >= 10000) return { badge: "Փոփոխության կրող", rank: 3 };
+  if (amountNum >= 5000) return { badge: "Աջակից", rank: 4 };
+
+  return { badge: "Ընկեր", rank: 5 };
+}
+
+function subscribeToResize(onChange: () => void) {
+  window.addEventListener("resize", onChange);
+
+  return () => window.removeEventListener("resize", onChange);
+}
+
 export default function DonationSuccessPage() {
   const searchParams = useSearchParams();
   const amount = searchParams.get("amount") || "5000";
@@ -33,39 +43,29 @@ export default function DonationSuccessPage() {
   const projectSlug = searchParams.get("slug") || "";
 
   const [showConfetti, setShowConfetti] = useState(true);
-const [impactBadge, setImpactBadge] = useState("");
   const [showBadgeAnimation, setShowBadgeAnimation] = useState(false);
   const [showThankYouMessage, setShowThankYouMessage] = useState(false);
-  const [donationRank, setDonationRank] = useState(0);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [project, setProject] = useState<IProject | null>(null);
   const [funding, setFunding] = useState<IProjectFunding | null>(null);
   const [animatedRaised, setAnimatedRaised] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Fix for confetti positioning
-  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+  const { badge: impactBadge, rank: donationRank } = getImpact(amount);
 
-  // Get accurate window dimensions on client side
-  useEffect(() => {
-    // Set dimensions only after component mounts (client-side)
-    setDimensions({
-      width: window.innerWidth,
-      height: window.innerHeight,
-    });
-
-    // Update dimensions on window resize
-    const handleResize = () => {
-      setDimensions({
-        width: window.innerWidth,
-        height: window.innerHeight,
-      });
-    };
-
-    window.addEventListener("resize", handleResize);
-
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  // Window dimensions for confetti positioning (0 on the server, live on the client)
+  const dimensions = {
+    width: useSyncExternalStore(
+      subscribeToResize,
+      () => window.innerWidth,
+      () => 0,
+    ),
+    height: useSyncExternalStore(
+      subscribeToResize,
+      () => window.innerHeight,
+      () => 0,
+    ),
+  };
 
   // Fetch user avatar and project data
   useEffect(() => {
@@ -98,28 +98,6 @@ const [impactBadge, setImpactBadge] = useState("");
     }
     loadData();
   }, [projectSlug]);
-
-  // Determine impact badge based on donation amount
-  useEffect(() => {
-    const amountNum = parseInt(amount);
-
-    if (amountNum >= 50000) {
-      setImpactBadge("Չեմպիոն");
-      setDonationRank(1);
-    } else if (amountNum >= 20000) {
-      setImpactBadge("Հերոս");
-      setDonationRank(2);
-    } else if (amountNum >= 10000) {
-      setImpactBadge("Փոփոխության կրող");
-      setDonationRank(3);
-    } else if (amountNum >= 5000) {
-      setImpactBadge("Աջակից");
-      setDonationRank(4);
-    } else {
-      setImpactBadge("Ընկեր");
-      setDonationRank(5);
-    }
-  }, [amount]);
 
   // Play success sound and show animations in sequence
   useEffect(() => {
@@ -155,8 +133,7 @@ const [impactBadge, setImpactBadge] = useState("");
   useEffect(() => {
     if (funding) {
       // Get gathered amount based on project type
-      const gatheredAmount =
-        getFundingAmount(funding);
+      const gatheredAmount = getFundingAmount(funding);
 
       if (gatheredAmount > 0) {
         const duration = 2000; // 2 seconds
@@ -347,40 +324,41 @@ const [impactBadge, setImpactBadge] = useState("");
                       Ձեր ազդեցությունը
                     </h2>
 
-                    {funding && funding.requiredAmount != null && funding.requiredAmount > 0 && (
-                      <>
-                        <div className="w-full mb-6">
-                          <div className="flex justify-between mb-2 text-sm">
-                            <span className="font-semibold">
-                              {funding.donationType === "recurring"
-                                ? "Այս ամիս հավաքված՝"
-                                : "Հավաքված՝"}
-                            </span>
-                            <span className="font-bold text-primary">
-                              {Math.round(animatedRaised).toLocaleString()} ֏ /{" "}
-                              {funding.requiredAmount.toLocaleString()} ֏
-                            </span>
+                    {funding &&
+                      funding.requiredAmount != null &&
+                      funding.requiredAmount > 0 && (
+                        <>
+                          <div className="w-full mb-6">
+                            <div className="flex justify-between mb-2 text-sm">
+                              <span className="font-semibold">
+                                {funding.donationType === "recurring"
+                                  ? "Այս ամիս հավաքված՝"
+                                  : "Հավաքված՝"}
+                              </span>
+                              <span className="font-bold text-primary">
+                                {Math.round(animatedRaised).toLocaleString()} ֏
+                                / {funding.requiredAmount.toLocaleString()} ֏
+                              </span>
+                            </div>
+                            <Progress
+                              aria-label="Նախագծի առաջընթաց"
+                              className="w-full"
+                              color="primary"
+                              size="md"
+                              value={
+                                (animatedRaised / funding.requiredAmount) * 100
+                              }
+                            />
+                            <p className="text-xs text-default-500 mt-2 text-center">
+                              {(
+                                (animatedRaised / funding.requiredAmount) *
+                                100
+                              ).toFixed(1)}
+                              % նպատակից
+                            </p>
                           </div>
-                          <Progress
-                            aria-label="Նախագծի առաջընթաց"
-                            className="w-full"
-                            color="primary"
-                            size="md"
-                            value={
-                              (animatedRaised / funding.requiredAmount) * 100
-                            }
-                          />
-                          <p className="text-xs text-default-500 mt-2 text-center">
-                            {(
-                              (animatedRaised / funding.requiredAmount) *
-                              100
-                            ).toFixed(1)}
-                            % նպատակից
-                          </p>
-                        </div>
-                      </>
-                    )}
-
+                        </>
+                      )}
                   </div>
                 </Card>
               </motion.div>

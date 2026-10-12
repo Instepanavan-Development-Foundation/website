@@ -122,6 +122,7 @@ export default function MagicLinkVerifyPage() {
           Ինչպե՞ս է ձեր անունը?
         </p>
         <Input
+          // eslint-disable-next-line jsx-a11y/no-autofocus -- field is revealed by the user's own submit; moving focus to it is intended
           autoFocus
           autoComplete="name"
           label="Անուն ազգանուն"

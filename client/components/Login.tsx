@@ -5,7 +5,11 @@ import { Input } from "@heroui/input";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, FormEvent, useEffect } from "react";
 
-import { isAuthenticated, sendMagicLink, setToken } from "@/src/services/userService";
+import {
+  isAuthenticated,
+  sendMagicLink,
+  setToken,
+} from "@/src/services/userService";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -75,6 +79,7 @@ const Login = () => {
       // OTP path: add proceed=1 so the donation page auto-submits payment
       if (returnUrl) {
         const separator = returnUrl.includes("?") ? "&" : "?";
+
         router.replace(`${returnUrl}${separator}proceed=1`);
       } else {
         router.replace("/");
@@ -98,6 +103,7 @@ const Login = () => {
 
         <form className="flex flex-col gap-4" onSubmit={handleOtpSubmit}>
           <Input
+            // eslint-disable-next-line jsx-a11y/no-autofocus -- field is revealed by the user's own submit; moving focus to it is intended
             autoFocus
             classNames={{
               input: "text-4xl font-bold tracking-widest text-center",

@@ -6,11 +6,11 @@ import clsx from "clsx";
 
 export const dynamic = "force-dynamic";
 
-import { Providers } from "./providers";
-import { PostHogProvider } from "./posthog-provider";
-
 import { getSiteConfig } from "@/config/site";
 import { Navbar } from "@/components/navbar";
+
+import { Providers } from "./providers";
+import { PostHogProvider } from "./posthog-provider";
 
 const inter = Inter({
   subsets: ["latin"],

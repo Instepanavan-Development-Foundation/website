@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { Tooltip } from "@heroui/tooltip";
 import { ArrowRightIcon, Heart } from "lucide-react";
 
+import { ClientTooltip } from "@/components/ClientTooltip";
 import getData from "@/src/helpers/getData";
 import { Avatar } from "@/components/Avatar";
 
@@ -32,24 +32,27 @@ export default async function TrustedByContributors() {
       <div className="relative">
         <div className="-mx-4 md:-mx-8 overflow-hidden">
           <div className="flex py-4 animate-[marquee_30s_linear_infinite] hover:[animation-play-state:paused]">
-            {[...trustedByContributors, ...trustedByContributors].map((contributor, i) => (
-              <Tooltip
-                key={`${contributor.id}-${i}`}
-                content={contributor.fullName}
-                showArrow={true}
-              >
-                <Link
-                  className="flex shrink-0 flex-col items-center px-2 md:px-4 transform hover:scale-105 transition-transform duration-200"
-                  href={`/contributor/${contributor.slug}`}
+            {[...trustedByContributors, ...trustedByContributors].map(
+              (contributor, i) => (
+                <ClientTooltip
+                  key={`${contributor.id}-${i}`}
+                  content={contributor.fullName}
+                  showArrow={true}
+                  triggerClassName="shrink-0"
                 >
-                  <Avatar
-                    className="object-contain border-2 border-white shadow-[0_4px_12px_rgba(0,0,0,0.06)]"
-                    contributor={contributor}
-                    height={64}
-                  />
-                </Link>
-              </Tooltip>
-            ))}
+                  <Link
+                    className="flex shrink-0 flex-col items-center px-2 md:px-4 transform hover:scale-105 transition-transform duration-200"
+                    href={`/contributor/${contributor.slug}`}
+                  >
+                    <Avatar
+                      className="object-contain border-2 border-white shadow-[0_4px_12px_rgba(0,0,0,0.06)]"
+                      contributor={contributor}
+                      height={64}
+                    />
+                  </Link>
+                </ClientTooltip>
+              ),
+            )}
           </div>
         </div>
         <div className="mt-10 flex justify-center gap-3 flex-wrap">

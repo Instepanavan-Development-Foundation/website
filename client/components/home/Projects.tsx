@@ -1,11 +1,11 @@
 import Link from "next/link";
 
-import { ProjectCard } from "./ProjectCard";
-
 import { IProject } from "@/src/models/project";
 import getData from "@/src/helpers/getData";
 import getProjectFunding from "@/src/helpers/getProjectFunding";
 import getFundingAmount from "@/src/helpers/getFundingAmount";
+
+import { ProjectCard } from "./ProjectCard";
 
 export default async function Projects({
   isArchived,
@@ -36,7 +36,9 @@ export default async function Projects({
   const projectsWithFunding = await Promise.all(
     projects.map(async (project) => {
       const funding = await getProjectFunding(project.documentId);
-      const gatheredAmount = funding ? getFundingAmount(funding, isArchived) : 0;
+      const gatheredAmount = funding
+        ? getFundingAmount(funding, isArchived)
+        : 0;
 
       return {
         ...project,
@@ -50,7 +52,10 @@ export default async function Projects({
   const heading = isArchived ? "Ավարտված նախագծեր" : "Ակտիվ նախագծեր";
 
   return (
-    <section className="w-full my-12 md:my-16" id={isArchived ? undefined : "projects"}>
+    <section
+      className="w-full my-12 md:my-16"
+      id={isArchived ? undefined : "projects"}
+    >
       <div className="flex items-baseline justify-between mb-6 md:mb-8">
         <div>
           <div className="text-[11px] font-medium tracking-[0.14em] text-primary uppercase mb-1.5">
@@ -71,7 +76,11 @@ export default async function Projects({
       </div>
       <div className="flex flex-wrap justify-center gap-5">
         {projectsWithFunding.map((project, index) => (
-          <Link key={index} className="block w-full sm:w-[calc(50%-10px)] lg:w-[calc(33.333%-14px)]" href={`/project/${project.slug}`}>
+          <Link
+            key={index}
+            className="block w-full sm:w-[calc(50%-10px)] lg:w-[calc(33.333%-14px)]"
+            href={`/project/${project.slug}`}
+          >
             <ProjectCard {...project} />
           </Link>
         ))}

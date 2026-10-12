@@ -7,6 +7,7 @@ export const Logo = ({
   width,
   height,
   src,
+  alt,
   ...props
 }: {
   size?: number;
@@ -17,10 +18,10 @@ export const Logo = ({
   props?: any;
 }) => (
   <Image
+    alt={alt}
+    height={Number(size || height)}
     src={src}
     width={Number(size || width)}
-    height={Number(size || height)}
-    // TODO: add alt
     {...props}
   />
 );

@@ -6,6 +6,7 @@ export default function getFundingAmount(
   fallback = 0,
 ): number {
   let amount: number;
+
   if (funding.donationType === "recurring") {
     amount = isArchived
       ? funding.allTime.recurring.amount
@@ -13,5 +14,6 @@ export default function getFundingAmount(
   } else {
     amount = funding.allTime.oneTime.amount;
   }
+
   return amount > 0 ? amount : fallback;
 }

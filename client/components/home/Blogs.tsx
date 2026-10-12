@@ -2,11 +2,11 @@ import Link from "next/link";
 import { button as buttonStyles } from "@heroui/theme";
 import { ArrowRightIcon } from "lucide-react";
 
-import { BlogPost } from "../BlogPost";
-
 import getData from "@/src/helpers/getData";
 import { IBlog } from "@/src/models/blog";
 import RSS from "@/components/home/RSS";
+
+import { BlogPost } from "../BlogPost";
 
 const LIMIT = Number(process.env.NEXT_PUBLIC_QUERY_LIMIT || 8);
 

@@ -12,11 +12,11 @@ import { RangeValue } from "@react-types/shared";
 import { Filter } from "lucide-react";
 import { Accordion, AccordionItem } from "@heroui/accordion";
 
-import { BlogPost } from "./BlogPost";
-
 import getData from "@/src/helpers/getData";
 import { IBlog } from "@/src/models/blog";
 import { INestedObject } from "@/src/models/getData";
+
+import { BlogPost } from "./BlogPost";
 
 const LIMIT = Number(process.env.NEXT_PUBLIC_QUERY_LIMIT || 10);
 
@@ -125,6 +125,7 @@ function BlogListUnwrapped() {
   );
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch-on-mount/filter-change effect; fetchBlogs flips `loading` before the request starts
     fetchBlogs(true);
     updateURL({
       search: searchQuery,

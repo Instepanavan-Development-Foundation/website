@@ -18,7 +18,10 @@ export const getSiteConfig = async (): Promise<ISiteConfig> => {
   const normalizeHref = (links: IMenuLink[]) =>
     links.map((link) => ({
       ...link,
-      href: link.href.startsWith("/") || link.href.startsWith("http") ? link.href : `/${link.href}`,
+      href:
+        link.href.startsWith("/") || link.href.startsWith("http")
+          ? link.href
+          : `/${link.href}`,
     }));
 
   const mainMenu = normalizeHref(

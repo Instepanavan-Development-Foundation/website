@@ -45,7 +45,12 @@ export default async function ProjectPage({ params }: IParams) {
     type: "projects",
     populate: {
       blogs: {
-        populate: ["images", "contribution.contributor.avatar", "attachments", "project"],
+        populate: [
+          "images",
+          "contribution.contributor.avatar",
+          "attachments",
+          "project",
+        ],
         sort: ["isFeatured:desc", "createdAt:desc"],
       },
       image: { fields: ["url", "alternativeText", "name"] },
@@ -60,12 +65,16 @@ export default async function ProjectPage({ params }: IParams) {
 
   const funding = await getProjectFunding(project.documentId);
 
-  const gatheredAmount = funding ? getFundingAmount(funding, project.isArchived) : 0;
-  const requiredAmount = funding?.requiredAmount ?? 0;
-  const percentComplete = requiredAmount > 0
-    ? Math.min(Math.round((gatheredAmount / requiredAmount) * 100), 100)
+  const gatheredAmount = funding
+    ? getFundingAmount(funding, project.isArchived)
     : 0;
-  const isUrgent = percentComplete < 30 && !project.isArchived && requiredAmount > 0;
+  const requiredAmount = funding?.requiredAmount ?? 0;
+  const percentComplete =
+    requiredAmount > 0
+      ? Math.min(Math.round((gatheredAmount / requiredAmount) * 100), 100)
+      : 0;
+  const isUrgent =
+    percentComplete < 30 && !project.isArchived && requiredAmount > 0;
 
   const statusTag = project.isArchived
     ? "Ավարտված"
@@ -77,7 +86,6 @@ export default async function ProjectPage({ params }: IParams) {
 
   return (
     <div className="pb-16">
-
       {/* Archive banner */}
       {project.isArchived && (
         <div className="mb-10 bg-cream-100 rounded-[20px] px-6 py-4 flex items-center gap-3">
@@ -90,18 +98,21 @@ export default async function ProjectPage({ params }: IParams) {
 
       {/* ── Hero ── */}
       <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center mb-12 md:mb-16">
-
         {/* Left: text */}
         <div className="flex flex-col">
           {/* Status pill */}
-          <div className={`self-end inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold mb-1 border ${
-            isUrgent
-              ? "bg-white border-ink text-ink"
-              : project.isArchived
-                ? "bg-white border-cream-200 text-ink-muted"
-                : "bg-white border-primary text-primary"
-          }`}>
-            <span className={`w-1 h-1 rounded-full ${isUrgent ? "bg-ink" : project.isArchived ? "bg-cream-200" : "bg-primary"}`} />
+          <div
+            className={`self-end inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold mb-1 border ${
+              isUrgent
+                ? "bg-white border-ink text-ink"
+                : project.isArchived
+                  ? "bg-white border-cream-200 text-ink-muted"
+                  : "bg-white border-primary text-primary"
+            }`}
+          >
+            <span
+              className={`w-1 h-1 rounded-full ${isUrgent ? "bg-ink" : project.isArchived ? "bg-cream-200" : "bg-primary"}`}
+            />
             {statusTag}
           </div>
 
@@ -127,7 +138,10 @@ export default async function ProjectPage({ params }: IParams) {
               ) : (
                 <div
                   className="w-full h-full"
-                  style={{ background: "linear-gradient(135deg,#FFB088,#E65A2A 55%,#B83875)" }}
+                  style={{
+                    background:
+                      "linear-gradient(135deg,#FFB088,#E65A2A 55%,#B83875)",
+                  }}
                 />
               )}
             </div>
@@ -229,8 +243,8 @@ export default async function ProjectPage({ params }: IParams) {
             Միջոցառումներ
           </h2>
           <div
-            className="text-container text-ink-body"
             dangerouslySetInnerHTML={{ __html: project.events }}
+            className="text-container text-ink-body"
           />
         </div>
       )}
@@ -252,7 +266,9 @@ export default async function ProjectPage({ params }: IParams) {
 
       {/* ── Supporters ── */}
       <Supporters
-        contributors={project.blogs?.map((blog) => blog.contribution).flat() ?? []}
+        contributors={
+          project.blogs?.map((blog) => blog.contribution).flat() ?? []
+        }
       />
     </div>
   );

@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useState, ReactNode } from "react";
+import { useCallback, useSyncExternalStore, ReactNode } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
 
@@ -22,7 +22,6 @@ export default function EmblaCarousel({
   loop = true,
   className = "",
 }: EmblaCarouselProps) {
-  const [currentSlide, setCurrentSlide] = useState(0);
   const hasMultipleSlides = children.length > 1;
 
   const plugins =
@@ -50,20 +49,24 @@ export default function EmblaCarousel({
     [emblaApi],
   );
 
-  const onSelect = useCallback(() => {
-    if (!emblaApi) return;
-    setCurrentSlide(emblaApi.selectedScrollSnap());
-  }, [emblaApi]);
+  // Selected slide is owned by Embla; subscribe to it as an external store.
+  const subscribeToSelect = useCallback(
+    (onChange: () => void) => {
+      if (!emblaApi) return () => {};
+      emblaApi.on("select", onChange);
 
-  useEffect(() => {
-    if (!emblaApi) return;
-    onSelect();
-    emblaApi.on("select", onSelect);
+      return () => {
+        emblaApi.off("select", onChange);
+      };
+    },
+    [emblaApi],
+  );
 
-    return () => {
-      emblaApi.off("select", onSelect);
-    };
-  }, [emblaApi, onSelect]);
+  const currentSlide = useSyncExternalStore(
+    subscribeToSelect,
+    () => emblaApi?.selectedScrollSnap() ?? 0,
+    () => 0,
+  );
 
   if (!children || children.length === 0) {
     return null;

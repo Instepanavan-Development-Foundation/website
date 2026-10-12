@@ -1,10 +1,10 @@
 import { Metadata } from "next";
 
-import Contributor from "./contributor";
-
 import getData from "@/src/helpers/getData";
 import getMediaSrc from "@/src/helpers/getMediaUrl";
 import { IParams } from "@/src/models/params";
+
+import Contributor from "./contributor";
 
 export async function generateMetadata({ params }: IParams): Promise<Metadata> {
   const { slug } = await params;

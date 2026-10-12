@@ -3,11 +3,11 @@ import Link from "next/link";
 import { Card, CardBody } from "@heroui/card";
 import { Image } from "@heroui/image";
 
-import { formatCurrency } from "./ProjectCard";
-
 import { IProject } from "@/src/models/project";
 import getMediaUrl from "@/src/helpers/getMediaUrl";
 import EmblaCarousel from "@/components/EmblaCarousel";
+
+import { formatCurrency } from "./ProjectCard";
 
 interface MainProjectsHeroProps {
   projects: IProject[];

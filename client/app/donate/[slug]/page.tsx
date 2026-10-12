@@ -4,6 +4,29 @@ import { Chip } from "@heroui/chip";
 import { RadioGroup, Radio } from "@heroui/radio";
 import { Spacer } from "@heroui/spacer";
 import { Skeleton } from "@heroui/skeleton";
+import { useState, useEffect, useRef } from "react";
+import { Button } from "@heroui/button";
+import { Input } from "@heroui/input";
+import { Card, CardBody, CardHeader, CardFooter } from "@heroui/card";
+import { Divider } from "@heroui/divider";
+import { Progress } from "@heroui/progress";
+import { CreditCard, Heart, Users } from "lucide-react";
+import Link from "next/link";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { Image } from "@heroui/image";
+
+import getMediaSrc from "@/src/helpers/getMediaUrl";
+import NotFound from "@/components/NotFound";
+import { IParams } from "@/src/models/params";
+import { IProject } from "@/src/models/project";
+import getData from "@/src/helpers/getData";
+import getPaymentMethods, {
+  IPaymentMethod,
+} from "@/src/helpers/getPaymentMethods";
+import { initPayment } from "@/src/helpers/initPayment";
+import { getToken, isAuthenticated } from "@/src/services/userService";
+import getProjectFunding from "@/src/helpers/getProjectFunding";
+import getFundingAmount from "@/src/helpers/getFundingAmount";
 
 // TODO: Add metadata
 // export async function generateMetadata({ params }: IParams): Promise<Metadata> {
@@ -138,8 +161,6 @@ export default function DonatePage({ params }: IParams) {
 }
 
 // Error/Success Message Component
-import { useSearchParams } from "next/navigation";
-
 function ErrorMessage() {
   const searchParams = useSearchParams();
   const error = searchParams.get("error");
@@ -174,30 +195,6 @@ function ErrorMessage() {
 }
 
 // Client-side donation form component
-import { useState, useEffect, useRef } from "react";
-import { Button } from "@heroui/button";
-import { Input } from "@heroui/input";
-import { Card, CardBody, CardHeader, CardFooter } from "@heroui/card";
-import { Divider } from "@heroui/divider";
-import { Progress } from "@heroui/progress";
-import { CreditCard, Heart, Users } from "lucide-react";
-import Link from "next/link";
-import { useRouter, usePathname } from "next/navigation";
-import { Image } from "@heroui/image";
-
-import getMediaSrc from "@/src/helpers/getMediaUrl";
-import NotFound from "@/components/NotFound";
-import { IParams } from "@/src/models/params";
-import { IProject } from "@/src/models/project";
-import getData from "@/src/helpers/getData";
-import getPaymentMethods, {
-  IPaymentMethod,
-} from "@/src/helpers/getPaymentMethods";
-import { initPayment } from "@/src/helpers/initPayment";
-import { getToken, isAuthenticated } from "@/src/services/userService";
-import getProjectFunding from "@/src/helpers/getProjectFunding";
-import getFundingAmount from "@/src/helpers/getFundingAmount";
-
 // Preset donation amounts
 const presetAmounts = [3000, 5000, 10000, 20000, 50000];
 const MIN_DONATION_AMOUNT = 10;
@@ -219,7 +216,10 @@ function DonationFormClient({ project }: { project: IProject }) {
   const [paymentMethods, setPaymentMethods] = useState<IPaymentMethod[]>([]);
   const [loadingPaymentMethods, setLoadingPaymentMethods] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [funding, setFunding] = useState<{ requiredAmount: number; gatheredAmount: number } | null>(null);
+  const [funding, setFunding] = useState<{
+    requiredAmount: number;
+    gatheredAmount: number;
+  } | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
 
   // Auto-submit after returning from login via OTP, but only when there's no saved card to choose from
@@ -232,6 +232,7 @@ function DonationFormClient({ project }: { project: IProject }) {
     ) {
       // Remove proceed=1 from URL to prevent re-submission on back button
       const params = new URLSearchParams(searchParams.toString());
+
       params.delete("proceed");
       window.history.replaceState(null, "", `${pathname}?${params.toString()}`);
 
@@ -275,11 +276,15 @@ function DonationFormClient({ project }: { project: IProject }) {
     async function loadFunding() {
       try {
         const fundingData = await getProjectFunding(project.documentId);
+
         if (!fundingData) return;
 
         const gatheredAmount = getFundingAmount(fundingData);
 
-        setFunding({ gatheredAmount, requiredAmount: fundingData.requiredAmount ?? 0 });
+        setFunding({
+          gatheredAmount,
+          requiredAmount: fundingData.requiredAmount ?? 0,
+        });
       } catch (error) {
         console.error("Failed to load funding data:", error);
         setFunding(null);
@@ -345,7 +350,6 @@ function DonationFormClient({ project }: { project: IProject }) {
 
     // If "new card" is selected, redirect to Ameriabank payment page
     if (selectedPaymentMethod === "new") {
-
       // Get user email
       const userResponse = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/users/me`,
@@ -425,12 +429,13 @@ function DonationFormClient({ project }: { project: IProject }) {
   };
 
   // Calculate progress percentage
-  const progressPercentage = funding && funding.requiredAmount && funding.gatheredAmount
-    ? Math.min(
-        100,
-        Math.round((funding.gatheredAmount / funding.requiredAmount) * 100),
-      )
-    : 0;
+  const progressPercentage =
+    funding && funding.requiredAmount && funding.gatheredAmount
+      ? Math.min(
+          100,
+          Math.round((funding.gatheredAmount / funding.requiredAmount) * 100),
+        )
+      : 0;
 
   return (
     <Card className="w-full shadow-xl border-none overflow-visible mb-16">
@@ -450,32 +455,35 @@ function DonationFormClient({ project }: { project: IProject }) {
             </div>
           </div>
 
-          {funding && funding.requiredAmount != null && funding.gatheredAmount != null && (
-            <div className="text-white">
-              <div className="flex justify-between items-center mb-1">
-                <span className="text-sm font-medium text-white/90">
-                  Հավաքված է {(funding.gatheredAmount || 0).toLocaleString()} ֏
-                </span>
-                <span className="text-sm font-medium text-white/90">
-                  Նպատակ՝ {funding.requiredAmount.toLocaleString()} ֏
-                </span>
+          {funding &&
+            funding.requiredAmount != null &&
+            funding.gatheredAmount != null && (
+              <div className="text-white">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-sm font-medium text-white/90">
+                    Հավաքված է {(funding.gatheredAmount || 0).toLocaleString()}{" "}
+                    ֏
+                  </span>
+                  <span className="text-sm font-medium text-white/90">
+                    Նպատակ՝ {funding.requiredAmount.toLocaleString()} ֏
+                  </span>
+                </div>
+                <Progress
+                  aria-label="Funding progress"
+                  className="h-2 mb-1"
+                  classNames={{
+                    indicator: "bg-white",
+                    track: "bg-white/30",
+                  }}
+                  value={progressPercentage}
+                />
+                <div className="flex justify-end">
+                  <span className="text-sm font-medium bg-white/30 px-2 py-0.5 rounded-full">
+                    {progressPercentage}%
+                  </span>
+                </div>
               </div>
-              <Progress
-                aria-label="Funding progress"
-                className="h-2 mb-1"
-                classNames={{
-                  indicator: "bg-white",
-                  track: "bg-white/30",
-                }}
-                value={progressPercentage}
-              />
-              <div className="flex justify-end">
-                <span className="text-sm font-medium bg-white/30 px-2 py-0.5 rounded-full">
-                  {progressPercentage}%
-                </span>
-              </div>
-            </div>
-          )}
+            )}
         </div>
       </CardHeader>
 

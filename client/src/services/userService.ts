@@ -133,6 +133,7 @@ export async function sendMagicLink(
 export function logout(): void {
   removeToken();
   if (typeof window !== "undefined") {
+    // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- full reload is intentional so all auth-dependent client state resets on logout
     window.location.href = "/";
   }
 }

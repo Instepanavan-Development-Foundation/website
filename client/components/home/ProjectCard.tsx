@@ -1,9 +1,9 @@
 import Image from "next/image";
 
-import { ContributorsList } from "../ContributorsList";
-
 import { IProject } from "@/src/models/project";
 import getMediaUrl from "@/src/helpers/getMediaUrl";
+
+import { ContributorsList } from "../ContributorsList";
 
 export const formatCurrency = (amount: number, currency: string = "AMD") => {
   return new Intl.NumberFormat("hy-AM", {
@@ -13,8 +13,7 @@ export const formatCurrency = (amount: number, currency: string = "AMD") => {
   }).format(amount);
 };
 
-const formatCompact = (n: number) =>
-  Math.round(n).toLocaleString("fr-FR");
+const formatCompact = (n: number) => Math.round(n).toLocaleString("fr-FR");
 
 const GRADIENTS = [
   "linear-gradient(135deg, #FFB088, #E65A2A)",
@@ -98,8 +97,12 @@ export function ProjectCard({
               contributions={blogs
                 .map(({ contribution }) => contribution)
                 .flat()
-                .filter((c, i, all) =>
-                  i === all.findIndex((x) => x?.contributor?.id === c?.contributor?.id)
+                .filter(
+                  (c, i, all) =>
+                    i ===
+                    all.findIndex(
+                      (x) => x?.contributor?.id === c?.contributor?.id,
+                    ),
                 )}
             />
           </div>

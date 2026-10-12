@@ -32,11 +32,16 @@ export default async function Home() {
   const featuredProjects = await Promise.all(
     (mainProjects ?? []).map(async (project) => {
       const funding = await getProjectFunding(project.documentId);
+
       if (!funding) return project;
 
       const gatheredAmount = getFundingAmount(funding);
 
-      return { ...project, gatheredAmount, requiredAmount: funding.requiredAmount ?? project.requiredAmount ?? 0 };
+      return {
+        ...project,
+        gatheredAmount,
+        requiredAmount: funding.requiredAmount ?? project.requiredAmount ?? 0,
+      };
     }),
   );
 

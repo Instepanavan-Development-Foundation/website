@@ -45,26 +45,48 @@ export default function NextJsImage({
       )
     : rect.height;
 
+  const handleClick =
+    click && offset === 0 ? () => click({ index: currentIndex }) : undefined;
+
+  const image = (
+    <img
+      alt=""
+      draggable={false}
+      loading="eager"
+      src={slide.src}
+      style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        width: "100%",
+        height: "100%",
+        objectFit: cover ? "cover" : "contain",
+        cursor: click ? "pointer" : undefined,
+      }}
+    />
+  );
+
   return (
     <div style={{ position: "relative", width, height }}>
-      <img
-        alt=""
-        draggable={false}
-        loading="eager"
-        src={slide.src}
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          width: "100%",
-          height: "100%",
-          objectFit: cover ? "cover" : "contain",
-          cursor: click ? "pointer" : undefined,
-        }}
-        onClick={
-          offset === 0 ? () => click?.({ index: currentIndex }) : undefined
-        }
-      />
+      {handleClick ? (
+        // Native button gives keyboard + screen-reader support for clickable slides.
+        <button
+          aria-label="Open image"
+          style={{
+            position: "absolute",
+            inset: 0,
+            padding: 0,
+            border: 0,
+            background: "none",
+          }}
+          type="button"
+          onClick={handleClick}
+        >
+          {image}
+        </button>
+      ) : (
+        image
+      )}
     </div>
   );
 }

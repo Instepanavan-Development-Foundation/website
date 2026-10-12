@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { Tooltip } from "@heroui/tooltip";
 
+import { ClientTooltip } from "@/components/ClientTooltip";
 import { Avatar } from "@/components/Avatar";
 import getData from "@/src/helpers/getData";
 
@@ -23,10 +23,11 @@ export default async function Contributors() {
 
       <div className="grid grid-cols-4 md:grid-cols-4 lg:grid-cols-6 gap-8">
         {trustedByContributors.map((contributor) => (
-          <Tooltip
+          <ClientTooltip
             key={contributor.id}
             content={contributor.fullName}
             showArrow={true}
+            triggerClassName="flex justify-center"
           >
             <Link
               className="flex flex-col items-center gap-2"
@@ -38,7 +39,7 @@ export default async function Contributors() {
                 height={100}
               />
             </Link>
-          </Tooltip>
+          </ClientTooltip>
         ))}
       </div>
     </div>

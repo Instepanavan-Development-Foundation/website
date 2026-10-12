@@ -9,19 +9,17 @@ import Link from "next/link";
 import Lightbox from "yet-another-react-lightbox";
 import Thumbnails from "yet-another-react-lightbox/plugins/thumbnails";
 
-import { ContributorsList } from "./ContributorsList";
-
 import { IBlog } from "@/src/models/blog";
 import getMediaUrl from "@/src/helpers/getMediaUrl";
-
-// Lightbox
-
-import "yet-another-react-lightbox/styles.css";
-import "yet-another-react-lightbox/plugins/thumbnails.css";
-import NextJsImage from "./NextJsImage";
-
 import { prettyDate } from "@/src/helpers/prettyDate";
 import ModifiedMarkdown from "@/src/hok/modifiedMarkdown";
+
+// Lightbox
+import "yet-another-react-lightbox/styles.css";
+import "yet-another-react-lightbox/plugins/thumbnails.css";
+
+import NextJsImage from "./NextJsImage";
+import { ContributorsList } from "./ContributorsList";
 
 function extractFirstUrl(text: string): string | null {
   const match = text.match(/https?:\/\/[^\s)>\]"]+/);
@@ -104,7 +102,7 @@ export function BlogPost({
               {/* Count of images in the blog post */}
               {images.length > numberOfImagesShown && (
                 <div className="relative">
-                  <div className="absolute bottom-0 right-0 z-30 bg-black bg-opacity-50 text-white p-2 text-xs text-right h-7">
+                  <div className="absolute bottom-0 right-0 z-30 bg-black/50 text-white p-2 text-xs text-right h-7">
                     ևս {images.length - numberOfImagesShown} նկար
                   </div>
                 </div>
@@ -133,9 +131,9 @@ export function BlogPost({
                 </div>
               </Link>
             ) : (
-              <p className="text-default-500 mb-4">
+              <div className="text-default-500 mb-4">
                 <ModifiedMarkdown>{content}</ModifiedMarkdown>
-              </p>
+              </div>
             )}
             {/* Tags */}
             <div className="flex gap-2 flex-wrap mb-4">
@@ -167,14 +165,16 @@ export function BlogPost({
                     <Heart className="w-3.5 h-3.5 fill-current" />
                     Աջակցել նախագծին
                   </a>
-                ) : !isLink && (
-                  <a
-                    className="inline-flex items-center gap-1.5 border-2 border-primary text-primary px-4 py-1.5 rounded-full text-[13px] font-medium hover:bg-primary hover:text-white transition-colors"
-                    href={process.env.NEXT_PUBLIC_DONATE_URL}
-                  >
-                    <Heart className="w-3.5 h-3.5 fill-current" />
-                    Աջակցել մեզ
-                  </a>
+                ) : (
+                  !isLink && (
+                    <a
+                      className="inline-flex items-center gap-1.5 border-2 border-primary text-primary px-4 py-1.5 rounded-full text-[13px] font-medium hover:bg-primary hover:text-white transition-colors"
+                      href={process.env.NEXT_PUBLIC_DONATE_URL}
+                    >
+                      <Heart className="w-3.5 h-3.5 fill-current" />
+                      Աջակցել մեզ
+                    </a>
+                  )
                 )}
               </div>
             )}

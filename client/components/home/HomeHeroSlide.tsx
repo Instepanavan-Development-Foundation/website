@@ -1,11 +1,9 @@
 import Link from "next/link";
 
-import { InLogo } from "@/components/icons/InLogo";
 import { IProject } from "@/src/models/project";
 import getMediaUrl from "@/src/helpers/getMediaUrl";
 
-const formatCompact = (n: number) =>
-  Math.round(n).toLocaleString("fr-FR");
+const formatCompact = (n: number) => Math.round(n).toLocaleString("fr-FR");
 
 interface HomeHeroSlideProps {
   project?: IProject;
@@ -15,12 +13,10 @@ export default function HomeHeroSlide({ project }: HomeHeroSlideProps) {
   const gatheredAmount = project?.gatheredAmount ?? 0;
   const requiredAmount = project?.requiredAmount ?? 0;
 
-  const percentComplete = requiredAmount > 0
-    ? Math.min(
-        Math.round((gatheredAmount / requiredAmount) * 100),
-        100,
-      )
-    : 0;
+  const percentComplete =
+    requiredAmount > 0
+      ? Math.min(Math.round((gatheredAmount / requiredAmount) * 100), 100)
+      : 0;
 
   const heroImageUrl = project?.image ? getMediaUrl(project.image) : null;
 

@@ -14,35 +14,36 @@ import NextLink from "next/link";
 import NextImage from "next/image";
 import clsx from "clsx";
 import { Heart, LogIn, User } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 
 import { getSiteConfig } from "@/config/site";
 import { IMenuLink } from "@/src/models/menu";
 import { ISiteConfig } from "@/src/models/site-config";
 import { isAuthenticated } from "@/src/services/userService";
 
+function subscribeToLoginState(onChange: () => void) {
+  window.addEventListener("loginStateChanged", onChange);
+
+  return () => window.removeEventListener("loginStateChanged", onChange);
+}
+
 export const Navbar = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  // Token lives in localStorage: read it as an external store. The server
+  // snapshot is `false`, so SSR/hydration render logged-out as before.
+  const isLoggedIn = useSyncExternalStore(
+    subscribeToLoginState,
+    isAuthenticated,
+    () => false,
+  );
   const [siteConfig, setSiteConfig] = useState<ISiteConfig | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
-    setIsLoggedIn(isAuthenticated());
     (async () => {
       const config = await getSiteConfig();
 
       setSiteConfig(config);
     })();
-
-    const handleLoginStateChange = () => {
-      setIsLoggedIn(isAuthenticated());
-    };
-
-    window.addEventListener("loginStateChanged", handleLoginStateChange);
-
-    return () => {
-      window.removeEventListener("loginStateChanged", handleLoginStateChange);
-    };
   }, []);
 
   if (!siteConfig) {
