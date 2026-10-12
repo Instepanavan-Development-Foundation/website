@@ -14,6 +14,8 @@ test:
 
 up:
 	docker compose -f docker-compose.prod.yml up -d
+	# nginx resolves upstream container IPs only at startup; recreated containers get new IPs (502s otherwise)
+	docker compose -f docker-compose.prod.yml exec -T nginx nginx -s reload
 
 down:
 	docker compose -f docker-compose.prod.yml down
