@@ -32,9 +32,17 @@ export function Image({
   className,
   radius = "lg",
   shadow = "none",
+  style,
   ...props
 }: ImageProps) {
   const hasOwnRadius = /(^|\s)rounded(-|\s|$)/.test(className ?? "");
+
+  // Tailwind's preflight sets `img { height: auto }`, which overrides the height attribute,
+  // so numeric (pixel) sizes are applied as inline styles like v2's Image effectively did.
+  const sizeStyle = {
+    ...(typeof props.width === "number" && { width: props.width }),
+    ...(typeof props.height === "number" && { height: props.height }),
+  };
 
   return (
     <img
@@ -45,6 +53,7 @@ export function Image({
         shadowClasses[shadow],
         className,
       )}
+      style={{ ...sizeStyle, ...style }}
       {...props}
     />
   );
