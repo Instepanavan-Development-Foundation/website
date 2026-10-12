@@ -2,7 +2,7 @@ import clsx from "clsx";
 
 import { Image } from "@/components/ui/Image";
 import { IImage } from "@/src/models/media";
-import getMediaUrl from "@/src/helpers/getMediaUrl";
+import getThumbUrl from "@/src/helpers/getThumbUrl";
 
 const MAX_TILES = 4;
 
@@ -15,12 +15,8 @@ const layouts: Record<number, { grid: string; tiles: string[] }> = {
   4: { grid: "grid-cols-2 grid-rows-2", tiles: ["", "", "", ""] },
 };
 
-/**
- * URL used for a preview tile. Originals are served for now; swap in a
- * thumbnail URL here once on-demand thumbnails exist.
- */
 function previewSrc(image: IImage): string {
-  return getMediaUrl(image);
+  return getThumbUrl(image, 320);
 }
 
 interface BlogImageGridProps {

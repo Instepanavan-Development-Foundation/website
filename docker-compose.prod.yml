@@ -51,6 +51,13 @@ services:
       SERVER_GRPC_BIND_ADDRESS: "0.0.0.0"
       SERVER_GRPC_BROADCAST_ADDRESS: "hatchet:7070"
       SERVER_GRPC_INSECURE: "t"
+      # Defaults (50/50 conns, 10 kept warm) cost ~45MB per idle Postgres backend; one monthly cron needs far fewer
+      DATABASE_MAX_CONNS: "10"
+      DATABASE_MIN_CONNS: "1"
+      DATABASE_MAX_QUEUE_CONNS: "10"
+      DATABASE_MIN_QUEUE_CONNS: "1"
+      DATABASE_MAX_CONN_IDLE_TIME: "1m"
+      DATABASE_MAX_CONN_LIFETIME: "5m"
     volumes:
       - ./hatchet-data:/data
       - ./hatchet-config:/config
@@ -118,6 +125,30 @@ services:
     networks:
       - nginx
 
+  # On-demand thumbnails for /thumb/ (see nginx/nginx.conf). Thumbor uses Pillow, which runs on
+  # this host's CPU; sharp/libvips-based tools (incl. imgproxy) crash with illegal instructions.
+  # Reachable only from nginx — "unsafe" URLs are fine because nginx allow-lists the sizes.
+  thumbor:
+    image: ghcr.io/minimalcompact/thumbor@sha256:7b3f040945d6573c70107f7c4bb67d73f15779327b9b79cca99460b6fae6ffbb
+    restart: unless-stopped
+    environment:
+      THUMBOR_NUM_PROCESSES: "2"
+      LOADER: thumbor.loaders.file_loader
+      FILE_LOADER_ROOT_PATH: /uploads
+      ALLOW_UNSAFE_URL: "True"
+      RESULT_STORAGE: thumbor.result_storages.file_storage
+      RESULT_STORAGE_FILE_STORAGE_ROOT_PATH: /cache/results
+      RESULT_STORAGE_STORES_UNSAFE: "True"
+      QUALITY: "80"
+      WEBP_QUALITY: "80"
+      MAX_AGE: "31536000"
+    volumes:
+      - ./server-data:/uploads:ro
+      - thumbor-cache:/cache
+    mem_limit: 512m
+    networks:
+      - nginx
+
   telegram-bot:
     image: telegram-bot
     container_name: instepanavan-telegram-bot
@@ -137,6 +168,9 @@ services:
       - ./rss-publisher-data:/app/data
     networks:
       - nginx
+
+volumes:
+  thumbor-cache:
 
 networks:
   nginx:

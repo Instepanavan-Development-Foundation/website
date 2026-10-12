@@ -7,7 +7,7 @@ import Link from "next/link";
 import { Image } from "@/components/ui/Image";
 import { Avatar } from "@/components/Avatar";
 import getData from "@/src/helpers/getData";
-import getMediaSrc from "@/src/helpers/getMediaUrl";
+import getThumbUrl from "@/src/helpers/getThumbUrl";
 import NotFound from "@/components/NotFound";
 import { IBlog } from "@/src/models/blog";
 import { IContributor } from "@/src/models/contributor";
@@ -299,7 +299,7 @@ export default function Contributor({
                           }
                           className="rounded-lg object-cover"
                           height={80}
-                          src={getMediaSrc(blog.project.image)}
+                          src={getThumbUrl(blog.project.image, 80)}
                           width={80}
                         />
                       </Link>
@@ -344,7 +344,7 @@ export default function Contributor({
                           }
                           className="rounded-lg object-cover"
                           height={80}
-                          src={getMediaSrc(donation.project.image)}
+                          src={getThumbUrl(donation.project.image, 80)}
                           width={80}
                         />
                       </Link>

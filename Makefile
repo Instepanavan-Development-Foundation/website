@@ -14,8 +14,9 @@ test:
 
 up:
 	docker compose -f docker-compose.prod.yml up -d
-	# nginx resolves upstream container IPs only at startup; recreated containers get new IPs (502s otherwise)
-	docker compose -f docker-compose.prod.yml exec -T nginx nginx -s reload
+	# Restart (not reload) nginx: it resolves upstream container IPs only at startup, and git
+	# replaces nginx.conf with a new inode that a running container's file bind mount doesn't see.
+	docker compose -f docker-compose.prod.yml restart nginx
 
 down:
 	docker compose -f docker-compose.prod.yml down

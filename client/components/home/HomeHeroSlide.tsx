@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { IProject } from "@/src/models/project";
-import getMediaUrl from "@/src/helpers/getMediaUrl";
+import getThumbUrl from "@/src/helpers/getThumbUrl";
 
 const formatCompact = (n: number) => Math.round(n).toLocaleString("fr-FR");
 
@@ -18,7 +18,7 @@ export default function HomeHeroSlide({ project }: HomeHeroSlideProps) {
       ? Math.min(Math.round((gatheredAmount / requiredAmount) * 100), 100)
       : 0;
 
-  const heroImageUrl = project?.image ? getMediaUrl(project.image) : null;
+  const heroImageUrl = project?.image ? getThumbUrl(project.image, 640) : null;
 
   const card = (
     <div

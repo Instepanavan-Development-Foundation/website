@@ -4,7 +4,7 @@ import { Card } from "@heroui/react";
 
 import { Image } from "@/components/ui/Image";
 import { IProject } from "@/src/models/project";
-import getMediaUrl from "@/src/helpers/getMediaUrl";
+import getThumbUrl from "@/src/helpers/getThumbUrl";
 import EmblaCarousel from "@/components/EmblaCarousel";
 
 import { formatCurrency } from "./ProjectCard";
@@ -39,7 +39,7 @@ export default function MainProjectsHero({ projects }: MainProjectsHeroProps) {
                   className="w-full object-cover h-[400px] md:h-[500px] z-10"
                   radius="lg"
                   shadow="sm"
-                  src={getMediaUrl(project.image)}
+                  src={getThumbUrl(project.image, 1280)}
                   width="100%"
                 />
                 {isUrgent && (

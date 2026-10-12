@@ -1,7 +1,7 @@
 "use client";
 import { Image } from "@/components/ui/Image";
 import { IProject } from "@/src/models/project";
-import getMediaUrl from "@/src/helpers/getMediaUrl";
+import getThumbUrl from "@/src/helpers/getThumbUrl";
 import EmblaCarousel from "@/components/EmblaCarousel";
 
 interface ICarouselProps {
@@ -18,7 +18,7 @@ export default function Carousel({ slider, image }: ICarouselProps) {
           alt={image.name}
           className="w-full h-full object-cover"
           radius="none"
-          src={getMediaUrl(image)}
+          src={getThumbUrl(image, 1280)}
           width="100%"
         />
       </div>
@@ -56,7 +56,7 @@ export default function Carousel({ slider, image }: ICarouselProps) {
           alt={image.name}
           className="w-full h-full object-cover"
           radius="none"
-          src={getMediaUrl(image)}
+          src={getThumbUrl(image, 1280)}
           width="100%"
         />,
       );

@@ -39,7 +39,7 @@ import { logout } from "@/src/services/userService";
 import { getUserContributor } from "@/src/helpers/getUserContributor";
 import { IContributor } from "@/src/models/contributor";
 import { IProjectPayment, IPaymentLog } from "@/src/models/getData";
-import getMediaSrc from "@/src/helpers/getMediaUrl";
+import getThumbUrl from "@/src/helpers/getThumbUrl";
 import { formatCurrency } from "@/components/home/ProjectCard";
 import { IPaymentMethod } from "@/src/models/payment-method";
 import {
@@ -596,7 +596,10 @@ export default function MyProfile() {
                                 }
                                 className="w-full h-32 object-cover"
                                 height={128}
-                                src={getMediaSrc(subscription.project.image)}
+                                src={getThumbUrl(
+                                  subscription.project.image,
+                                  400,
+                                )}
                                 width="100%"
                               />
                             </Link>

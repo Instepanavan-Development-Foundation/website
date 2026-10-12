@@ -1,7 +1,7 @@
 import crypto from "crypto";
 
 import { Image } from "@/components/ui/Image";
-import getMediaUrl from "@/src/helpers/getMediaUrl";
+import getThumbUrl from "@/src/helpers/getThumbUrl";
 import { IContributor } from "@/src/models/contributor";
 
 function getGravatarUrl(email: string, size = 80) {
@@ -27,7 +27,7 @@ export function Avatar({
   }
 
   const avatarUrl = contributor.avatar?.url
-    ? getMediaUrl(contributor.avatar)
+    ? getThumbUrl(contributor.avatar, Math.max(width ?? 0, height * 2))
     : getGravatarUrl(contributor.email);
 
   return (

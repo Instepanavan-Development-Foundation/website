@@ -1,7 +1,7 @@
 import Image from "next/image";
 
 import { IProject } from "@/src/models/project";
-import getMediaUrl from "@/src/helpers/getMediaUrl";
+import getThumbUrl from "@/src/helpers/getThumbUrl";
 
 import { ContributorsList } from "../ContributorsList";
 
@@ -51,7 +51,7 @@ export function ProjectCard({
             alt={name}
             className="object-cover"
             sizes="(max-width: 768px) 100vw, 33vw"
-            src={getMediaUrl(image)}
+            src={getThumbUrl(image, 400)}
           />
         ) : (
           <div

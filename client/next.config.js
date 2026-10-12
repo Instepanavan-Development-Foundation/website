@@ -12,6 +12,11 @@ const nextConfig = {
         source: "/uploads/:path*",
         destination: `${backendUrl}/uploads/:path*`,
       },
+      // In production nginx serves /thumb/ via Thumbor; without it (local dev) fall back to the original.
+      {
+        source: "/thumb/:width/uploads/:path*",
+        destination: `${backendUrl}/uploads/:path*`,
+      },
     ];
   },
   images: {

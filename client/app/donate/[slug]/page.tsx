@@ -20,7 +20,7 @@ import Link from "next/link";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 
 import { Image } from "@/components/ui/Image";
-import getMediaSrc from "@/src/helpers/getMediaUrl";
+import getThumbUrl from "@/src/helpers/getThumbUrl";
 import NotFound from "@/components/NotFound";
 import { IParams } from "@/src/models/params";
 import { IProject } from "@/src/models/project";
@@ -142,7 +142,7 @@ export default function DonatePage({ params }: IParams) {
           alt={project.name}
           className="w-full h-full object-cover"
           radius="none"
-          src={getMediaSrc(project.image)}
+          src={getThumbUrl(project.image, 800)}
           width="100%"
         />
         <div className="absolute inset-0 z-10 bg-linear-to-t from-black via-black/70 to-transparent flex flex-col justify-end p-6">
