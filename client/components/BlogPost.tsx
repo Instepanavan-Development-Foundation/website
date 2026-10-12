@@ -18,6 +18,7 @@ import "yet-another-react-lightbox/styles.css";
 import "yet-another-react-lightbox/plugins/thumbnails.css";
 
 import NextJsImage from "./NextJsImage";
+import { BlogImageGrid } from "./BlogImageGrid";
 import { ContributorsList } from "./ContributorsList";
 
 function extractFirstUrl(text: string): string | null {
@@ -39,8 +40,8 @@ export function BlogPost({
   isLink = true,
   showDonateButton = false,
 }: IBlog) {
-  const numberOfImagesShown = 1;
-  const [open, setOpen] = useState(false);
+  // Index of the image open in the lightbox, -1 when closed.
+  const [lightboxIndex, setLightboxIndex] = useState(-1);
   const [linkOgImage, setLinkOgImage] = useState<string | null>(null);
 
   const hasImages = images?.length > 0;
@@ -67,6 +68,13 @@ export function BlogPost({
     height: image.height,
   }));
 
+  // Plain-text excerpt of the post, used as fallback alt text for its images.
+  const imageAlt = content
+    .replace(/[#*_>`[\]()!]/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 120);
+
   const youtubeLink = content.match(
     /https?:\/\/(www\.)?youtube\.com\/watch\?v=([a-zA-Z0-9_-]{11})/,
   );
@@ -81,32 +89,24 @@ export function BlogPost({
       )}
       <Card className="group rounded-[20px] border border-cream-200 shadow-none hover:shadow-[0_12px_32px_rgba(230,90,42,0.06)] transition-shadow">
         <Card.Content className="p-0">
-          {/* TODO images like in fb, 3 images on front */}
           {hasImages ? (
-            <button className="cursor-zoom-in" onClick={() => setOpen(true)}>
+            <>
               <Lightbox
-                close={() => setOpen(false)}
-                open={open}
+                close={() => setLightboxIndex(-1)}
+                index={Math.max(lightboxIndex, 0)}
+                open={lightboxIndex >= 0}
                 plugins={[Thumbnails]}
                 render={{ slide: NextJsImage, thumbnail: NextJsImage as any }} // TODO: fix this some day
                 slides={imageSlides}
               />
-              <Image
-                alt={content}
-                className={`w-full object-contain h-[200px] z-10 ${gradient}`}
-                radius="none"
-                src={getMediaUrl(images[0])}
-                width="100"
+              <BlogImageGrid
+                alt={imageAlt}
+                className="h-[200px] rounded-t-[19px] rounded-b-xl"
+                images={images}
+                singleImageClassName={gradient}
+                onOpen={setLightboxIndex}
               />
-              {/* Count of images in the blog post */}
-              {images.length > numberOfImagesShown && (
-                <div className="relative">
-                  <div className="absolute bottom-0 right-0 z-30 bg-black/50 text-white p-2 text-xs text-right h-7">
-                    ևս {images.length - numberOfImagesShown} նկար
-                  </div>
-                </div>
-              )}
-            </button>
+            </>
           ) : linkOgImage ? (
             <Image
               alt={content}
