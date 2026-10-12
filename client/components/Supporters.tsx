@@ -2,11 +2,10 @@
 
 import { EllipsisVertical, Star } from "lucide-react";
 import Link from "next/link";
-import { button as buttonStyles } from "@heroui/theme";
 import { useState } from "react";
-import { Button } from "@heroui/button";
-import { Tooltip } from "@heroui/tooltip";
+import { Button } from "@heroui/react";
 
+import { Tooltip } from "@/components/ui/Tooltip";
 import { IContribution } from "@/src/models/blog";
 import { Avatar } from "@/components/Avatar";
 
@@ -29,6 +28,7 @@ export default function Supporters({
         {slicedContributors.map((contributor, index) => (
           <Tooltip
             key={contributor.contributor.slug}
+            className="grid"
             content={contributor.contributor.fullName}
           >
             <Link
@@ -61,12 +61,10 @@ export default function Supporters({
       <div className="col-span-full flex justify-center mt-8">
         {contributors.length > limit && (
           <Button
-            className={buttonStyles({
-              variant: "flat",
-              radius: "full",
-              size: "lg",
-            })}
-            onClick={() => setLimit((prev) => prev + LIMIT)}
+            className="rounded-full"
+            size="lg"
+            variant="tertiary"
+            onPress={() => setLimit((prev) => prev + LIMIT)}
           >
             Բեռնել ավել
             <EllipsisVertical className="ml-2 w-5 h-5" />

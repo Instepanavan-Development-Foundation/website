@@ -1,6 +1,5 @@
 "use client";
-import { Image } from "@heroui/image";
-
+import { Image } from "@/components/ui/Image";
 import { IProject } from "@/src/models/project";
 import getMediaUrl from "@/src/helpers/getMediaUrl";
 import EmblaCarousel from "@/components/EmblaCarousel";

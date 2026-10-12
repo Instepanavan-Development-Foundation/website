@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@heroui/button";
+import { Button } from "@heroui/react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -53,11 +53,10 @@ export default function NotFound() {
 
       {!showProjects && hasProjects && (
         <Button
-          color="secondary"
-          disabled={isShaking}
+          isDisabled={isShaking}
           size="lg"
-          variant="flat"
-          onClick={handleShake}
+          variant="secondary"
+          onPress={handleShake}
         >
           {isShaking
             ? "Թափահարում է... 🌪️"

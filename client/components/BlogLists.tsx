@@ -1,16 +1,28 @@
 "use client";
-import { Input } from "@heroui/input";
-import { Select, SelectItem } from "@heroui/select";
-import { useEffect, useState, useRef, useCallback } from "react";
-import { Button } from "@heroui/button";
-import { DateRangePicker } from "@heroui/date-picker";
+import {
+  Accordion,
+  Button,
+  Chip,
+  CloseButton,
+  DateField,
+  DateRangePicker,
+  Input,
+  ListBox,
+  RangeCalendar,
+  Select,
+} from "@heroui/react";
+import {
+  useEffect,
+  useState,
+  useRef,
+  useCallback,
+  type ReactNode,
+} from "react";
 import { DateValue, parseDate } from "@internationalized/date";
-import { Chip } from "@heroui/chip";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { RangeValue } from "@react-types/shared";
 import { Filter } from "lucide-react";
-import { Accordion, AccordionItem } from "@heroui/accordion";
 
 import getData from "@/src/helpers/getData";
 import { IBlog } from "@/src/models/blog";
@@ -187,6 +199,33 @@ function BlogListUnwrapped() {
     setSelectedTags("");
   };
 
+  const projectNames = blogs
+    .map((blog) => blog.project?.name)
+    .filter(
+      (name, index, self): name is string =>
+        !!name && self.indexOf(name) === index,
+    );
+  const tagNames = blogs
+    .flatMap((blog) => blog.tag || [])
+    .map((tag) => tag.name)
+    .filter((tagName, index, self) => self.indexOf(tagName) === index);
+
+  const handleProjectChange = (value: string) => {
+    setSelectedProject(value);
+    updateURL({ project: value });
+  };
+
+  const handleTagChange = (value: string) => {
+    setSelectedTags(value);
+    updateURL({ tags: value });
+  };
+
+  const handleDateRangeChange = (range: RangeValue<DateValue> | null) => {
+    if (range?.start && range?.end) {
+      setDateRange(range);
+    }
+  };
+
   return (
     <div className="container mx-auto px-4">
       <h1 className="mb-8 text-5xl">Բլոգ</h1>
@@ -194,165 +233,90 @@ function BlogListUnwrapped() {
       <div className="mb-8">
         {/* Mobile: Collapsible Filters */}
         <div className="block md:hidden">
-          <Accordion variant="bordered">
-            <AccordionItem
-              key="filters"
-              aria-label="Ֆիլտրեր"
-              title={
-                <div className="flex items-center gap-2">
-                  <Filter className="w-4 h-4" />
-                  <span>Ֆիլտրեր</span>
-                </div>
-              }
-            >
-              <div className="grid grid-cols-1 gap-4 pt-2">
-                <Input
-                  aria-label="search"
-                  placeholder="Որոնել..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
+          <Accordion className="px-2 border border-border rounded-medium">
+            <Accordion.Item id="filters">
+              <Accordion.Heading>
+                <Accordion.Trigger aria-label="Ֆիլտրեր">
+                  <div className="flex items-center gap-2">
+                    <Filter className="w-4 h-4" />
+                    <span>Ֆիլտրեր</span>
+                  </div>
+                  <Accordion.Indicator />
+                </Accordion.Trigger>
+              </Accordion.Heading>
+              <Accordion.Panel>
+                <Accordion.Body>
+                  <div className="grid grid-cols-1 gap-4 pt-2">
+                    <SearchInput
+                      value={searchQuery}
+                      onChange={setSearchQuery}
+                    />
 
-                <Select
-                  aria-label="projects"
-                  placeholder="Ընտրել նախագիծը"
-                  selectedKeys={selectedProject ? [selectedProject] : []}
-                  onChange={(e) => {
-                    const value = e.target.value;
+                    <FilterSelect
+                      ariaLabel="projects"
+                      options={projectNames}
+                      placeholder="Ընտրել նախագիծը"
+                      value={selectedProject}
+                      onChange={handleProjectChange}
+                    />
 
-                    setSelectedProject(value);
-                    updateURL({ project: value });
-                  }}
-                >
-                  {blogs
-                    .map((blog) => blog.project)
-                    .filter(
-                      (project, index, self) =>
-                        project &&
-                        self.findIndex((p) => p?.name === project?.name) ===
-                          index,
-                    )
-                    .map((project) => (
-                      <SelectItem key={project?.name || ""}>
-                        {project?.name}
-                      </SelectItem>
-                    ))}
-                </Select>
+                    <FilterSelect
+                      ariaLabel="tags"
+                      options={tagNames}
+                      placeholder="Ընտրել պիտակները"
+                      value={selectedTags}
+                      onChange={handleTagChange}
+                    />
 
-                <Select
-                  aria-label="tags"
-                  placeholder="Ընտրել պիտակները"
-                  selectedKeys={selectedTags ? [selectedTags] : []}
-                  onChange={(e) => {
-                    const value = e.target.value;
+                    <DateRangeFilter
+                      value={dateRange}
+                      onChange={handleDateRangeChange}
+                    />
 
-                    setSelectedTags(value);
-                    updateURL({ tags: value });
-                  }}
-                >
-                  {blogs
-                    .flatMap((blog) => blog.tag || [])
-                    .map((tag) => tag.name)
-                    .filter(
-                      (tagName, index, self) => self.indexOf(tagName) === index,
-                    )
-                    .map((tagName) => (
-                      <SelectItem key={tagName}>{tagName}</SelectItem>
-                    ))}
-                </Select>
-
-                <DateRangePicker
-                  aria-label="date-range"
-                  value={dateRange as any}
-                  onChange={(range) => {
-                    if (range?.start && range?.end) {
-                      setDateRange(range as any);
-                    }
-                  }}
-                />
-
-                <Button
-                  className="w-full"
-                  color="primary"
-                  onClick={resetFilters}
-                >
-                  Չեղարկել
-                </Button>
-              </div>
-            </AccordionItem>
+                    <Button fullWidth variant="primary" onPress={resetFilters}>
+                      Չեղարկել
+                    </Button>
+                  </div>
+                </Accordion.Body>
+              </Accordion.Panel>
+            </Accordion.Item>
           </Accordion>
         </div>
 
         {/* Desktop: Always Visible Filters */}
         <div className="hidden md:grid grid-cols-12 gap-4">
-          <Input
-            aria-label="search"
+          <SearchInput
             className="col-span-12"
-            placeholder="Որոնել..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={setSearchQuery}
           />
 
-          <Select
-            aria-label="projects"
+          <FilterSelect
+            ariaLabel="projects"
             className="col-span-4"
+            options={projectNames}
             placeholder="Ընտրել նախագիծը"
-            selectedKeys={selectedProject ? [selectedProject] : []}
-            onChange={(e) => {
-              const value = e.target.value;
+            value={selectedProject}
+            onChange={handleProjectChange}
+          />
 
-              setSelectedProject(value);
-              updateURL({ project: value });
-            }}
-          >
-            {blogs
-              .map((blog) => blog.project)
-              .filter(
-                (project, index, self) =>
-                  project &&
-                  self.findIndex((p) => p?.name === project?.name) === index,
-              )
-              .map((project) => (
-                <SelectItem key={project?.name || ""}>
-                  {project?.name}
-                </SelectItem>
-              ))}
-          </Select>
-
-          <Select
-            aria-label="tags"
+          <FilterSelect
+            ariaLabel="tags"
             className="col-span-4"
+            options={tagNames}
             placeholder="Ընտրել պիտակները"
-            selectedKeys={selectedTags ? [selectedTags] : []}
-            onChange={(e) => {
-              const value = e.target.value;
+            value={selectedTags}
+            onChange={handleTagChange}
+          />
 
-              setSelectedTags(value);
-              updateURL({ tags: value });
-            }}
-          >
-            {blogs
-              .flatMap((blog) => blog.tag || [])
-              .map((tag) => tag.name)
-              .filter((tagName, index, self) => self.indexOf(tagName) === index)
-              .map((tagName) => (
-                <SelectItem key={tagName}>{tagName}</SelectItem>
-              ))}
-          </Select>
-
-          <DateRangePicker
-            aria-label="date-range"
+          <DateRangeFilter
             className="col-span-3"
-            value={dateRange as any}
-            onChange={(range) => {
-              if (range?.start && range?.end) {
-                setDateRange(range as any);
-              }
-            }}
+            value={dateRange}
+            onChange={handleDateRangeChange}
           />
 
           <div className="flex gap-2 col-span-1">
-            <Button className="flex-1" color="primary" onClick={resetFilters}>
+            <Button className="flex-1" variant="primary" onPress={resetFilters}>
               Չեղարկել
             </Button>
           </div>
@@ -363,40 +327,29 @@ function BlogListUnwrapped() {
       {(selectedProject || selectedTags.length > 0 || searchQuery) && (
         <div className="flex flex-wrap gap-2 mb-4">
           {searchQuery && (
-            <Chip
-              color="primary"
-              variant="flat"
-              onClose={() => setSearchQuery("")}
-            >
+            <FilterChip onClose={() => setSearchQuery("")}>
               Որոնում: {searchQuery}
-            </Chip>
+            </FilterChip>
           )}
 
           {selectedProject && (
-            <Chip
-              className="capitalize"
-              color="secondary"
-              variant="flat"
-              onClose={removeProject}
-            >
+            <FilterChip className="capitalize" onClose={removeProject}>
               Նախագիծ:{" "}
               {
                 blogs.find((b) => b.project?.name === selectedProject)?.project
                   ?.name
               }
-            </Chip>
+            </FilterChip>
           )}
 
           {selectedTags && (
-            <Chip
+            <FilterChip
               key={`tag-${selectedTags}`}
               className="capitalize"
-              color="primary"
-              variant="flat"
               onClose={() => removeTag()}
             >
               Թեգ: {selectedTags}
-            </Chip>
+            </FilterChip>
           )}
         </div>
       )}
@@ -428,6 +381,142 @@ function BlogListUnwrapped() {
         )}
       </div>
     </div>
+  );
+}
+
+function SearchInput({
+  value,
+  onChange,
+  className,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  className?: string;
+}) {
+  return (
+    <Input
+      fullWidth
+      aria-label="search"
+      className={className}
+      placeholder="Որոնել..."
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+    />
+  );
+}
+
+/** Single-select filter; `""` means no selection (as with the v2 Select). */
+function FilterSelect({
+  ariaLabel,
+  placeholder,
+  options,
+  value,
+  onChange,
+  className,
+}: {
+  ariaLabel: string;
+  placeholder: string;
+  options: string[];
+  value: string;
+  onChange: (value: string) => void;
+  className?: string;
+}) {
+  return (
+    <Select
+      fullWidth
+      aria-label={ariaLabel}
+      className={className}
+      placeholder={placeholder}
+      value={value || null}
+      onChange={(key) => onChange(key == null ? "" : String(key))}
+    >
+      <Select.Trigger>
+        <Select.Value />
+        <Select.ClearButton />
+        <Select.Indicator />
+      </Select.Trigger>
+      <Select.Popover>
+        <ListBox>
+          {options.map((option) => (
+            <ListBox.Item key={option} id={option} textValue={option}>
+              {option}
+              <ListBox.ItemIndicator />
+            </ListBox.Item>
+          ))}
+        </ListBox>
+      </Select.Popover>
+    </Select>
+  );
+}
+
+function DateRangeFilter({
+  value,
+  onChange,
+  className,
+}: {
+  value: RangeValue<DateValue>;
+  onChange: (range: RangeValue<DateValue> | null) => void;
+  className?: string;
+}) {
+  return (
+    <DateRangePicker
+      aria-label="date-range"
+      className={className}
+      value={value.start && value.end ? value : null}
+      onChange={onChange}
+    >
+      <DateField.Group fullWidth>
+        <DateField.Input slot="start">
+          {(segment) => <DateField.Segment segment={segment} />}
+        </DateField.Input>
+        <DateRangePicker.RangeSeparator />
+        <DateField.Input slot="end">
+          {(segment) => <DateField.Segment segment={segment} />}
+        </DateField.Input>
+        <DateField.Suffix>
+          <DateRangePicker.Trigger>
+            <DateRangePicker.TriggerIndicator />
+          </DateRangePicker.Trigger>
+        </DateField.Suffix>
+      </DateField.Group>
+      <DateRangePicker.Popover>
+        <RangeCalendar aria-label="date-range">
+          <RangeCalendar.Header>
+            <RangeCalendar.NavButton slot="previous" />
+            <RangeCalendar.Heading />
+            <RangeCalendar.NavButton slot="next" />
+          </RangeCalendar.Header>
+          <RangeCalendar.Grid>
+            <RangeCalendar.GridHeader>
+              {(day) => (
+                <RangeCalendar.HeaderCell>{day}</RangeCalendar.HeaderCell>
+              )}
+            </RangeCalendar.GridHeader>
+            <RangeCalendar.GridBody>
+              {(date) => <RangeCalendar.Cell date={date} />}
+            </RangeCalendar.GridBody>
+          </RangeCalendar.Grid>
+        </RangeCalendar>
+      </DateRangePicker.Popover>
+    </DateRangePicker>
+  );
+}
+
+/** Active-filter chip with a remove button (v2 Chip `onClose`). */
+function FilterChip({
+  children,
+  className,
+  onClose,
+}: {
+  children: ReactNode;
+  className?: string;
+  onClose: () => void;
+}) {
+  return (
+    <Chip className={className} color="accent" variant="soft">
+      <Chip.Label>{children}</Chip.Label>
+      <CloseButton aria-label="close chip" onPress={onClose} />
+    </Chip>
   );
 }
 

@@ -2,11 +2,17 @@
 
 import { useEffect, useState, useRef, useSyncExternalStore } from "react";
 import { useSearchParams } from "next/navigation";
-import { Button } from "@heroui/button";
-import { Card } from "@heroui/card";
-import { Avatar } from "@heroui/avatar";
-import { Progress } from "@heroui/progress";
-import { Heart, ArrowRight, Award, Gift, Star, Trophy } from "lucide-react";
+import { Avatar, Card, ProgressBar } from "@heroui/react";
+import { buttonVariants } from "@heroui/styles";
+import {
+  Heart,
+  ArrowRight,
+  Award,
+  Gift,
+  Star,
+  Trophy,
+  User as UserIcon,
+} from "lucide-react";
 import Link from "next/link";
 import Confetti from "react-confetti";
 import { motion, AnimatePresence } from "framer-motion";
@@ -299,12 +305,15 @@ export default function DonationSuccessPage() {
                     <div className="relative mb-6">
                       {avatarUrl ? (
                         <Avatar
-                          isBordered
-                          className="w-24 h-24"
-                          color="primary"
+                          className="w-24 h-24 ring-2 ring-primary ring-offset-2 ring-offset-background"
+                          color="accent"
                           size="lg"
-                          src={avatarUrl}
-                        />
+                        >
+                          <Avatar.Image alt="" src={avatarUrl} />
+                          <Avatar.Fallback>
+                            <UserIcon className="w-12 h-12" />
+                          </Avatar.Fallback>
+                        </Avatar>
                       ) : (
                         <div className="w-24 h-24 bg-primary-100 rounded-full flex items-center justify-center">
                           <Heart className="w-12 h-12 text-primary" />
@@ -340,15 +349,18 @@ export default function DonationSuccessPage() {
                                 / {funding.requiredAmount.toLocaleString()} ֏
                               </span>
                             </div>
-                            <Progress
+                            <ProgressBar
                               aria-label="Նախագծի առաջընթաց"
                               className="w-full"
-                              color="primary"
-                              size="md"
+                              color="accent"
                               value={
                                 (animatedRaised / funding.requiredAmount) * 100
                               }
-                            />
+                            >
+                              <ProgressBar.Track className="h-3 rounded-full">
+                                <ProgressBar.Fill className="rounded-full" />
+                              </ProgressBar.Track>
+                            </ProgressBar>
                             <p className="text-xs text-default-500 mt-2 text-center">
                               {(
                                 (animatedRaised / funding.requiredAmount) *
@@ -373,30 +385,30 @@ export default function DonationSuccessPage() {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <Button
-                    as={Link}
-                    className="px-6"
-                    color="primary"
-                    endContent={<ArrowRight size={18} />}
+                  <Link
+                    className={buttonVariants({
+                      variant: "secondary",
+                      className: "px-6",
+                    })}
                     href={projectSlug ? `/project/${projectSlug}` : "/"}
-                    variant="flat"
                   >
                     Վերադառնալ նախագիծ
-                  </Button>
+                    <ArrowRight size={18} />
+                  </Link>
                 </motion.div>
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <Button
-                    as={Link}
-                    className="px-6"
-                    color="default"
+                  <Link
+                    className={buttonVariants({
+                      variant: "tertiary",
+                      className: "px-6",
+                    })}
                     href="/"
-                    variant="flat"
                   >
                     Գլխավոր էջ
-                  </Button>
+                  </Link>
                 </motion.div>
               </motion.div>
             </motion.div>

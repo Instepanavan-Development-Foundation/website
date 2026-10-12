@@ -1,24 +1,25 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, CardBody } from "@heroui/card";
-import { Button } from "@heroui/button";
-import { Input } from "@heroui/input";
 import {
+  Avatar,
+  Button,
+  Card,
+  Chip,
+  Description,
+  FieldError,
+  InputGroup,
+  Label,
+  ListBox,
   Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  useDisclosure,
-} from "@heroui/modal";
-import { Image } from "@heroui/image";
-import { User } from "@heroui/user";
-import { Tabs, Tab } from "@heroui/tabs";
-import { Skeleton } from "@heroui/skeleton";
-import { Chip } from "@heroui/chip";
-import { Divider } from "@heroui/divider";
-import { Listbox, ListboxItem } from "@heroui/listbox";
+  Separator,
+  Skeleton,
+  Spinner,
+  Tabs,
+  TextField,
+  useOverlayState,
+} from "@heroui/react";
+import { buttonVariants } from "@heroui/styles";
 import Link from "next/link";
 import {
   CreditCard,
@@ -32,6 +33,7 @@ import {
   LogOut,
 } from "lucide-react";
 
+import { Image } from "@/components/ui/Image";
 import { useAuth } from "@/src/hooks/useAuth";
 import { logout } from "@/src/services/userService";
 import { getUserContributor } from "@/src/helpers/getUserContributor";
@@ -64,7 +66,7 @@ export default function MyProfile() {
   >(null);
   const [subscriptionToCancel, setSubscriptionToCancel] =
     useState<IProjectPayment | null>(null);
-  const { isOpen, onOpen, onOpenChange } = useDisclosure();
+  const cancelModal = useOverlayState();
 
   // Payment method deletion states
   const [deletingPaymentMethodId, setDeletingPaymentMethodId] = useState<
@@ -73,11 +75,7 @@ export default function MyProfile() {
   const [methodToDelete, setMethodToDelete] = useState<IPaymentMethod | null>(
     null,
   );
-  const {
-    isOpen: isDeleteModalOpen,
-    onOpen: onDeleteModalOpen,
-    onOpenChange: onDeleteModalOpenChange,
-  } = useDisclosure();
+  const deleteModal = useOverlayState();
   const [paymentMethodError, setPaymentMethodError] = useState<string | null>(
     null,
   );
@@ -281,7 +279,7 @@ export default function MyProfile() {
 
   const handleDeletePaymentMethodClick = (paymentMethod: IPaymentMethod) => {
     setMethodToDelete(paymentMethod);
-    onDeleteModalOpen();
+    deleteModal.open();
   };
 
   const handleDeletePaymentMethod = async () => {
@@ -296,7 +294,7 @@ export default function MyProfile() {
         prev.filter((method) => method.id !== methodToDelete.id),
       );
       setMethodToDelete(null);
-      onDeleteModalOpenChange();
+      deleteModal.toggle();
     } catch (err) {
       setPaymentMethodError(
         err instanceof Error ? err.message : "Վճարման եղանակը ջնջելու սխալ",
@@ -308,7 +306,7 @@ export default function MyProfile() {
 
   const handleCancelSubscriptionClick = (subscription: IProjectPayment) => {
     setSubscriptionToCancel(subscription);
-    onOpen();
+    cancelModal.open();
   };
 
   const handleCancelSubscription = async () => {
@@ -358,7 +356,7 @@ export default function MyProfile() {
     } finally {
       setCancellingSubscription(null);
       setSubscriptionToCancel(null);
-      onOpenChange();
+      cancelModal.toggle();
     }
   };
 
@@ -367,7 +365,7 @@ export default function MyProfile() {
       <div className="container mx-auto flex flex-col gap-6">
         {/* Profile Header Skeleton */}
         <Card className="p-6">
-          <CardBody>
+          <Card.Content>
             <div className="flex items-center gap-4">
               <Skeleton className="rounded-full w-16 h-16" />
               <div className="flex-1 space-y-3">
@@ -375,14 +373,14 @@ export default function MyProfile() {
                 <Skeleton className="h-4 w-64 rounded-lg" />
               </div>
             </div>
-          </CardBody>
+          </Card.Content>
         </Card>
 
         {/* Stats Cards Skeleton */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[1, 2, 3].map((i) => (
             <Card key={i} className="p-4">
-              <CardBody>
+              <Card.Content>
                 <div className="flex items-center gap-3">
                   <Skeleton className="rounded-lg w-12 h-12" />
                   <div className="flex-1 space-y-2">
@@ -390,20 +388,20 @@ export default function MyProfile() {
                     <Skeleton className="h-6 w-16 rounded-lg" />
                   </div>
                 </div>
-              </CardBody>
+              </Card.Content>
             </Card>
           ))}
         </div>
 
         {/* Tabs Skeleton */}
         <Card className="p-6">
-          <CardBody>
+          <Card.Content>
             <Skeleton className="h-10 w-full rounded-lg mb-4" />
             <div className="space-y-4">
               <Skeleton className="h-32 w-full rounded-lg" />
               <Skeleton className="h-32 w-full rounded-lg" />
             </div>
-          </CardBody>
+          </Card.Content>
         </Card>
       </div>
     );
@@ -425,34 +423,26 @@ export default function MyProfile() {
     <div className="container mx-auto flex flex-col gap-6">
       {/* Profile Header with User Component */}
       <Card className="p-6">
-        <CardBody>
+        <Card.Content>
           <div className="flex items-center justify-between">
-            <User
-              avatarProps={{
-                src: avatarUrl,
-                size: "lg",
-                isBordered: true,
-                color: "primary",
-                radius: "full",
-                classNames: {
-                  base: "!rounded-full",
-                  img: "!rounded-full",
-                  icon: "!rounded-full",
-                },
-                style: {
-                  borderRadius: "9999px",
-                },
-              }}
-              classNames={{
-                name: "text-2xl font-bold",
-                description: "text-default-500",
-              }}
-              description={user?.email}
-              name={displayName}
-            />
+            <div className="inline-flex items-center gap-2">
+              <Avatar
+                className="w-14 h-14 rounded-full ring-2 ring-primary ring-offset-2 ring-offset-background"
+                color="accent"
+                size="lg"
+              >
+                <Avatar.Image alt={displayName} src={avatarUrl} />
+                <Avatar.Fallback>
+                  <UserIcon className="w-7 h-7" />
+                </Avatar.Fallback>
+              </Avatar>
+              <div className="inline-flex flex-col items-start">
+                <span className="text-2xl font-bold">{displayName}</span>
+                <span className="text-xs text-default-500">{user?.email}</span>
+              </div>
+            </div>
             <Button
-              color="primary"
-              variant="flat"
+              variant="secondary"
               onPress={() => {
                 logout();
                 window.dispatchEvent(new CustomEvent("loginStateChanged"));
@@ -462,13 +452,13 @@ export default function MyProfile() {
               Դուրս գալ
             </Button>
           </div>
-        </CardBody>
+        </Card.Content>
       </Card>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="p-4">
-          <CardBody>
+          <Card.Content>
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center shrink-0">
                 <TrendingUp className="w-6 h-6 text-primary-600" />
@@ -482,11 +472,11 @@ export default function MyProfile() {
                 </p>
               </div>
             </div>
-          </CardBody>
+          </Card.Content>
         </Card>
 
         <Card className="p-4">
-          <CardBody>
+          <Card.Content>
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-success-100 rounded-lg flex items-center justify-center shrink-0">
                 <Receipt className="w-6 h-6 text-success-600" />
@@ -500,65 +490,100 @@ export default function MyProfile() {
                 </p>
               </div>
             </div>
-          </CardBody>
+          </Card.Content>
         </Card>
 
         <Card className="p-4">
-          <CardBody>
+          <Card.Content>
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-secondary-100 rounded-lg flex items-center justify-center shrink-0">
-                <CreditCard className="w-6 h-6 text-secondary-600" />
+              <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center shrink-0">
+                <CreditCard className="w-6 h-6 text-primary-600" />
               </div>
               <div>
                 <p className="text-sm text-default-500">Հաջողված վճարումներ</p>
-                <p className="text-2xl font-bold text-secondary">
+                <p className="text-2xl font-bold text-primary">
                   {successfulPaymentsCount}
                 </p>
               </div>
             </div>
-          </CardBody>
+          </Card.Content>
         </Card>
       </div>
 
       {/* Tabs for different sections */}
       <Card className="p-6">
-        <CardBody>
-          <Tabs
-            aria-label="Profile sections"
-            classNames={{
-              base: "w-full",
-              tabList: "gap-2 w-full relative rounded-none p-0 overflow-x-auto",
-              cursor: "w-full",
-              tab: "max-w-fit px-2 h-12",
-              tabContent:
-                "group-data-[selected=true]:text-primary text-xs sm:text-sm",
-            }}
-            color="primary"
-            variant="underlined"
-          >
+        <Card.Content>
+          <Tabs className="w-full" variant="secondary">
+            <Tabs.ListContainer>
+              <Tabs.List
+                aria-label="Profile sections"
+                className="gap-2 w-full overflow-x-auto"
+              >
+                <Tabs.Tab
+                  className="max-w-fit px-2 h-12 text-xs sm:text-sm data-[selected=true]:text-primary"
+                  id="subscriptions"
+                >
+                  <div className="flex items-center gap-1 sm:gap-2">
+                    <TrendingUp className="w-4 h-4" />
+                    <span className="whitespace-nowrap">
+                      Բաժանորդագրություններ
+                    </span>
+                    {activeSubscriptionsCount > 0 && (
+                      <Chip color="accent" size="sm" variant="soft">
+                        {activeSubscriptionsCount}
+                      </Chip>
+                    )}
+                  </div>
+                  <Tabs.Indicator />
+                </Tabs.Tab>
+                <Tabs.Tab
+                  className="max-w-fit px-2 h-12 text-xs sm:text-sm data-[selected=true]:text-primary"
+                  id="payment-history"
+                >
+                  <div className="flex items-center gap-1 sm:gap-2">
+                    <Receipt className="w-4 h-4" />
+                    <span className="whitespace-nowrap">
+                      Վճարումների պատմություն
+                    </span>
+                  </div>
+                  <Tabs.Indicator />
+                </Tabs.Tab>
+                <Tabs.Tab
+                  className="max-w-fit px-2 h-12 text-xs sm:text-sm data-[selected=true]:text-primary"
+                  id="overview"
+                >
+                  <div className="flex items-center gap-1 sm:gap-2">
+                    <UserIcon className="w-4 h-4" />
+                    <span className="whitespace-nowrap">Ընդհանուր</span>
+                  </div>
+                  <Tabs.Indicator />
+                </Tabs.Tab>
+                <Tabs.Tab
+                  className="max-w-fit px-2 h-12 text-xs sm:text-sm data-[selected=true]:text-primary"
+                  id="payment-methods"
+                >
+                  <div className="flex items-center gap-1 sm:gap-2">
+                    <CreditCard className="w-4 h-4" />
+                    <span className="whitespace-nowrap">Վճարման եղանակներ</span>
+                    {paymentMethods.length > 0 && (
+                      <Chip color="accent" size="sm" variant="soft">
+                        {paymentMethods.length}
+                      </Chip>
+                    )}
+                  </div>
+                  <Tabs.Indicator />
+                </Tabs.Tab>
+              </Tabs.List>
+            </Tabs.ListContainer>
+
             {/* Subscriptions Tab - FIRST */}
-            <Tab
-              key="subscriptions"
-              title={
-                <div className="flex items-center gap-1 sm:gap-2">
-                  <TrendingUp className="w-4 h-4" />
-                  <span className="whitespace-nowrap">
-                    Բաժանորդագրություններ
-                  </span>
-                  {activeSubscriptionsCount > 0 && (
-                    <Chip color="primary" size="sm" variant="flat">
-                      {activeSubscriptionsCount}
-                    </Chip>
-                  )}
-                </div>
-              }
-            >
+            <Tabs.Panel id="subscriptions">
               <div className="py-4">
                 {subscriptions.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {subscriptions.map((subscription) => (
                       <Card key={subscription.id} className="overflow-hidden">
-                        <CardBody className="p-0">
+                        <Card.Content className="p-0">
                           {/* Project Image */}
                           {subscription.project?.image && (
                             <Link
@@ -594,7 +619,7 @@ export default function MyProfile() {
                                     : "default"
                                 }
                                 size="sm"
-                                variant="flat"
+                                variant="soft"
                               >
                                 {subscription.type === "recurring"
                                   ? "Ամսական"
@@ -602,7 +627,7 @@ export default function MyProfile() {
                               </Chip>
                             </div>
 
-                            <Divider />
+                            <Separator />
 
                             <div className="flex justify-between items-center">
                               <span className="text-sm text-default-600">
@@ -615,22 +640,25 @@ export default function MyProfile() {
 
                             {subscription.type === "recurring" && (
                               <Button
-                                className="w-full"
-                                color="danger"
-                                isLoading={
+                                fullWidth
+                                className="text-danger"
+                                isPending={
                                   cancellingSubscription === subscription.id
                                 }
                                 size="sm"
-                                variant="light"
+                                variant="ghost"
                                 onPress={() =>
                                   handleCancelSubscriptionClick(subscription)
                                 }
                               >
+                                {cancellingSubscription === subscription.id && (
+                                  <Spinner color="current" size="sm" />
+                                )}
                                 Չեղարկել բաժանորդագրությունը
                               </Button>
                             )}
                           </div>
-                        </CardBody>
+                        </Card.Content>
                       </Card>
                     ))}
                   </div>
@@ -643,33 +671,24 @@ export default function MyProfile() {
                     <p className="text-default-500 mb-4">
                       Դուք դեռ չունեք ակտիվ բաժանորդագրություններ
                     </p>
-                    <Link href="/#projects">
-                      <Button color="primary" variant="flat">
-                        Տեսնել նախագծերը
-                      </Button>
+                    <Link
+                      className={buttonVariants({ variant: "secondary" })}
+                      href="/#projects"
+                    >
+                      Տեսնել նախագծերը
                     </Link>
                   </div>
                 )}
               </div>
-            </Tab>
+            </Tabs.Panel>
 
             {/* Payment History Tab - SECOND */}
-            <Tab
-              key="payment-history"
-              title={
-                <div className="flex items-center gap-1 sm:gap-2">
-                  <Receipt className="w-4 h-4" />
-                  <span className="whitespace-nowrap">
-                    Վճարումների պատմություն
-                  </span>
-                </div>
-              }
-            >
+            <Tabs.Panel id="payment-history">
               <div className="py-4">
                 {paymentHistory.length > 0 ? (
                   <Card className="p-0">
-                    <CardBody className="p-0">
-                      <Listbox aria-label="Payment History" variant="flat">
+                    <Card.Content className="p-0">
+                      <ListBox aria-label="Payment History">
                         {paymentHistory.map((log) => {
                           // Get project name from multiple sources (fallback chain)
                           const projectName =
@@ -680,10 +699,30 @@ export default function MyProfile() {
                             "Վճարում";
 
                           return (
-                            <ListboxItem
+                            <ListBox.Item
                               key={log.id}
-                              description={
-                                <span className="text-small text-default-500">
+                              className="flex items-center gap-2"
+                              id={log.id}
+                              textValue={projectName}
+                            >
+                              <div
+                                className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${
+                                  log.success
+                                    ? "bg-success-100"
+                                    : "bg-danger-100"
+                                }`}
+                              >
+                                {log.success ? (
+                                  <CheckCircle className="w-5 h-5 text-success-600" />
+                                ) : (
+                                  <XCircle className="w-5 h-5 text-danger-600" />
+                                )}
+                              </div>
+                              <div className="flex flex-1 flex-col min-w-0">
+                                <Label className="font-semibold text-base">
+                                  {projectName}
+                                </Label>
+                                <Description className="text-sm text-default-500">
                                   {new Date(log.createdAt).toLocaleDateString(
                                     "hy-AM",
                                     {
@@ -694,52 +733,30 @@ export default function MyProfile() {
                                       minute: "2-digit",
                                     },
                                   )}
-                                </span>
-                              }
-                              endContent={
-                                <div className="flex flex-col items-end gap-1 shrink-0">
-                                  <span className="text-base font-bold text-primary whitespace-nowrap">
-                                    {formatCurrency(
-                                      log.amount,
-                                      log.currency?.toUpperCase() === "AMD"
-                                        ? "AMD"
-                                        : "AMD",
-                                    )}
-                                  </span>
-                                  <Chip
-                                    color={log.success ? "success" : "danger"}
-                                    size="sm"
-                                    variant="flat"
-                                  >
-                                    {log.success ? "Հաջողված" : "Ձախողված"}
-                                  </Chip>
-                                </div>
-                              }
-                              startContent={
-                                <div
-                                  className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${
-                                    log.success
-                                      ? "bg-success-100"
-                                      : "bg-danger-100"
-                                  }`}
-                                >
-                                  {log.success ? (
-                                    <CheckCircle className="w-5 h-5 text-success-600" />
-                                  ) : (
-                                    <XCircle className="w-5 h-5 text-danger-600" />
+                                </Description>
+                              </div>
+                              <div className="flex flex-col items-end gap-1 shrink-0">
+                                <span className="text-base font-bold text-primary whitespace-nowrap">
+                                  {formatCurrency(
+                                    log.amount,
+                                    log.currency?.toUpperCase() === "AMD"
+                                      ? "AMD"
+                                      : "AMD",
                                   )}
-                                </div>
-                              }
-                              textValue={projectName}
-                            >
-                              <span className="font-semibold text-base">
-                                {projectName}
-                              </span>
-                            </ListboxItem>
+                                </span>
+                                <Chip
+                                  color={log.success ? "success" : "danger"}
+                                  size="sm"
+                                  variant="soft"
+                                >
+                                  {log.success ? "Հաջողված" : "Ձախողված"}
+                                </Chip>
+                              </div>
+                            </ListBox.Item>
                           );
                         })}
-                      </Listbox>
-                    </CardBody>
+                      </ListBox>
+                    </Card.Content>
                   </Card>
                 ) : (
                   <div className="text-center py-12">
@@ -750,34 +767,31 @@ export default function MyProfile() {
                     <p className="text-default-500 mb-4">
                       Դուք դեռ չեք կատարել որևէ վճարում
                     </p>
-                    <Link href="/#projects">
-                      <Button color="primary" variant="flat">
-                        Տեսնել նախագծերը
-                      </Button>
+                    <Link
+                      className={buttonVariants({ variant: "secondary" })}
+                      href="/#projects"
+                    >
+                      Տեսնել նախագծերը
                     </Link>
                   </div>
                 )}
               </div>
-            </Tab>
+            </Tabs.Panel>
 
             {/* Overview Tab - THIRD */}
-            <Tab
-              key="overview"
-              title={
-                <div className="flex items-center gap-1 sm:gap-2">
-                  <UserIcon className="w-4 h-4" />
-                  <span className="whitespace-nowrap">Ընդհանուր</span>
-                </div>
-              }
-            >
+            <Tabs.Panel id="overview">
               <div className="py-4 space-y-4">
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="text-xl font-bold">Անձնական տվյալներ</h2>
                   <Button
-                    color={isEditing ? "danger" : "primary"}
+                    className={
+                      isEditing
+                        ? "border-danger text-danger hover:bg-danger hover:text-danger-foreground"
+                        : undefined
+                    }
                     isDisabled={isUpdating}
                     size="sm"
-                    variant={isEditing ? "ghost" : "solid"}
+                    variant={isEditing ? "outline" : "primary"}
                     onPress={handleEditToggle}
                   >
                     {isEditing ? "Չեղարկել" : "Խմբագրել"}
@@ -793,48 +807,52 @@ export default function MyProfile() {
                 <div className="space-y-4">
                   {isEditing ? (
                     <>
-                      <Input
-                        errorMessage={validationErrors.fullName}
+                      <TextField
+                        fullWidth
                         isInvalid={!!validationErrors.fullName}
-                        label="Անուն Ազգանուն"
-                        labelPlacement="outside"
-                        placeholder="Մուտքագրեք ձեր անունը"
-                        startContent={
-                          <UserIcon className="w-4 h-4 text-default-400" />
-                        }
                         value={editFormData.fullName}
-                        onChange={(e) =>
-                          handleInputChange("fullName", e.target.value)
+                        onChange={(value) =>
+                          handleInputChange("fullName", value)
                         }
-                      />
-                      <Input
-                        errorMessage={validationErrors.email}
+                      >
+                        <Label>Անուն Ազգանուն</Label>
+                        <InputGroup fullWidth>
+                          <InputGroup.Prefix>
+                            <UserIcon className="w-4 h-4 text-default-400" />
+                          </InputGroup.Prefix>
+                          <InputGroup.Input placeholder="Մուտքագրեք ձեր անունը" />
+                        </InputGroup>
+                        <FieldError>{validationErrors.fullName}</FieldError>
+                      </TextField>
+                      <TextField
+                        fullWidth
                         isInvalid={!!validationErrors.email}
-                        label="Էլ. հասցե"
-                        labelPlacement="outside"
-                        placeholder="your@email.com"
-                        startContent={
-                          <Mail className="w-4 h-4 text-default-400" />
-                        }
                         type="email"
                         value={editFormData.email}
-                        onChange={(e) =>
-                          handleInputChange("email", e.target.value)
-                        }
-                      />
+                        onChange={(value) => handleInputChange("email", value)}
+                      >
+                        <Label>Էլ. հասցե</Label>
+                        <InputGroup fullWidth>
+                          <InputGroup.Prefix>
+                            <Mail className="w-4 h-4 text-default-400" />
+                          </InputGroup.Prefix>
+                          <InputGroup.Input placeholder="your@email.com" />
+                        </InputGroup>
+                        <FieldError>{validationErrors.email}</FieldError>
+                      </TextField>
                       <div className="flex gap-2 mt-6">
                         <Button
-                          color="primary"
                           isDisabled={isUpdating}
-                          isLoading={isUpdating}
+                          isPending={isUpdating}
+                          variant="primary"
                           onPress={handleUpdateProfile}
                         >
+                          {isUpdating && <Spinner color="current" size="sm" />}
                           {isUpdating ? "Պահպանվում է..." : "Պահպանել"}
                         </Button>
                         <Button
-                          color="default"
                           isDisabled={isUpdating}
-                          variant="ghost"
+                          variant="outline"
                           onPress={handleEditToggle}
                         >
                           Չեղարկել
@@ -865,23 +883,10 @@ export default function MyProfile() {
                   )}
                 </div>
               </div>
-            </Tab>
+            </Tabs.Panel>
 
             {/* Payment Methods Tab - FOURTH */}
-            <Tab
-              key="payment-methods"
-              title={
-                <div className="flex items-center gap-1 sm:gap-2">
-                  <CreditCard className="w-4 h-4" />
-                  <span className="whitespace-nowrap">Վճարման եղանակներ</span>
-                  {paymentMethods.length > 0 && (
-                    <Chip color="secondary" size="sm" variant="flat">
-                      {paymentMethods.length}
-                    </Chip>
-                  )}
-                </div>
-              }
-            >
+            <Tabs.Panel id="payment-methods">
               <div className="py-4 space-y-4">
                 <div>
                   <h3 className="text-lg font-semibold">
@@ -899,7 +904,7 @@ export default function MyProfile() {
                   <div className="space-y-3">
                     {paymentMethods.map((method) => (
                       <Card key={method.id} className="p-4">
-                        <CardBody>
+                        <Card.Content>
                           <div className="flex flex-col gap-3">
                             <div className="flex items-center gap-4">
                               <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
@@ -922,19 +927,23 @@ export default function MyProfile() {
                             </div>
                             <Button
                               fullWidth
-                              color="danger"
-                              isLoading={deletingPaymentMethodId === method.id}
+                              className="border-danger text-danger hover:bg-danger hover:text-danger-foreground"
+                              isPending={deletingPaymentMethodId === method.id}
                               size="sm"
-                              variant="ghost"
+                              variant="outline"
                               onPress={() =>
                                 handleDeletePaymentMethodClick(method)
                               }
                             >
-                              <Trash2 className="w-4 h-4 mr-2" />
+                              {deletingPaymentMethodId === method.id ? (
+                                <Spinner color="current" size="sm" />
+                              ) : (
+                                <Trash2 className="w-4 h-4 mr-2" />
+                              )}
                               Հեռացնել
                             </Button>
                           </div>
-                        </CardBody>
+                        </Card.Content>
                       </Card>
                     ))}
                   </div>
@@ -947,93 +956,105 @@ export default function MyProfile() {
                   </div>
                 )}
               </div>
-            </Tab>
+            </Tabs.Panel>
           </Tabs>
-        </CardBody>
+        </Card.Content>
       </Card>
 
       {/* Confirmation Modal for Subscription Cancellation */}
-      <Modal isOpen={isOpen} placement="center" onOpenChange={onOpenChange}>
-        <ModalContent>
-          {(onClose) => (
-            <>
-              <ModalHeader className="flex flex-col gap-1">
-                Բաժանորդագրության չեղարկում
-              </ModalHeader>
-              <ModalBody>
-                <p>
-                  Դուք վստա՞հ եք, որ ցանկանում եք չեղարկել ձեր ամսական
-                  բաժանորդագրությունը՝
-                </p>
-                <p className="font-semibold text-primary">
-                  {subscriptionToCancel?.project?.name}
-                </p>
-              </ModalBody>
-              <ModalFooter>
-                <Button
-                  color="default"
-                  isDisabled={cancellingSubscription !== null}
-                  variant="light"
-                  onPress={onClose}
-                >
-                  Չեղարկել
-                </Button>
-                <Button
-                  color="danger"
-                  isLoading={cancellingSubscription !== null}
-                  onPress={handleCancelSubscription}
-                >
-                  {cancellingSubscription !== null
-                    ? "Չեղարկվում է..."
-                    : "Հաստատել չեղարկումը"}
-                </Button>
-              </ModalFooter>
-            </>
-          )}
-        </ModalContent>
+      <Modal state={cancelModal}>
+        <Modal.Backdrop>
+          <Modal.Container placement="center">
+            <Modal.Dialog>
+              {({ close }) => (
+                <>
+                  <Modal.CloseTrigger />
+                  <Modal.Header>
+                    <Modal.Heading>Բաժանորդագրության չեղարկում</Modal.Heading>
+                  </Modal.Header>
+                  <Modal.Body className="flex flex-col gap-3 text-foreground">
+                    <p>
+                      Դուք վստա՞հ եք, որ ցանկանում եք չեղարկել ձեր ամսական
+                      բաժանորդագրությունը՝
+                    </p>
+                    <p className="font-semibold text-primary">
+                      {subscriptionToCancel?.project?.name}
+                    </p>
+                  </Modal.Body>
+                  <Modal.Footer>
+                    <Button
+                      isDisabled={cancellingSubscription !== null}
+                      variant="ghost"
+                      onPress={close}
+                    >
+                      Չեղարկել
+                    </Button>
+                    <Button
+                      isPending={cancellingSubscription !== null}
+                      variant="danger"
+                      onPress={handleCancelSubscription}
+                    >
+                      {cancellingSubscription !== null && (
+                        <Spinner color="current" size="sm" />
+                      )}
+                      {cancellingSubscription !== null
+                        ? "Չեղարկվում է..."
+                        : "Հաստատել չեղարկումը"}
+                    </Button>
+                  </Modal.Footer>
+                </>
+              )}
+            </Modal.Dialog>
+          </Modal.Container>
+        </Modal.Backdrop>
       </Modal>
 
       {/* Delete Payment Method Confirmation Modal */}
-      <Modal
-        isOpen={isDeleteModalOpen}
-        placement="center"
-        onOpenChange={onDeleteModalOpenChange}
-      >
-        <ModalContent>
-          {(onClose) => (
-            <>
-              <ModalHeader className="flex flex-col gap-1">
-                Վճարման եղանակի ջնջում
-              </ModalHeader>
-              <ModalBody>
-                <p>
-                  Դուք վստա՞հ եք, որ ցանկանում եք ջնջել այս վճարման եղանակը՝
-                </p>
-                <p className="font-semibold text-primary">
-                  {methodToDelete &&
-                    getPaymentMethodDisplayName(methodToDelete)}
-                </p>
-              </ModalBody>
-              <ModalFooter>
-                <Button
-                  color="default"
-                  isDisabled={deletingPaymentMethodId !== null}
-                  variant="light"
-                  onPress={onClose}
-                >
-                  Չեղարկել
-                </Button>
-                <Button
-                  color="danger"
-                  isLoading={deletingPaymentMethodId !== null}
-                  onPress={handleDeletePaymentMethod}
-                >
-                  {deletingPaymentMethodId !== null ? "Ջնջվում է..." : "Ջնջել"}
-                </Button>
-              </ModalFooter>
-            </>
-          )}
-        </ModalContent>
+      <Modal state={deleteModal}>
+        <Modal.Backdrop>
+          <Modal.Container placement="center">
+            <Modal.Dialog>
+              {({ close }) => (
+                <>
+                  <Modal.CloseTrigger />
+                  <Modal.Header>
+                    <Modal.Heading>Վճարման եղանակի ջնջում</Modal.Heading>
+                  </Modal.Header>
+                  <Modal.Body className="flex flex-col gap-3 text-foreground">
+                    <p>
+                      Դուք վստա՞հ եք, որ ցանկանում եք ջնջել այս վճարման եղանակը՝
+                    </p>
+                    <p className="font-semibold text-primary">
+                      {methodToDelete &&
+                        getPaymentMethodDisplayName(methodToDelete)}
+                    </p>
+                  </Modal.Body>
+                  <Modal.Footer>
+                    <Button
+                      isDisabled={deletingPaymentMethodId !== null}
+                      variant="ghost"
+                      onPress={close}
+                    >
+                      Չեղարկել
+                    </Button>
+                    <Button
+                      isPending={deletingPaymentMethodId !== null}
+                      variant="danger"
+                      onPress={handleDeletePaymentMethod}
+                    >
+                      {deletingPaymentMethodId !== null && (
+                        <Spinner color="current" size="sm" />
+                      )}
+                      {deletingPaymentMethodId !== null
+                        ? "Ջնջվում է..."
+                        : "Ջնջել"}
+                    </Button>
+                  </Modal.Footer>
+                </>
+              )}
+            </Modal.Dialog>
+          </Modal.Container>
+        </Modal.Backdrop>
       </Modal>
     </div>
   );

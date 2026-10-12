@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Rss, MoveRight } from "lucide-react";
-import { Button } from "@heroui/button";
+import { buttonVariants } from "@heroui/styles";
 
 import { BlogPost } from "@/components/BlogPost";
 import getData from "@/src/helpers/getData";
@@ -205,13 +205,16 @@ export default async function ProjectPage({ params }: IParams) {
               </h2>
             </div>
             <Link
+              className={buttonVariants({
+                variant: "outline",
+                size: "sm",
+                className: "border-primary text-primary",
+              })}
               href={`${process.env.NEXT_PUBLIC_BACKEND_URL}${process.env.NEXT_PUBLIC_RSS_URL}?project=${project.slug}`}
               target="_blank"
             >
-              <Button color="primary" size="sm" variant="bordered">
-                <Rss className="w-3.5 h-3.5" />
-                RSS
-              </Button>
+              <Rss className="w-3.5 h-3.5" />
+              RSS
             </Link>
           </div>
 

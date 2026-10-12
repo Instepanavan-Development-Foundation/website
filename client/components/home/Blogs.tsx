@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { button as buttonStyles } from "@heroui/theme";
+import { buttonVariants } from "@heroui/styles";
 import { ArrowRightIcon } from "lucide-react";
 
 import getData from "@/src/helpers/getData";
@@ -38,10 +38,10 @@ export default async function Blogs() {
       </div>
       <div className="col-span-full flex justify-center mt-8">
         <Link
-          className={buttonStyles({
-            variant: "flat",
-            radius: "full",
+          className={buttonVariants({
+            variant: "tertiary",
             size: "lg",
+            className: "h-12 rounded-full px-6",
           })}
           href="/blog"
         >

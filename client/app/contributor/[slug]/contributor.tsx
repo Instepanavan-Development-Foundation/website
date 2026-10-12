@@ -1,11 +1,10 @@
 "use client";
 
-import { Image } from "@heroui/image";
-import { Card, CardBody } from "@heroui/card";
-import { Button } from "@heroui/button";
+import { Button, Card } from "@heroui/react";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
+import { Image } from "@/components/ui/Image";
 import { Avatar } from "@/components/Avatar";
 import getData from "@/src/helpers/getData";
 import getMediaSrc from "@/src/helpers/getMediaUrl";
@@ -270,9 +269,8 @@ export default function Contributor({
           )}
           {showCopyLink && contributor && (
             <Button
-              className="mb-4"
-              color="primary"
-              variant="bordered"
+              className="mb-4 border-primary text-primary"
+              variant="outline"
               onPress={handleCopyLink}
             >
               {copySuccess ? "Պատճենվել է!" : "պատճենել հղումը"}
@@ -291,7 +289,7 @@ export default function Contributor({
                   key={blog.slug}
                   className="hover:shadow-lg transition-shadow"
                 >
-                  <CardBody>
+                  <Card.Content>
                     <div className="flex flex-col md:flex-row gap-4">
                       <Link href={`/project/${blog.project.slug}`}>
                         <Image
@@ -321,7 +319,7 @@ export default function Contributor({
                         <p>{prettyDate(blog.createdAt)}</p>
                       </div>
                     </div>
-                  </CardBody>
+                  </Card.Content>
                 </Card>
               ))}
             </div>
@@ -336,7 +334,7 @@ export default function Contributor({
                   key={donation.id}
                   className="hover:shadow-lg transition-shadow"
                 >
-                  <CardBody>
+                  <Card.Content>
                     <div className="flex flex-col md:flex-row gap-4">
                       <Link href={`/project/${donation.project.slug}`}>
                         <Image
@@ -366,7 +364,7 @@ export default function Contributor({
                         <p>{prettyDate(donation.createdAt)}</p>
                       </div>
                     </div>
-                  </CardBody>
+                  </Card.Content>
                 </Card>
               ))}
             </div>

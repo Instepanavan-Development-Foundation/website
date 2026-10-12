@@ -1,16 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { button as buttonStyles } from "@heroui/theme";
-import { Button } from "@heroui/button";
-import {
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  useDisclosure,
-} from "@heroui/modal";
+import { buttonVariants } from "@heroui/styles";
+import { Button, Modal } from "@heroui/react";
 import { useEffect, useState } from "react";
 
 import { getSiteConfig } from "@/config/site";
@@ -30,8 +22,6 @@ export const ContributionBox = ({ project }: { project: IProject }) => {
     fetchSiteConfig();
   }, []);
 
-  const { isOpen, onOpen, onOpenChange } = useDisclosure();
-
   if (project.isArchived) return null;
 
   if (!siteConfig) {
@@ -42,11 +32,10 @@ export const ContributionBox = ({ project }: { project: IProject }) => {
   if (project.fundraisingURL) {
     return (
       <Link
-        className={buttonStyles({
-          color: "primary",
-          radius: "full",
-          variant: "shadow",
+        className={buttonVariants({
+          variant: "primary",
           size: "lg",
+          className: "h-12 rounded-full px-6 shadow-lg shadow-primary/40",
         })}
         href={project.fundraisingURL}
         target="_blank"
@@ -60,11 +49,10 @@ export const ContributionBox = ({ project }: { project: IProject }) => {
   if (project.requiredAmount) {
     return (
       <Link
-        className={buttonStyles({
-          color: "primary",
-          radius: "full",
-          variant: "shadow",
+        className={buttonVariants({
+          variant: "primary",
           size: "lg",
+          className: "h-12 rounded-full px-6 shadow-lg shadow-primary/40",
         })}
         href={`/donate/${project.slug}?amount=10000`}
       >
@@ -74,35 +62,39 @@ export const ContributionBox = ({ project }: { project: IProject }) => {
   }
 
   // No fundraising setup - show contact modal
+  // The Button is the modal's trigger (a direct child of <Modal>).
   return (
-    <>
-      <Button color="primary" size="lg" onPress={onOpen}>
+    <Modal>
+      <Button size="lg" variant="primary">
         Կապնվել աջակցելու համար
       </Button>
-      <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
-        <ModalContent>
-          {(onClose) => (
-            <>
-              <ModalHeader className="flex flex-col gap-1">
-                Մանրամասներ
-              </ModalHeader>
-              <ModalBody>
-                <div
-                  dangerouslySetInnerHTML={{
-                    __html: siteConfig.defaultContact,
-                  }}
-                  className="text-container"
-                />
-              </ModalBody>
-              <ModalFooter>
-                <Button color="primary" onPress={onClose}>
-                  Փակել
-                </Button>
-              </ModalFooter>
-            </>
-          )}
-        </ModalContent>
-      </Modal>
-    </>
+      <Modal.Backdrop>
+        <Modal.Container>
+          <Modal.Dialog>
+            {({ close }) => (
+              <>
+                <Modal.CloseTrigger />
+                <Modal.Header>
+                  <Modal.Heading>Մանրամասներ</Modal.Heading>
+                </Modal.Header>
+                <Modal.Body>
+                  <div
+                    dangerouslySetInnerHTML={{
+                      __html: siteConfig.defaultContact,
+                    }}
+                    className="text-container"
+                  />
+                </Modal.Body>
+                <Modal.Footer>
+                  <Button variant="primary" onPress={close}>
+                    Փակել
+                  </Button>
+                </Modal.Footer>
+              </>
+            )}
+          </Modal.Dialog>
+        </Modal.Container>
+      </Modal.Backdrop>
+    </Modal>
   );
 };

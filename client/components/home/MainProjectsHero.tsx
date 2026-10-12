@@ -1,8 +1,8 @@
 "use client";
 import Link from "next/link";
-import { Card, CardBody } from "@heroui/card";
-import { Image } from "@heroui/image";
+import { Card } from "@heroui/react";
 
+import { Image } from "@/components/ui/Image";
 import { IProject } from "@/src/models/project";
 import getMediaUrl from "@/src/helpers/getMediaUrl";
 import EmblaCarousel from "@/components/EmblaCarousel";
@@ -32,7 +32,7 @@ export default function MainProjectsHero({ projects }: MainProjectsHeroProps) {
       <div key={project.documentId} className="w-full h-full">
         <Link href={`/project/${project.slug}`}>
           <Card className="group bg-gradient-to-br from-background to-default-50 w-full hover:shadow-2xl transition-all duration-300 cursor-pointer">
-            <CardBody className="overflow-visible p-0">
+            <Card.Content className="overflow-visible p-0">
               <div className="relative">
                 <Image
                   alt={project.name}
@@ -95,7 +95,7 @@ export default function MainProjectsHero({ projects }: MainProjectsHeroProps) {
                   </div>
                 )}
               </div>
-            </CardBody>
+            </Card.Content>
           </Card>
         </Link>
       </div>

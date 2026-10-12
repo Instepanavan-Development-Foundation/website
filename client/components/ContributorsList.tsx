@@ -1,4 +1,4 @@
-import { ClientTooltip } from "@/components/ClientTooltip";
+import { Tooltip } from "@/components/ui/Tooltip";
 import { IContribution } from "@/src/models/blog";
 import { Avatar } from "@/components/Avatar";
 
@@ -31,12 +31,12 @@ export function ContributorsList({
           return (
             <div key={idx} className="relative">
               {contribution.text ? (
-                <ClientTooltip
+                <Tooltip
+                  className="inline-flex rounded-full"
                   content={contribution.text}
-                  triggerClassName="flex"
                 >
                   {avatar}
-                </ClientTooltip>
+                </Tooltip>
               ) : (
                 avatar
               )}

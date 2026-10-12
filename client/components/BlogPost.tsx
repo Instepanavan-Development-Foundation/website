@@ -1,14 +1,13 @@
 "use client";
 
-import { Card, CardBody } from "@heroui/card";
-import { Chip } from "@heroui/chip";
+import { Card, Chip } from "@heroui/react";
 import { Paperclip, Bookmark, Heart } from "lucide-react";
 import { useState, useEffect } from "react";
-import { Image } from "@heroui/image";
 import Link from "next/link";
 import Lightbox from "yet-another-react-lightbox";
 import Thumbnails from "yet-another-react-lightbox/plugins/thumbnails";
 
+import { Image } from "@/components/ui/Image";
 import { IBlog } from "@/src/models/blog";
 import getMediaUrl from "@/src/helpers/getMediaUrl";
 import { prettyDate } from "@/src/helpers/prettyDate";
@@ -81,7 +80,7 @@ export function BlogPost({
         </div>
       )}
       <Card className="group rounded-[20px] border border-cream-200 shadow-none hover:shadow-[0_12px_32px_rgba(230,90,42,0.06)] transition-shadow">
-        <CardBody className="p-0">
+        <Card.Content className="p-0">
           {/* TODO images like in fb, 3 images on front */}
           {hasImages ? (
             <button className="cursor-zoom-in" onClick={() => setOpen(true)}>
@@ -139,7 +138,7 @@ export function BlogPost({
             <div className="flex gap-2 flex-wrap mb-4">
               {tag &&
                 tag.map(({ name }, tagIndex) => (
-                  <Chip key={tagIndex} size="sm" variant="flat">
+                  <Chip key={tagIndex} size="sm" variant="soft">
                     {name}
                   </Chip>
                 ))}
@@ -202,7 +201,7 @@ export function BlogPost({
               </div>
             )}
           </div>
-        </CardBody>
+        </Card.Content>
       </Card>
     </div>
   );

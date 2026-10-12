@@ -1,8 +1,6 @@
 "use client";
 
-import { Button } from "@heroui/button";
-import { Input } from "@heroui/input";
-import { Spinner } from "@heroui/spinner";
+import { Button, Input, Label, Spinner, TextField } from "@heroui/react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
@@ -121,28 +119,32 @@ export default function MagicLinkVerifyPage() {
         <p className="text-gray-600 text-center text-sm">
           Ինչպե՞ս է ձեր անունը?
         </p>
-        <Input
+        <TextField
           // eslint-disable-next-line jsx-a11y/no-autofocus -- field is revealed by the user's own submit; moving focus to it is intended
           autoFocus
-          autoComplete="name"
-          label="Անուն ազգանուն"
-          placeholder="Հովհաննես Հայրապետյան"
+          fullWidth
           type="text"
           value={fullName}
-          onChange={(e) => setFullName(e.target.value)}
-        />
+          onChange={setFullName}
+        >
+          <Label>Անուն ազգանուն</Label>
+          <Input autoComplete="name" placeholder="Հովհաննես Հայրապետյան" />
+        </TextField>
         <Button
+          fullWidth
           className="text-sm font-normal text-white bg-gradient-to-r from-pink-500 to-rose-500 hover:from-rose-500 hover:to-pink-500 transition-all duration-300 shadow-md hover:shadow-lg"
-          isLoading={savingName}
+          isPending={savingName}
           size="md"
           type="submit"
-          variant="flat"
+          variant="tertiary"
         >
+          {savingName && <Spinner color="current" size="sm" />}
           Շարունակել
         </Button>
         <Button
+          fullWidth
           className="text-sm font-normal text-gray-600"
-          variant="light"
+          variant="ghost"
           onPress={handleSkip}
         >
           Բաց թողնել

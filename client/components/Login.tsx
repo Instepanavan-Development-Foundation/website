@@ -1,7 +1,6 @@
 "use client";
 
-import { Button } from "@heroui/button";
-import { Input } from "@heroui/input";
+import { Button, Input, Label, Spinner, TextField } from "@heroui/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, FormEvent, useEffect } from "react";
 
@@ -102,44 +101,48 @@ const Login = () => {
         </div>
 
         <form className="flex flex-col gap-4" onSubmit={handleOtpSubmit}>
-          <Input
+          <TextField
             // eslint-disable-next-line jsx-a11y/no-autofocus -- field is revealed by the user's own submit; moving focus to it is intended
             autoFocus
-            classNames={{
-              input: "text-4xl font-bold tracking-widest text-center",
-              inputWrapper: "h-20",
-            }}
-            inputMode="numeric"
-            label="Մուտքի կոդ"
-            maxLength={4}
-            pattern="[0-9]{4}"
-            placeholder="0000"
+            fullWidth
             type="text"
             value={otp}
-            onChange={(e) => {
-              const val = e.target.value.replace(/\D/g, "").slice(0, 4);
+            onChange={(value) => {
+              const val = value.replace(/\D/g, "").slice(0, 4);
 
               setOtp(val);
             }}
-          />
+          >
+            <Label>Մուտքի կոդ</Label>
+            <Input
+              className="h-20 text-4xl font-bold tracking-widest text-center"
+              inputMode="numeric"
+              maxLength={4}
+              pattern="[0-9]{4}"
+              placeholder="0000"
+            />
+          </TextField>
           {error && (
             <div className="text-red-500 text-sm text-center">{error}</div>
           )}
           <Button
+            fullWidth
             className="text-sm font-normal text-white bg-linear-to-r from-pink-500 to-rose-500 hover:from-rose-500 hover:to-pink-500 transition-all duration-300 shadow-md hover:shadow-lg"
             isDisabled={otp.length !== 4}
-            isLoading={otpLoading}
+            isPending={otpLoading}
             size="md"
             type="submit"
-            variant="flat"
+            variant="tertiary"
           >
+            {otpLoading && <Spinner color="current" size="sm" />}
             Հաստատել
           </Button>
         </form>
 
         <Button
+          fullWidth
           className="text-sm font-normal text-gray-600"
-          variant="light"
+          variant="ghost"
           onPress={() => {
             setSent(false);
             setOtp("");
@@ -158,23 +161,20 @@ const Login = () => {
       onSubmit={handleSubmit}
     >
       <h2 className="text-2xl font-bold text-center">Մուտք գործել</h2>
-      <Input
-        required
-        autoComplete="email"
-        label="Էլ. հասցե"
-        placeholder="your@email.com"
-        type="email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-      />
+      <TextField fullWidth type="email" value={email} onChange={setEmail}>
+        <Label>Էլ. հասցե</Label>
+        <Input required autoComplete="email" placeholder="your@email.com" />
+      </TextField>
       {error && <div className="text-red-500 text-sm text-center">{error}</div>}
       <Button
+        fullWidth
         className="text-sm font-normal text-white bg-linear-to-r from-pink-500 to-rose-500 hover:from-rose-500 hover:to-pink-500 transition-all duration-300 shadow-md hover:shadow-lg"
-        isLoading={loading}
+        isPending={loading}
         size="md"
         type="submit"
-        variant="flat"
+        variant="tertiary"
       >
+        {loading && <Spinner color="current" size="sm" />}
         Ուղարկել մուտքի կոդ
       </Button>
     </form>

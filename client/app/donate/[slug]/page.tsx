@@ -1,20 +1,25 @@
 "use client";
 
-import { Chip } from "@heroui/chip";
-import { RadioGroup, Radio } from "@heroui/radio";
-import { Spacer } from "@heroui/spacer";
-import { Skeleton } from "@heroui/skeleton";
+import {
+  Button,
+  Card,
+  Chip,
+  Description,
+  InputGroup,
+  Label,
+  ProgressBar,
+  Radio,
+  RadioGroup,
+  Separator,
+  Skeleton,
+  Spinner,
+} from "@heroui/react";
 import { useState, useEffect, useRef } from "react";
-import { Button } from "@heroui/button";
-import { Input } from "@heroui/input";
-import { Card, CardBody, CardHeader, CardFooter } from "@heroui/card";
-import { Divider } from "@heroui/divider";
-import { Progress } from "@heroui/progress";
 import { CreditCard, Heart, Users } from "lucide-react";
 import Link from "next/link";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { Image } from "@heroui/image";
 
+import { Image } from "@/components/ui/Image";
 import getMediaSrc from "@/src/helpers/getMediaUrl";
 import NotFound from "@/components/NotFound";
 import { IParams } from "@/src/models/params";
@@ -102,10 +107,9 @@ export default function DonatePage({ params }: IParams) {
     return (
       <section className="flex flex-col px-4">
         <Chip
-          className="w-full mb-4 max-w-full text-lg p-4"
-          color="primary"
-          radius="sm"
-          variant="shadow"
+          className="w-full mb-4 max-w-full text-lg p-4 rounded-small shadow-lg shadow-primary/40"
+          color="accent"
+          variant="primary"
         >
           Այս նախագիծը արխիվում է և այլևս չի ընդունում աջակցություններ։
         </Chip>
@@ -136,10 +140,7 @@ export default function DonatePage({ params }: IParams) {
       <div className="relative w-full h-64 md:h-40 mb-8 rounded-xl overflow-hidden">
         <Image
           alt={project.name}
-          classNames={{
-            wrapper: "!max-w-full w-full h-full",
-            img: "w-full h-full object-cover",
-          }}
+          className="w-full h-full object-cover"
           radius="none"
           src={getMediaSrc(project.image)}
           width="100%"
@@ -198,6 +199,12 @@ function ErrorMessage() {
 // Preset donation amounts
 const presetAmounts = [3000, 5000, 10000, 20000, 50000];
 const MIN_DONATION_AMOUNT = 10;
+
+// Saved-card options render as bordered boxes; the selected one gets an
+// orange border (same look as the v2 Radio classNames).
+const radioCardClass =
+  "m-0 w-full max-w-full gap-0 rounded-lg border-2 border-transparent hover:bg-surface-secondary data-selected:border-primary";
+const radioCardContentClass = "w-full gap-4 p-4";
 
 function DonationFormClient({ project }: { project: IProject }) {
   const router = useRouter();
@@ -440,7 +447,7 @@ function DonationFormClient({ project }: { project: IProject }) {
   return (
     <Card className="w-full shadow-xl border-none overflow-visible mb-16">
       {/* Header with progress */}
-      <CardHeader className="flex flex-col p-0">
+      <Card.Header className="flex flex-col p-0">
         <div className="bg-linear-to-r from-primary-600 to-primary-500 p-6 rounded-t-xl w-full">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
@@ -468,15 +475,15 @@ function DonationFormClient({ project }: { project: IProject }) {
                     Նպատակ՝ {funding.requiredAmount.toLocaleString()} ֏
                   </span>
                 </div>
-                <Progress
+                <ProgressBar
                   aria-label="Funding progress"
-                  className="h-2 mb-1"
-                  classNames={{
-                    indicator: "bg-white",
-                    track: "bg-white/30",
-                  }}
+                  className="mb-1"
                   value={progressPercentage}
-                />
+                >
+                  <ProgressBar.Track className="h-2 rounded-full bg-white/30">
+                    <ProgressBar.Fill className="rounded-full bg-white" />
+                  </ProgressBar.Track>
+                </ProgressBar>
                 <div className="flex justify-end">
                   <span className="text-sm font-medium bg-white/30 px-2 py-0.5 rounded-full">
                     {progressPercentage}%
@@ -485,13 +492,15 @@ function DonationFormClient({ project }: { project: IProject }) {
               </div>
             )}
         </div>
-      </CardHeader>
+      </Card.Header>
 
-      <CardBody className="px-6 py-6">
+      <Card.Content className="px-6 py-6">
         <form ref={formRef} onSubmit={handleSubmit}>
           {/* Amount Input */}
           <div>
-            <h3 className="text-lg font-semibold mb-3">Ընտրեք գումարը</h3>
+            <h3 className="text-lg font-semibold mb-3" id="amount-heading">
+              Ընտրեք գումարը
+            </h3>
 
             {/* Preset amount buttons */}
             <div className="flex flex-wrap gap-2 mb-4">
@@ -499,9 +508,8 @@ function DonationFormClient({ project }: { project: IProject }) {
                 <Button
                   key={presetAmount}
                   className={amount === presetAmount ? "font-semibold" : ""}
-                  color={amount === presetAmount ? "primary" : "default"}
                   size="lg"
-                  variant={amount === presetAmount ? "solid" : "bordered"}
+                  variant={amount === presetAmount ? "primary" : "outline"}
                   onPress={() => handlePresetAmountClick(presetAmount)}
                 >
                   {presetAmount.toLocaleString()} ֏
@@ -511,37 +519,30 @@ function DonationFormClient({ project }: { project: IProject }) {
 
             {/* Custom amount input */}
             <div className="flex items-center gap-3 mb-3">
-              <Divider className="flex-1" />
-              <span className="text-small text-default-400">
+              <Separator className="flex-1" />
+              <span className="text-sm text-default-400">
                 կամ այնքան ինչքան կցանկանաք
               </span>
-              <Divider className="flex-1" />
+              <Separator className="flex-1" />
             </div>
-            <Input
-              required
-              classNames={{
-                input: "text-2xl font-semibold text-center",
-                inputWrapper: "h-16",
-              }}
-              id="custom-amount"
-              min={MIN_DONATION_AMOUNT}
-              size="lg"
-              startContent={
-                <div className="pointer-events-none flex items-center">
-                  <span className="text-default-400 text-xl">֏</span>
-                </div>
-              }
-              type="number"
-              value={customAmount}
-              onChange={handleAmountChange}
-            />
+            <InputGroup fullWidth className="h-16">
+              <InputGroup.Prefix className="pointer-events-none">
+                <span className="text-default-400 text-xl">֏</span>
+              </InputGroup.Prefix>
+              <InputGroup.Input
+                required
+                aria-labelledby="amount-heading"
+                className="text-2xl font-semibold text-center"
+                id="custom-amount"
+                min={MIN_DONATION_AMOUNT}
+                type="number"
+                value={customAmount}
+                onChange={handleAmountChange}
+              />
+            </InputGroup>
           </div>
 
-          <Spacer y={6} />
-
-          <Divider />
-
-          <Spacer y={6} />
+          <Separator className="my-6" />
 
           {/* Payment Method Selection — only shown when user has saved cards */}
           {(loadingPaymentMethods || paymentMethods.length > 0) && (
@@ -550,27 +551,19 @@ function DonationFormClient({ project }: { project: IProject }) {
 
               {loadingPaymentMethods ? (
                 <div className="space-y-3">
-                  <Skeleton className="rounded-lg">
-                    <div className="h-20 rounded-lg bg-default-200" />
-                  </Skeleton>
-                  <Skeleton className="rounded-lg">
-                    <div className="h-20 rounded-lg bg-default-200" />
-                  </Skeleton>
+                  <Skeleton className="h-20 rounded-lg" />
+                  <Skeleton className="h-20 rounded-lg" />
                 </div>
               ) : (
+                // Only rendered when the user has saved cards, so the label
+                // (conditional on that in v2) is always present.
                 <RadioGroup
-                  classNames={{
-                    base: "w-full",
-                    wrapper: "gap-3",
-                  }}
-                  label={
-                    paymentMethods.length > 0
-                      ? "Ընտրել վճարման եղանակ"
-                      : undefined
-                  }
+                  className="w-full gap-3"
+                  name="paymentMethod"
                   value={selectedPaymentMethod}
-                  onValueChange={setSelectedPaymentMethod}
+                  onChange={setSelectedPaymentMethod}
                 >
+                  <Label>Ընտրել վճարման եղանակ</Label>
                   {paymentMethods.map((method, index) => {
                     const cardNumber =
                       method.params?.CardNumber ||
@@ -604,55 +597,57 @@ function DonationFormClient({ project }: { project: IProject }) {
                     return (
                       <Radio
                         key={method.documentId}
-                        classNames={{
-                          base: "inline-flex m-0 items-center hover:bg-content2 max-w-full cursor-pointer rounded-lg gap-4 p-4 border-2 border-transparent data-[selected=true]:border-primary",
-                          label: "w-full",
-                          wrapper: "group-data-[selected=true]:border-primary",
-                        }}
-                        description={
-                          index === 0 ? "Հիմնական վճարման եղանակ" : undefined
-                        }
+                        className={radioCardClass}
                         value={method.documentId}
                       >
-                        <div className="flex items-center gap-3 w-full">
-                          <CreditCard className="w-8 h-8 text-default-400" />
-                          <div className="flex-1">
-                            <p className="text-sm font-medium text-default-600">
-                              {cardType}
-                            </p>
-                            <p className="font-mono font-semibold text-base">
-                              {cardNumber}
-                            </p>
+                        <Radio.Content className={radioCardContentClass}>
+                          <Radio.Control>
+                            <Radio.Indicator />
+                          </Radio.Control>
+                          <div className="flex items-center gap-3 w-full">
+                            <CreditCard className="w-8 h-8 text-default-400" />
+                            <div className="flex-1">
+                              <p className="text-sm font-medium text-default-600">
+                                {cardType}
+                              </p>
+                              <p className="font-mono font-semibold text-base">
+                                {cardNumber}
+                              </p>
+                            </div>
                           </div>
-                        </div>
+                        </Radio.Content>
+                        {index === 0 && (
+                          <Description className="-mt-3 pb-4 ps-12">
+                            Հիմնական վճարման եղանակ
+                          </Description>
+                        )}
                       </Radio>
                     );
                   })}
 
-                  <Radio
-                    classNames={{
-                      base: "inline-flex m-0 items-center hover:bg-content2 max-w-full cursor-pointer rounded-lg gap-4 p-4 border-2 border-transparent data-[selected=true]:border-primary",
-                      wrapper: "group-data-[selected=true]:border-primary",
-                    }}
-                    value="new"
-                  >
-                    <div className="flex items-center gap-2">
-                      <p className="font-medium">Նոր քարտ</p>
-                    </div>
+                  <Radio className={radioCardClass} value="new">
+                    <Radio.Content className={radioCardContentClass}>
+                      <Radio.Control>
+                        <Radio.Indicator />
+                      </Radio.Control>
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium">Նոր քարտ</p>
+                      </div>
+                    </Radio.Content>
                   </Radio>
                 </RadioGroup>
               )}
             </div>
           )}
         </form>
-      </CardBody>
+      </Card.Content>
 
       {/* Error Message */}
       <ErrorMessage />
 
-      <Divider />
+      <Separator />
 
-      <CardFooter className="px-6 py-6 bg-linear-to-r from-primary-50 to-primary-100">
+      <Card.Footer className="px-6 py-6 bg-linear-to-r from-primary-50 to-primary-100">
         <div className="w-full">
           <div className="flex justify-between items-center mb-4">
             <span className="text-lg text-default-700">Ընդհանուր գումար</span>
@@ -662,13 +657,14 @@ function DonationFormClient({ project }: { project: IProject }) {
           </div>
           <Button
             className="w-full h-auto py-4 text-lg font-medium shadow-lg whitespace-normal leading-tight"
-            color="primary"
             isDisabled={isSubmitting}
-            isLoading={isSubmitting}
+            isPending={isSubmitting}
             size="lg"
             type="submit"
-            onClick={() => formRef.current?.requestSubmit()}
+            variant="primary"
+            onPress={() => formRef.current?.requestSubmit()}
           >
+            {isSubmitting && <Spinner color="current" size="sm" />}
             {isSubmitting
               ? "Մշակվում է..."
               : project.donationType === "recurring"
@@ -683,7 +679,7 @@ function DonationFormClient({ project }: { project: IProject }) {
             </Link>
           </p>
         </div>
-      </CardFooter>
+      </Card.Footer>
     </Card>
   );
 }

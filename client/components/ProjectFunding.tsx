@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, CardBody } from "@heroui/card";
+import { Card } from "@heroui/react";
 
 import { IProjectFunding } from "@/src/models/project-funding";
 import { formatMonthArmenian } from "@/src/helpers/armenianMonths";
@@ -32,7 +32,7 @@ export function ProjectFunding({ funding }: ProjectFundingProps) {
       {isRecurring ? (
         // Current Month Recurring - for monthly subscription projects
         <Card>
-          <CardBody className="p-6">
+          <Card.Content className="p-6">
             <h3 className="text-sm font-medium text-gray-600 mb-2">
               Ամսական բաժանորդագրություններ
             </h3>
@@ -60,12 +60,12 @@ export function ProjectFunding({ funding }: ProjectFundingProps) {
                 </p>
               </>
             )}
-          </CardBody>
+          </Card.Content>
         </Card>
       ) : (
         // All-Time One-Time - for one-time donation projects
         <Card>
-          <CardBody className="p-6">
+          <Card.Content className="p-6">
             <h3 className="text-sm font-medium text-gray-600 mb-2">
               Ընդհանուր հավաքված
             </h3>
@@ -92,7 +92,7 @@ export function ProjectFunding({ funding }: ProjectFundingProps) {
                 </p>
               </>
             )}
-          </CardBody>
+          </Card.Content>
         </Card>
       )}
     </div>

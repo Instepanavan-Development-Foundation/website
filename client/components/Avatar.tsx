@@ -1,7 +1,6 @@
 import crypto from "crypto";
 
-import { Image } from "@heroui/image";
-
+import { Image } from "@/components/ui/Image";
 import getMediaUrl from "@/src/helpers/getMediaUrl";
 import { IContributor } from "@/src/models/contributor";
 

@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { ClientTooltip } from "@/components/ClientTooltip";
+import { Tooltip } from "@/components/ui/Tooltip";
 import { Avatar } from "@/components/Avatar";
 import getData from "@/src/helpers/getData";
 
@@ -23,11 +23,11 @@ export default async function Contributors() {
 
       <div className="grid grid-cols-4 md:grid-cols-4 lg:grid-cols-6 gap-8">
         {trustedByContributors.map((contributor) => (
-          <ClientTooltip
+          <Tooltip
             key={contributor.id}
+            className="grid"
             content={contributor.fullName}
             showArrow={true}
-            triggerClassName="flex justify-center"
           >
             <Link
               className="flex flex-col items-center gap-2"
@@ -39,7 +39,7 @@ export default async function Contributors() {
                 height={100}
               />
             </Link>
-          </ClientTooltip>
+          </Tooltip>
         ))}
       </div>
     </div>

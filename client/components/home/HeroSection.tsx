@@ -1,6 +1,7 @@
-import { Image } from "@heroui/image";
 import Link from "next/link";
-import { button as buttonStyles } from "@heroui/theme";
+import { buttonVariants } from "@heroui/styles";
+
+import { Image } from "@/components/ui/Image";
 
 interface HeroSectionProps {
   imageUrl: string;
@@ -35,22 +36,20 @@ export const HeroSection = ({
         </p>
         <div className="flex flex-col sm:flex-row gap-4 items-center">
           <Link
-            className={buttonStyles({
-              color: "success",
-              radius: "full",
-              variant: "shadow",
+            className={buttonVariants({
+              variant: "primary",
               size: "lg",
+              className: "h-12 rounded-full px-6 shadow-lg shadow-primary/40",
             })}
             href={ctaLink}
           >
             <span className="text-xl px-8 py-2">{ctaText}</span>
           </Link>
           <Link
-            className={buttonStyles({
-              color: "danger",
-              radius: "full",
-              variant: "flat",
+            className={buttonVariants({
+              variant: "danger-soft",
               size: "lg",
+              className: "h-12 rounded-full px-6",
             })}
             href={process.env.NEXT_PUBLIC_DONATE_URL ?? "/projects"}
           >

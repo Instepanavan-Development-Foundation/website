@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowRightIcon, Heart } from "lucide-react";
 
-import { ClientTooltip } from "@/components/ClientTooltip";
+import { Tooltip } from "@/components/ui/Tooltip";
 import getData from "@/src/helpers/getData";
 import { Avatar } from "@/components/Avatar";
 
@@ -34,11 +34,11 @@ export default async function TrustedByContributors() {
           <div className="flex py-4 animate-[marquee_30s_linear_infinite] hover:[animation-play-state:paused]">
             {[...trustedByContributors, ...trustedByContributors].map(
               (contributor, i) => (
-                <ClientTooltip
+                <Tooltip
                   key={`${contributor.id}-${i}`}
+                  className="flex shrink-0"
                   content={contributor.fullName}
                   showArrow={true}
-                  triggerClassName="shrink-0"
                 >
                   <Link
                     className="flex shrink-0 flex-col items-center px-2 md:px-4 transform hover:scale-105 transition-transform duration-200"
@@ -50,7 +50,7 @@ export default async function TrustedByContributors() {
                       height={64}
                     />
                   </Link>
-                </ClientTooltip>
+                </Tooltip>
               ),
             )}
           </div>
