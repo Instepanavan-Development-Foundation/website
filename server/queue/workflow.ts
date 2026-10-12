@@ -1,4 +1,5 @@
 import axios from "axios";
+import { randomUUID } from "node:crypto";
 import { RateLimitDuration } from "@hatchet-dev/typescript-sdk";
 
 import { Core } from "@strapi/strapi";
@@ -7,6 +8,9 @@ import { mintAdminToken } from "../src/api/payment/utils/mint-admin-token";
 
 let strapiGlobal: Core.Strapi;
 let workerGlobal: Awaited<ReturnType<NonNullable<typeof hatchet>["worker"]>> | undefined;
+// Set by stopRecurringPaymentSystem() so an in-flight fan-out stops pushing new events
+// instead of holding up worker shutdown until every project payment is queued.
+let stopping = false;
 interface ProcessPaymentInput {
   amount: number;
   documentId: string;
@@ -17,12 +21,15 @@ const axiosClient = axios.create({
   timeout: 30000,
 });
 
-// Under Jest, multiple test files run as separate processes but all talk to the
-// same live Hatchet server. Without a per-process suffix, they'd register the same
-// worker/workflow names and Hatchet could dispatch a job from one file's test data
-// to another file's (already-torn-down) process. process.pid is unique per process,
-// even when Jest reuses a worker slot sequentially across files.
-const TEST_SUFFIX = process.env.JEST_WORKER_ID ? `-test-${process.pid}` : "";
+// Under Jest, every test file talks to the same live Hatchet server. Without a
+// unique suffix, files would register the same worker/workflow names and Hatchet
+// could dispatch runs queued by one file (e.g. the trigger-all-payments load test)
+// to the next file's worker. Jest gives each test file its own module registry, so
+// a random component makes the suffix unique per file even when files run
+// sequentially in the same process (runInBand / maxWorkers: 1).
+const TEST_SUFFIX = process.env.JEST_WORKER_ID
+  ? `-test-${process.pid}-${randomUUID().slice(0, 8)}`
+  : "";
 
 const PROJECT_PAYMENT_CREATE_EVENT = `project-payment:create${TEST_SUFFIX}`;
 
@@ -130,6 +137,11 @@ recurringPaymentsTask?.task({
 
     for (const project of projects) {
       for (const projectPayment of project.project_payments) {
+        if (stopping) {
+          throw new Error(
+            `Recurring payments worker is stopping; queued ${results.length} payments before aborting`
+          );
+        }
         const { amount, documentId } = projectPayment;
         const email = projectPayment.payment_method?.users_permissions_user?.email || "";
 
@@ -203,12 +215,19 @@ export async function startRecurringPaymentSystem(strapi: Core.Strapi): Promise<
 // finish. Needed between test files sharing one live Hatchet instance — otherwise a
 // leftover worker from a previous file keeps processing events against that file's
 // already-torn-down DB connection.
+//
+// Only called explicitly (the test harness); production shutdown goes through the
+// SDK's own SIGTERM/SIGINT handling and is unaffected by the `stopping` flag.
 export async function stopRecurringPaymentSystem(): Promise<void> {
   if (!workerGlobal) {
     return;
   }
+  // Runs still queued for this worker's (per-test-file) workflow names are never
+  // picked up by another worker; Hatchet times them out on its own.
+  stopping = true;
   await workerGlobal.stop();
   workerGlobal = undefined;
+  stopping = false;
 }
 
 // For manual Running

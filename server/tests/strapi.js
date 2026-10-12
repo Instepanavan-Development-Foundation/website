@@ -21,13 +21,24 @@ async function setupStrapi() {
 
 async function cleanupStrapi() {
   if (!instance) return;
-  // Unregister the Hatchet worker before tearing down the DB connection — otherwise
-  // a leftover worker from this file keeps processing events against an already-
-  // destroyed pool once the next test file starts its own Strapi instance.
+  // Unregister the Hatchet worker first. stop() pauses task assignment and waits for
+  // in-flight tasks to finish — those tasks call back into this Strapi instance over
+  // HTTP, so the server and DB must still be up while it drains. Otherwise a leftover
+  // worker keeps processing events against an already-torn-down instance once the
+  // next test file starts.
   await stopRecurringPaymentSystem();
-  // Don't call instance.stop() — it calls process.exit() internally, which Jest treats as a failure.
-  // --forceExit in the test script handles process termination after all tests complete.
-  await instance.db.connection.destroy();
+
+  // Don't call instance.stop() — it calls process.exit() internally, which Jest treats
+  // as a failure. instance.destroy() is also avoided: it ends with
+  // process.removeAllListeners(), which would strip Jest's own process handlers.
+  // Instead, replicate the relevant parts of Strapi.destroy() manually:
+  // close the HTTP server (frees port 1337 for the next suite), stop Strapi's cron
+  // and event hub, then destroy the DB pool.
+  await instance.server.destroy();
+  instance.cron?.destroy();
+  instance.eventHub?.destroy();
+  await instance.db.destroy();
+  delete global.strapi;
   instance = null;
 }
 
