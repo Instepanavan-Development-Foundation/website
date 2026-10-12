@@ -4,7 +4,8 @@ FROM node:22-alpine AS builder
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm install
+# better-sqlite3 ships prebuilt binaries (incl. linuxmusl); skip npm's implicit node-gyp rebuild
+RUN npm install --ignore-scripts
 
 COPY . .
 RUN npm run build
@@ -14,11 +15,8 @@ FROM node:22-alpine
 
 WORKDIR /app
 
-# Install better-sqlite3 dependencies
-RUN apk add --no-cache python3 make g++
-
 COPY package*.json ./
-RUN npm install --production
+RUN npm install --omit=dev --ignore-scripts
 
 COPY --from=builder /app/dist ./dist
 
