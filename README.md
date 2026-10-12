@@ -28,10 +28,15 @@ cd client && npm install && npm run dev
 
 ### Recurring Payments
 
-Recurring donations are charged by Strapi's built-in cron (`server/config/cron-tasks.ts`)
+Recurring donations are charged by Strapi's built-in cron (registered in `server/queue/workflow.ts`)
 at 00:00 UTC (04:00 Armenia) on the 4th, 14th and 24th of each month. The task processes
 due project-payments sequentially in-process via `/api/payment/do-recurring-payment`,
 using an admin token it mints for `RECURRING_PAYMENTS_ADMIN_USER_ID` (set in `server/.env`).
+
+**Known limitation:** the cron is an in-memory timer. If Strapi is down at fire time
+(e.g. a deploy at 00:00 UTC on a scheduled date) or restarts mid-run, the missed payments
+wait for the next scheduled date. No double charge is possible; trigger manually if needed.
+See `server/src/api/payment/PAYMENT.md` → "Run State".
 
 **Trigger manually:**
 ```bash

@@ -159,6 +159,11 @@ export async function startRecurringPaymentSystem(strapi: Core.Strapi): Promise<
 
   // Crons are time-based and irrelevant to test execution — skip registering them
   // under Jest so the test suite never fires a real recurring-payments run.
+  //
+  // KNOWN LIMITATION: this is an in-memory timer with no catch-up. If Strapi is down
+  // at fire time or restarts mid-run, the missed payments wait for the next scheduled
+  // date (the row lock in doRecurringPaymentWithAtomicLock prevents double charges).
+  // See PAYMENT.md → "Run State".
   if (!process.env.JEST_WORKER_ID) {
     strapi.cron.add({
       recurringPayments: {

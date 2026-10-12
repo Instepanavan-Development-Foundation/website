@@ -685,7 +685,14 @@ Registers the Strapi cron (00:00 UTC on the 4th, 14th and 24th) on bootstrap.
 
 ### Run State
 
-Runs live in memory only. If Strapi restarts mid-run, the remaining payments are picked up by the next scheduled run.
+Runs live in memory only (croner timer inside the Strapi process). There is no persistence and no catch-up, so:
+
+- **Strapi down at fire time** (deploy, crash, VPS reset at 00:00 UTC on the 4th/14th/24th): that run is skipped entirely. The payments are picked up by the next scheduled date, 10 days later.
+- **Strapi restarts mid-run**: the remaining payments wait for the next scheduled date.
+
+Neither case can double-charge (see [Concurrency & Double-Charge Protection](#concurrency--double-charge-protection)). If a run is known to have been missed, trigger it manually via `POST /api/payment/trigger-all-payments` (see the `trigger-recurring-payment` skill); the lock skips anything already paid this month.
+
+Hatchet (replaced in Oct 2026) persisted the queue and would have resumed after a restart. A catch-up on boot is tracked in the TODO list below.
 
 ---
 
@@ -800,6 +807,7 @@ RECURRING_PAYMENTS_ADMIN_USER_ID=1
 
 ### High Priority
 
+- [ ] **Catch up missed recurring runs after a restart** — The cron is an in-memory timer (see "Run State"); a run missed while Strapi was down waits for the next scheduled date. Simplest fix: run `runRecurringPayments()` once on boot (production only, UTC day ≥ 4) and let the row lock skip anything already handled. Alternative: store `lastAttemptedRun` on project-payment and process only unattempted ones on boot.
 - [x] **Add authentication to recurring payment endpoints** — Both `doRecurringPayment` and `triggerAllPayments` now require a real admin session token via `verifyAdminAuth`, same as cancel/refund (no static shared secret anymore — see "Recurring Payments" in [../../../../README.md](../../../../README.md))
 - [x] **Link payment methods to users** — `createProjectPaymentMethod` now saves `userDocumentId` (string) and `users_permissions_user` (numeric) ([services/strapi.ts:132-147](services/strapi.ts#L132-L147))
 - [x] **Fix hardcoded payment type** — Now uses project's `donationType` directly (`"recurring"` or `"one time"`). Project-payment schema enum updated to match ([services/strapi.ts:94](services/strapi.ts#L94))
