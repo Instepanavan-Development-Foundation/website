@@ -17,11 +17,10 @@ mkdir -p "${LOCAL_BACKUP_DIR}"
 
 # Step 1: Create backup on production server
 echo "📦 Creating backup on production server..."
-echo "   Backing up: server-data/, hatchet-data/, wireguard-config/"
+echo "   Backing up: server-data/, wireguard-config/"
 ssh ${SSH_HOST} "cd ${REMOTE_PATH} && \
     tar -czf /tmp/${BACKUP_FILENAME} \
     server-data/ \
-    hatchet-data/ \
     wireguard-config/ \
     2>/dev/null || true"
 

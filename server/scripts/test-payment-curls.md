@@ -3,8 +3,11 @@
 ## Prerequisites
 
 1. **Strapi running**: `cd server && npm run dev`
-2. **Hatchet running**: `docker compose -f docker-compose.dev.yml up -d hatchet`
-3. **PostgreSQL running**: `docker compose -f docker-compose.dev.yml up -d postgres`
+2. **PostgreSQL running**: `docker compose -f docker-compose.dev.yml up -d postgres`
+3. **`RECURRING_PAYMENTS_ADMIN_USER_ID` set** in `server/.env` (used by the scheduled cron run and by `trigger-all-payments`)
+
+Recurring payments are scheduled by Strapi's built-in cron (`server/config/cron-tasks.ts`,
+00:00 UTC on the 4th, 14th and 24th). The commands below trigger the same processing manually.
 
 ---
 
@@ -13,11 +16,6 @@
 ### Check Strapi
 ```bash
 curl http://localhost:1337/_health
-```
-
-### Check Hatchet
-```bash
-curl http://localhost:8080/health
 ```
 
 ---
@@ -107,21 +105,11 @@ curl -s "http://localhost:1337/api/payment-logs?filters[project_payment][documen
 
 ---
 
-## Step 6: Monitor Hatchet
-
-### View Hatchet UI
-```
-http://localhost:8888
-Login: admin@example.com / Admin123!!
-```
-
-### Check Hatchet Docker logs
-```bash
-docker compose -f docker-compose.dev.yml logs -f hatchet
-```
+## Step 6: Monitor Processing
 
 ### Check Strapi logs
 ```bash
+# Recurring runs log "Running monthly recurring payments..." and one line per payment.
 # If running in terminal, just look at the console
 # Or check the logs if running in Docker
 ```
@@ -237,10 +225,10 @@ Create a project in Strapi admin with `donationType: "recurring"`
 ### No project-payments found
 Create an initial payment using the "Creating Test Payment" section above
 
-### Hatchet not processing
-1. Check Hatchet is running: `docker compose -f docker-compose.dev.yml ps hatchet`
-2. Check HATCHET_CLIENT_TOKEN is set in `server/.env`
-3. Check Hatchet logs: `docker compose -f docker-compose.dev.yml logs hatchet`
+### Recurring payments not processing
+1. Check `RECURRING_PAYMENTS_ADMIN_USER_ID` is set in `server/.env` and points to an existing admin user
+2. Check the Strapi logs around 00:00 UTC on the 4th/14th/24th (or after a manual trigger)
+3. Confirm the cron is enabled (`cron.enabled` in `server/config/server.ts`, tasks in `server/config/cron-tasks.ts`)
 
 ### Ameriabank errors
 - Using test server: `https://servicestest.ameriabank.am`

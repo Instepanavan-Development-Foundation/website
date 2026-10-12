@@ -28,7 +28,6 @@ services:
     networks:
       - postgres
       - nginx
-      - hatchet
 
   client:
     image: client
@@ -41,50 +40,6 @@ services:
       - server
     networks:
       - nginx
-
-  hatchet:
-    image: ghcr.io/hatchet-dev/hatchet/hatchet-lite:latest
-    restart: unless-stopped
-    environment:
-      DATABASE_URL: "postgresql://hatchet:hatchet@hatchet_postgres:5432/hatchet"
-      SERVER_AUTH_COOKIE_DOMAIN: "localhost"
-      SERVER_GRPC_BIND_ADDRESS: "0.0.0.0"
-      SERVER_GRPC_BROADCAST_ADDRESS: "hatchet:7070"
-      SERVER_GRPC_INSECURE: "t"
-      # Defaults (50/50 conns, 10 kept warm) cost ~45MB per idle Postgres backend; one monthly cron needs far fewer
-      DATABASE_MAX_CONNS: "10"
-      DATABASE_MIN_CONNS: "1"
-      DATABASE_MAX_QUEUE_CONNS: "10"
-      DATABASE_MIN_QUEUE_CONNS: "1"
-      DATABASE_MAX_CONN_IDLE_TIME: "1m"
-      DATABASE_MAX_CONN_LIFETIME: "5m"
-    volumes:
-      - ./hatchet-data:/data
-      - ./hatchet-config:/config
-    depends_on:
-      hatchet_postgres:
-        condition: service_healthy
-    networks:
-      - hatchet
-
-  hatchet_postgres:
-    image: postgres:17
-    restart: unless-stopped
-    hostname: "hatchet_postgres"
-    environment:
-      POSTGRES_USER: hatchet
-      POSTGRES_PASSWORD: hatchet
-      POSTGRES_DB: hatchet
-    volumes:
-      - ./hatchet-data/postgres:/var/lib/postgresql/data
-    networks:
-      - hatchet
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -d hatchet -U hatchet"]
-      interval: 10s
-      timeout: 10s
-      retries: 5
-      start_period: 10s
 
   wireguard:
     image: linuxserver/wireguard:latest
@@ -110,7 +65,6 @@ services:
       - net.ipv4.conf.all.src_valid_mark=1
     networks:
       - postgres
-      - hatchet
 
   nginx:
     image: nginx:alpine
@@ -177,5 +131,4 @@ networks:
     name: saint-nginx
     external: true
   postgres:
-  hatchet:
   telegram:

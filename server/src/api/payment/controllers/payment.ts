@@ -154,7 +154,7 @@ export default {
     const service = strapi.service(PAYMENT_API);
 
     try {
-      // Requires a real admin session token (Hatchet mints one for its own system
+      // Requires a real admin session token (the cron mints one for its own system
       // account per call; manual/test triggers use a real admin's own token)
       if (!await verifyAdminAuth(ctx)) {
         return ctx.unauthorized('Invalid admin token');

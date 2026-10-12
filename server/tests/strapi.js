@@ -21,11 +21,10 @@ async function setupStrapi() {
 
 async function cleanupStrapi() {
   if (!instance) return;
-  // Unregister the Hatchet worker first. stop() pauses task assignment and waits for
-  // in-flight tasks to finish — those tasks call back into this Strapi instance over
-  // HTTP, so the server and DB must still be up while it drains. Otherwise a leftover
-  // worker keeps processing events against an already-torn-down instance once the
-  // next test file starts.
+  // Stop any in-flight recurring-payments run first. It waits for the current payment
+  // to finish — payments call back into this Strapi instance over HTTP, so the server
+  // and DB must still be up while it drains. Otherwise a leftover run keeps processing
+  // payments against an already-torn-down instance once the next test file starts.
   await stopRecurringPaymentSystem();
 
   // Don't call instance.stop() — it calls process.exit() internally, which Jest treats

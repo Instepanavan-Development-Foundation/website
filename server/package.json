@@ -13,7 +13,6 @@
     "test": "npm run build && jest --forceExit"
   },
   "dependencies": {
-    "@hatchet-dev/typescript-sdk": "^1.37.0",
     "@strapi/plugin-users-permissions": "^5.57.0",
     "@strapi/provider-email-nodemailer": "^5.57.0",
     "@strapi/strapi": "^5.57.0",

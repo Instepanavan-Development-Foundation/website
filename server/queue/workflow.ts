@@ -1,15 +1,14 @@
 import axios from "axios";
 import { randomUUID } from "node:crypto";
-import { RateLimitDuration } from "@hatchet-dev/typescript-sdk";
 
 import { Core } from "@strapi/strapi";
-import { hatchet } from "./hatchet-client";
 import { mintAdminToken } from "../src/api/payment/utils/mint-admin-token";
 
 let strapiGlobal: Core.Strapi;
-let workerGlobal: Awaited<ReturnType<NonNullable<typeof hatchet>["worker"]>> | undefined;
-// Set by stopRecurringPaymentSystem() so an in-flight fan-out stops pushing new events
-// instead of holding up worker shutdown until every project payment is queued.
+// In-process overlap guard: the run in progress, if any (a second trigger is skipped)
+let currentRun: Promise<unknown> | undefined;
+// Set by stopRecurringPaymentSystem() so an in-flight run stops processing new payments
+// instead of holding up shutdown until every project payment is charged.
 let stopping = false;
 interface ProcessPaymentInput {
   amount: number;
@@ -20,18 +19,6 @@ const axiosClient = axios.create({
   baseURL: process.env.BASE_URL,
   timeout: 30000,
 });
-
-// Under Jest, every test file talks to the same live Hatchet server. Without a
-// unique suffix, files would register the same worker/workflow names and Hatchet
-// could dispatch runs queued by one file (e.g. the trigger-all-payments load test)
-// to the next file's worker. Jest gives each test file its own module registry, so
-// a random component makes the suffix unique per file even when files run
-// sequentially in the same process (runInBand / maxWorkers: 1).
-const TEST_SUFFIX = process.env.JEST_WORKER_ID
-  ? `-test-${process.pid}-${randomUUID().slice(0, 8)}`
-  : "";
-
-const PROJECT_PAYMENT_CREATE_EVENT = `project-payment:create${TEST_SUFFIX}`;
 
 async function getSystemAdminToken(): Promise<string> {
   const userId = process.env.RECURRING_PAYMENTS_ADMIN_USER_ID;
@@ -44,18 +31,8 @@ async function getSystemAdminToken(): Promise<string> {
 
 // Single payment processing task
 
-const upper = hatchet?.workflow({
-  name: `upper${TEST_SUFFIX}`,
-  on: {
-    event: PROJECT_PAYMENT_CREATE_EVENT,
-  },
-});
-
-upper?.task({
-  // Cast: the SDK's .task() overload resolution depends on `name` being the
-  // literal "upper" type; the runtime value is still suffixed for uniqueness.
-  name: `upper${TEST_SUFFIX}` as "upper",
-  fn: async (input, ctx) => {
+const upper = {
+  fn: async (input: ProcessPaymentInput) => {
     const { amount, documentId, email } = input as ProcessPaymentInput;
 
     console.log(`🔄 Processing payment ${documentId}...`);
@@ -78,7 +55,7 @@ upper?.task({
         console.log(`✅ Payment ${documentId}: ${response.data.message}`);
       }
 
-      return { message: response.data.message };
+      return { message: response.data.message, status: response.status };
     } catch (error) {
       const errorMessage = error.response?.data?.errorMessage || error.message;
       console.error(`❌ Payment ${documentId} failed: ${errorMessage}`);
@@ -88,20 +65,15 @@ upper?.task({
       return { error: errorMessage };
     }
   },
-});
+};
 
 // Main recurring payments workflow
-const recurringPaymentsTask = hatchet?.workflow({
-  name: `recurring-payments-monthly${TEST_SUFFIX}`,
-});
-
-recurringPaymentsTask?.task({
-  // Same cast rationale as the `upper` task above.
-  name: `process-recurring-payments${TEST_SUFFIX}` as "process-recurring-payments",
+const recurringPaymentsTask = {
   fn: async (input: { projectDocumentId?: string } = {}) => {
     const { projectDocumentId } = input || {};
+    const runId = randomUUID().slice(0, 8);
 
-    console.log("🔄 Running monthly recurring payments...");
+    console.log(`🔄 [run ${runId}] Running monthly recurring payments...`);
 
     const filters: any = {
       donationType: "recurring",
@@ -145,97 +117,84 @@ recurringPaymentsTask?.task({
         const { amount, documentId } = projectPayment;
         const email = projectPayment.payment_method?.users_permissions_user?.email || "";
 
-        const result = await hatchet.events.push(PROJECT_PAYMENT_CREATE_EVENT, {
+        // Sequential: each payment is fully settled before the next one starts
+        const result = await upper.fn({
           amount,
           documentId,
           email,
-          ShouldSkip: false,
         });
 
         results.push(result);
       }
     }
 
-    console.log(`✅ Queued ${results.length} recurring payments for processing`);
-    return { processed: results.length };
+    const succeeded = results.filter((r) => !r.error && r.status !== 203).length;
+    const skipped = results.filter((r) => r.status === 203).length;
+    const failed = results.filter((r) => r.error).length;
+    console.log(
+      `✅ [run ${runId}] Processed ${results.length} recurring payments: ` +
+      `${succeeded} succeeded, ${skipped} skipped (already processed), ${failed} failed`
+    );
+    return { processed: results.length, succeeded, skipped, failed };
   },
-});
+};
+
+// Runs the recurring payments task unless a run is already in progress
+async function runRecurringPayments(projectDocumentId?: string) {
+  if (currentRun) {
+    console.log("⏭️  Recurring payments already running — skipping this trigger");
+    return;
+  }
+  currentRun = recurringPaymentsTask.fn({ projectDocumentId });
+  try {
+    return await currentRun;
+  } finally {
+    currentRun = undefined;
+  }
+}
 
 // Setup cron schedule and start system
 export async function startRecurringPaymentSystem(strapi: Core.Strapi): Promise<boolean> {
-  if (!hatchet) {
-    console.log("⚠️ Hatchet not initialized (missing HATCHET_CLIENT_TOKEN) — recurring payments disabled");
-    return false;
-  }
-
-  console.log(`🔄 Connecting to Hatchet (${process.env.HATCHET_CLIENT_HOST_PORT})...`);
-
-  try {
-    await hatchet.admin.putRateLimit("limit", 10, RateLimitDuration.SECOND);
-    console.log("✅ Hatchet gRPC connected");
-  } catch (error) {
-    console.error("❌ Hatchet connection failed");
-    console.error("💡 Get token at http://localhost:8888 → Settings → API Tokens");
-    throw error;
-  }
-
   strapiGlobal = strapi;
 
-  const worker = await hatchet.worker(`recurring-payments-worker${TEST_SUFFIX}`, {
-    workflows: [recurringPaymentsTask, upper],
-  });
-  workerGlobal = worker;
-
-  worker.start().catch(err => {
-    strapiGlobal.log.error("Recurring payments worker crashed:", err);
-    process.exit(1);
-  });
-
   // Crons are time-based and irrelevant to test execution — skip registering them
-  // under Jest so every test run doesn't leave behind a uniquely-suffixed orphan cron.
-  if (!TEST_SUFFIX) {
-    try {
-      await recurringPaymentsTask.cron('monthly-payments-4th', '0 0 4 * *', {});
-      await recurringPaymentsTask.cron('monthly-payments-14th', '0 0 14 * *', {});
-      await recurringPaymentsTask.cron('monthly-payments-24th', '0 0 24 * *', {});
-      console.log("✅ Recurring payments: Crons registered (4th, 14th, 24th at 00:00 UTC = 04:00 AM Armenia)");
-    } catch (error) {
-      if (error.message.includes("already exists")) {
-        console.log("✅ Recurring payments: Crons active (4th, 14th, 24th)");
-      } else {
-        console.error("⚠️ Cron registration failed (manual trigger only)");
-      }
-    }
+  // under Jest so the test suite never fires a real recurring-payments run.
+  if (!process.env.JEST_WORKER_ID) {
+    strapi.cron.add({
+      recurringPayments: {
+        // Caught so a failed run is logged instead of becoming an unhandled rejection
+        task: () => runRecurringPayments().catch((error) => {
+          console.error("❌ Recurring payments run failed:", error.message);
+        }),
+        options: { rule: "0 0 4,14,24 * *", tz: "Etc/UTC" },
+      },
+    });
+    console.log("✅ Recurring payments: Crons registered (4th, 14th, 24th at 00:00 UTC = 04:00 AM Armenia)");
   }
 
   return true;
 }
 
-// Gracefully unregisters the worker from Hatchet and waits for in-flight tasks to
-// finish. Needed between test files sharing one live Hatchet instance — otherwise a
-// leftover worker from a previous file keeps processing events against that file's
-// already-torn-down DB connection.
+// Stops an in-flight run after its current payment and waits for it to finish.
+// Payments call back into this Strapi instance over HTTP, so the test harness must
+// call this before tearing the server and DB down.
 //
-// Only called explicitly (the test harness); production shutdown goes through the
-// SDK's own SIGTERM/SIGINT handling and is unaffected by the `stopping` flag.
+// Only called explicitly (the test harness); production shutdown is unaffected.
 export async function stopRecurringPaymentSystem(): Promise<void> {
-  if (!workerGlobal) {
+  if (!currentRun) {
     return;
   }
-  // Runs still queued for this worker's (per-test-file) workflow names are never
-  // picked up by another worker; Hatchet times them out on its own.
   stopping = true;
-  await workerGlobal.stop();
-  workerGlobal = undefined;
+  await currentRun.catch(() => {});
   stopping = false;
 }
 
 // For manual Running
 export async function triggerAllPaymentsManually(projectDocumentId?) {
-  if (!hatchet || !recurringPaymentsTask) {
-    throw new Error("Hatchet client not initialized. Recurring payments system is disabled.");
-  }
-  return await recurringPaymentsTask.runNoWait({ projectDocumentId });
+  // Fire-and-forget: a full run can take minutes
+  runRecurringPayments(projectDocumentId).catch((error) => {
+    console.error("❌ Recurring payments run failed:", error.message);
+  });
 }
 
 // TODO: make sure that tasks stay in queue when no process exists

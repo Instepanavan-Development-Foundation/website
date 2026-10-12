@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document describes the payment system architecture for the Instepanavan donation platform. The system handles both one-time and recurring donations through Ameriabank's payment gateway, with background processing managed by Hatchet.
+This document describes the payment system architecture for the Instepanavan donation platform. The system handles both one-time and recurring donations through Ameriabank's payment gateway, with recurring charges scheduled by Strapi's built-in cron.
 
 ## Table of Contents
 
@@ -12,7 +12,7 @@ This document describes the payment system architecture for the Instepanavan don
 - [Database Schema](#database-schema)
 - [API Endpoints](#api-endpoints)
 - [Ameriabank Integration](#ameriabank-integration)
-- [Hatchet Integration](#hatchet-integration)
+- [Recurring Payment Scheduling](#recurring-payment-scheduling)
 - [Security Considerations](#security-considerations)
 - [Environment Variables](#environment-variables)
 
@@ -54,12 +54,12 @@ This document describes the payment system architecture for the Instepanavan don
                                        │
                                        ▼
                               ┌────────────────┐
-                              │  Hatchet Queue │
-                              │   (Optional)   │
+                              │  Strapi Cron   │
+                              │ (4th/14th/24th)│
                               │                │
-                              │ - Cron Jobs    │
-                              │ - Workers      │
-                              │ - Event Queue  │
+                              │ - In-process   │
+                              │ - Sequential   │
+                              │ - No queue     │
                               └────────────────┘
 ```
 
@@ -228,62 +228,33 @@ Increments gathered amount and checks if goal is reached.
 **On Strapi Bootstrap:** [../../index.ts:21-23](../../index.ts#L21-L23)
 ```javascript
 bootstrap({ strapi }) {
-  initQueue(strapi); // Starts Hatchet worker
+  initQueue(strapi); // Registers the recurring payments cron
 }
 ```
 
 **Worker Initialization:** [../../../queue/worker.ts](../../../queue/worker.ts)
-- Checks if `HATCHET_CLIENT_TOKEN` exists
-- If missing: logs warning, gracefully degrades
-- If present: starts recurring payment system
+- Calls `startRecurringPaymentSystem`, which registers the cron with `strapi.cron.add`
+- Skipped under Jest so tests never fire a real run
 
 ---
 
-### 2. Hatchet Client Setup
+### 2. Cron Job Configuration
 
-**Client Initialization:** [../../../queue/hatchet-client.ts](../../../queue/hatchet-client.ts)
+**Registration:** [../../../queue/workflow.ts](../../../queue/workflow.ts) (`startRecurringPaymentSystem`)
 ```javascript
-export const hatchet = process.env.HATCHET_CLIENT_TOKEN
-  ? HatchetClient.init({
-      log_level: 'INFO',
-      host_port: process.env.HATCHET_CLIENT_HOST_PORT,
-    })
-  : null;
-```
-
-**Graceful Degradation:**
-- System continues to work for one-time payments if Hatchet is not configured
-- Recurring payments simply won't be processed automatically
-
----
-
-### 3. Cron Job Configuration
-
-**Schedule:** [../../../queue/workflow.ts:121](../../../queue/workflow.ts#L121)
-```javascript
-const cronSchedule = "* * * * *"; // ⚠️ Currently every minute (should be monthly)
-```
-
-**Registration:** [../../../queue/workflow.ts:148-152](../../../queue/workflow.ts#L148-L152)
-```javascript
-await recurringPaymentsTask.cron(
-  `monthly-payments ${cronSchedule}`,
-  cronSchedule,
-  {}
-);
-```
-
-**Worker Start:** [../../../queue/workflow.ts:123-125](../../../queue/workflow.ts#L123-L125)
-```javascript
-const worker = await hatchet.worker("recurring-payments-worker", {
-  workflows: [recurringPaymentsTask, upper]
+strapi.cron.add({
+  recurringPayments: {
+    task: () => runRecurringPayments(),
+    options: { rule: "0 0 4,14,24 * *", tz: "Etc/UTC" },
+  },
 });
-await worker.start();
 ```
+
+An in-process guard skips a trigger (cron or manual) while a run is already in progress.
 
 ---
 
-### 4. Monthly Processing Task
+### 3. Monthly Processing Task
 
 **Task:** [../../../queue/workflow.ts:53-108](../../../queue/workflow.ts#L53-L108)
 
@@ -303,11 +274,11 @@ const projects = await strapi.documents("api::project.project").findMany({
 });
 ```
 
-#### Step 2: Queue Individual Payments
+#### Step 2: Process Individual Payments (sequentially)
 ```javascript
 for (const project of projects) {
   for (const projectPayment of project.project_payments) {
-    await hatchet.events.push("project-payment:create", {
+    await upper.fn({
       amount: projectPayment.amount,
       documentId: projectPayment.documentId,
       email: "TODO: dummy EMAIL ADD LATER" // ❌ Missing user email
@@ -318,17 +289,14 @@ for (const project of projects) {
 
 ---
 
-### 5. Individual Payment Processing
+### 4. Individual Payment Processing
 
 **Workflow:** [../../../queue/workflow.ts:21-50](../../../queue/workflow.ts#L21-L50)
 
-**Event:** `"project-payment:create"`
-
 **Task Execution:**
 ```javascript
-upper?.task({
-  name: "upper",
-  fn: async (input, ctx) => {
+const upper = {
+  fn: async (input) => {
     const { documentId } = input;
 
     // Call internal API endpoint
@@ -337,9 +305,9 @@ upper?.task({
       { projectPaymentId: documentId }
     );
 
-    return { message: response.data.message };
+    return { message: response.data.message, status: response.status };
   }
-});
+};
 ```
 
 ---
@@ -348,7 +316,7 @@ upper?.task({
 
 **Endpoint:** `POST /api/payment/do-recurring-payment`
 
-**Auth:** Requires a real admin session token (`Authorization: Bearer <token>`), verified via `verifyAdminAuth` — the same check used by cancel/refund. The Hatchet worker mints its own token in-process for a dedicated admin account (see `RECURRING_PAYMENTS_ADMIN_USER_ID` in `.env`); no static shared secret is involved.
+**Auth:** Requires a real admin session token (`Authorization: Bearer <token>`), verified via `verifyAdminAuth` — the same check used by cancel/refund. The recurring payments cron mints its own token in-process for a dedicated admin account (see `RECURRING_PAYMENTS_ADMIN_USER_ID` in `.env`); no static shared secret is involved.
 
 **Request Body:**
 ```json
@@ -406,7 +374,7 @@ BEGIN TRANSACTION
 COMMIT
 ```
 
-The `FOR UPDATE` row lock on `project_payments` ensures that when 10 concurrent requests arrive (e.g. Hatchet cron fires twice), only one proceeds. The others wait, then see the log from the first and return `alreadyProcessed: true`.
+The `FOR UPDATE` row lock on `project_payments` ensures that when 10 concurrent requests arrive (e.g. a manual trigger overlaps the cron), only one proceeds. The others wait, then see the log from the first and return `alreadyProcessed: true`.
 
 #### Step 5: Return Result
 
@@ -692,28 +660,18 @@ This approach ensures predictable behavior and prevents unexpected charges. User
 
 ---
 
-## Hatchet Integration
+## Recurring Payment Scheduling
 
 ### Components
 
-#### Hatchet Client
-**File:** [../../../queue/hatchet-client.ts](../../../queue/hatchet-client.ts)
-
-Conditionally initializes Hatchet client only if `HATCHET_CLIENT_TOKEN` is provided.
-
----
-
-#### Workflows
+#### Workflow
 **File:** [../../../queue/workflow.ts](../../../queue/workflow.ts)
 
-**Two workflows:**
-
-1. **`recurring-payments-monthly`** - Main cron task
+1. **`recurringPaymentsTask`** - Main cron task
    - Queries all recurring projects
-   - Pushes events to queue
+   - Processes each project payment sequentially via `upper`
 
 2. **`upper`** - Individual payment processor
-   - Triggered by `project-payment:create` event
    - Calls internal API to process payment
 
 ---
@@ -721,26 +679,13 @@ Conditionally initializes Hatchet client only if `HATCHET_CLIENT_TOKEN` is provi
 #### Worker
 **File:** [../../../queue/worker.ts](../../../queue/worker.ts)
 
-Initializes and starts the Hatchet worker with both workflows.
+Registers the Strapi cron (00:00 UTC on the 4th, 14th and 24th) on bootstrap.
 
 ---
 
-### Rate Limiting
+### Run State
 
-**Configuration:** [../../../queue/workflow.ts:118](../../../queue/workflow.ts#L118)
-```javascript
-await hatchet.admin.putRateLimit("limit", 10, RateLimitDuration.SECOND);
-```
-
-Limits processing to 10 payments per second.
-
----
-
-### Cron Management
-
-**Deletion of Old Crons:** [../../../queue/workflow.ts:128-146](../../../queue/workflow.ts#L128-L146)
-
-On each initialization, the system deletes all existing cron jobs before creating new ones to prevent duplicates.
+Runs live in memory only. If Strapi restarts mid-run, the remaining payments are picked up by the next scheduled run.
 
 ---
 
@@ -751,7 +696,7 @@ On each initialization, the system deletes all existing cron jobs before creatin
 The guard uses a **PostgreSQL `SELECT ... FOR UPDATE` row lock** on the `project_payments` row, held for the entire duration of the bank charge and log write. This means:
 
 - 10 concurrent requests for the same subscription → only 1 charges the bank, 9 block at the lock and return `alreadyProcessed`
-- Hatchet cron firing twice (the May 4 incident) → same protection, no double-charge
+- Cron firing twice (the May 4 incident) → same protection, no double-charge
 
 **Retry schedule** (cron runs on 4th, 14th, 24th):
 - ✅ Successful payment this month → blocked for the rest of the month
@@ -778,7 +723,7 @@ Both use **optimistic atomic UPDATE** before calling the bank:
 1. **Authentication on recurring payment endpoints**
    - `/do-recurring-payment` and `/trigger-all-payments` both require a real admin
      session token via `verifyAdminAuth` — same mechanism as cancel/refund
-   - No static shared secret: the Hatchet worker mints its own token in-process for a
+   - No static shared secret: the recurring payments cron mints its own token in-process for a
      dedicated admin account ([../../../queue/workflow.ts](../../../queue/workflow.ts),
      `getSystemAdminToken` / `RECURRING_PAYMENTS_ADMIN_USER_ID`)
    - Manual triggers use a real admin's own browser session token (see the
@@ -813,11 +758,9 @@ Both use **optimistic atomic UPDATE** before calling the bank:
 
 ### ✅ Good Practices
 
-1. **Graceful degradation** — system continues for one-time payments if Hatchet is not configured
-2. **Audit trail** — all transactions (success and failure) logged in `payment-log`
-3. **Armenia timezone** — month boundaries computed in UTC+4, not server local time
-4. **30-second HTTP timeouts** — all Ameriabank API calls have explicit timeouts
-5. **Worker crash handling** — Hatchet worker crash triggers `process.exit(1)` for clean restart
+1. **Audit trail** — all transactions (success and failure) logged in `payment-log`
+2. **Armenia timezone** — month boundaries computed in UTC+4, not server local time
+3. **30-second HTTP timeouts** — all Ameriabank API calls have explicit timeouts
 
 ---
 
@@ -841,22 +784,15 @@ PAYMENT_TIMEOUT=900               # Payment timeout in seconds (15 minutes)
 
 # Application URLs
 BACK_URL=https://instepanavan.am/payment-success
-BASE_URL=http://localhost:1337    # For internal API calls from Hatchet
+BASE_URL=http://localhost:1337    # For internal API calls from the recurring payments cron
 ```
 
-### Optional for Recurring Payments
+### Required for Recurring Payments
 
 ```bash
-# Hatchet Configuration (optional - system gracefully degrades without it)
-HATCHET_CLIENT_TOKEN=your_hatchet_token
-HATCHET_CLIENT_HOST_PORT=localhost:7077
+# Admin user the recurring payments cron mints its session token for
+RECURRING_PAYMENTS_ADMIN_USER_ID=1
 ```
-
-**To get Hatchet token:**
-1. Access Hatchet UI at http://localhost:8888
-2. Login with admin@example.com / Admin123!!
-3. Generate API token
-4. Add to `.env` file
 
 ---
 
@@ -864,7 +800,7 @@ HATCHET_CLIENT_HOST_PORT=localhost:7077
 
 ### High Priority
 
-- [x] **Add authentication to recurring payment endpoints** — Both `doRecurringPayment` and `triggerAllPayments` now require a real admin session token via `verifyAdminAuth`, same as cancel/refund (no static shared secret anymore — see "Hatchet & Recurring Payments" in [../../../../README.md](../../../../README.md))
+- [x] **Add authentication to recurring payment endpoints** — Both `doRecurringPayment` and `triggerAllPayments` now require a real admin session token via `verifyAdminAuth`, same as cancel/refund (no static shared secret anymore — see "Recurring Payments" in [../../../../README.md](../../../../README.md))
 - [x] **Link payment methods to users** — `createProjectPaymentMethod` now saves `userDocumentId` (string) and `users_permissions_user` (numeric) ([services/strapi.ts:132-147](services/strapi.ts#L132-L147))
 - [x] **Fix hardcoded payment type** — Now uses project's `donationType` directly (`"recurring"` or `"one time"`). Project-payment schema enum updated to match ([services/strapi.ts:94](services/strapi.ts#L94))
 - [x] **Add email to project payments** — Now populates user email via project_payment → payment_method → users_permissions_user ([../../../queue/workflow.ts:89-112](../../../queue/workflow.ts#L89-L112))
@@ -878,7 +814,7 @@ HATCHET_CLIENT_HOST_PORT=localhost:7077
 
 ### Low Priority
 
-- [x] **Add authentication check comment** — Hatchet worker now mints its own admin session token in-process ([../../../queue/workflow.ts](../../../queue/workflow.ts), `getSystemAdminToken`)
+- [x] **Add authentication check comment** — The recurring payments cron now mints its own admin session token in-process ([../../../queue/workflow.ts](../../../queue/workflow.ts), `getSystemAdminToken`)
 - [x] **Prevent deletion of historical logs** — Old cron deletion loop removed; crons are now registered with `onCrons` declaratively and handle "already exists" gracefully ([../../../queue/workflow.ts:150-161](../../../queue/workflow.ts#L150-L161))
 
 ---
@@ -1005,24 +941,17 @@ curl -X POST http://localhost:1337/api/payment/do-recurring-payment \
 
 ### Recurring Payments Not Processing
 
-1. **Check Hatchet is running:**
-   ```bash
-   docker compose -f docker-compose.dev.yml ps hatchet
+1. **Check the cron was registered** (Strapi startup logs):
+   ```
+   ✅ Recurring payments: Crons registered (4th, 14th, 24th at 00:00 UTC = 04:00 AM Armenia)
    ```
 
-2. **Verify Hatchet token is set:**
+2. **Verify the admin user is set:**
    ```bash
-   grep HATCHET_CLIENT_TOKEN server/.env
+   grep RECURRING_PAYMENTS_ADMIN_USER_ID server/.env
    ```
 
-3. **Check Hatchet logs:**
-   ```bash
-   docker compose -f docker-compose.dev.yml logs -f hatchet
-   ```
-
-4. **Access Hatchet UI:**
-   - URL: http://localhost:8888
-   - Credentials: admin@example.com / Admin123!!
+3. **Find the run in the Strapi logs** — each run logs `[run <id>]` start and summary lines.
 
 ### Payment Initialization Fails
 
@@ -1088,7 +1017,6 @@ server/src/api/payment/
     └── currencies.ts             # Currency mappings
 
 server/queue/
-├── hatchet-client.ts             # Hatchet client initialization
-├── workflow.ts                   # Recurring payment workflows
-└── worker.ts                     # Worker initialization
+├── workflow.ts                   # Recurring payment run + cron registration
+└── worker.ts                     # Bootstrap initialization
 ```

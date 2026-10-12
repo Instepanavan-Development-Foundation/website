@@ -89,4 +89,3 @@ docker compose -f docker-compose.dev.yml ps
 echo ""
 echo "✨ Done! Your local database now has production data."
 echo "🌐 Access Strapi at: http://localhost:1337"
-echo "📊 Access Hatchet at: http://localhost:8080"

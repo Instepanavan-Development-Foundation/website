@@ -2,7 +2,7 @@
 
 Donation website for Instepanavan Development Foundation.
 
-**Stack:** Next.js 15 + Strapi 5 + PostgreSQL 17 + Hatchet + Ameriabank
+**Stack:** Next.js 15 + Strapi 5 + PostgreSQL 17 + Ameriabank
 
 ## External Integrations
 
@@ -16,15 +16,8 @@ Donation website for Instepanavan Development Foundation.
 ## Local Development
 
 ```bash
-# Start PostgreSQL 17 + Hatchet
+# Start PostgreSQL 17
 docker compose -f docker-compose.dev.yml up -d
-
-# Generate Hatchet token for local development
-# 1. Go to http://localhost:8888
-# 2. Login: admin@example.com / Admin123!!
-# 3. Navigate to Settings → API Tokens
-# 4. Create new API token
-# 5. Add HATCHET_CLIENT_TOKEN to server/.env
 
 # Run backend
 cd server && npm install && npm run dev
@@ -33,19 +26,17 @@ cd server && npm install && npm run dev
 cd client && npm install && npm run dev
 ```
 
-### Hatchet & Recurring Payments
+### Recurring Payments
 
-**Status:** ✅ Hatchet worker connection working!
+Recurring donations are charged by Strapi's built-in cron (`server/config/cron-tasks.ts`)
+at 00:00 UTC (04:00 Armenia) on the 4th, 14th and 24th of each month. The task processes
+due project-payments sequentially in-process via `/api/payment/do-recurring-payment`,
+using an admin token it mints for `RECURRING_PAYMENTS_ADMIN_USER_ID` (set in `server/.env`).
 
-**Configuration:**
-- Hatchet SDK v1.10.5
-- `SERVER_GRPC_INSECURE: "t"` enabled in docker-compose.dev.yml
-- `SERVER_GRPC_BROADCAST_ADDRESS: localhost:7077`
-- Token generated with correct gRPC settings
-
-**Testing the queue:**
+**Trigger manually:**
 ```bash
-# Trigger all recurring payments via Hatchet queue (requires an admin bearer token)
+# Process all recurring payments now (requires an admin bearer token).
+# Optionally pass {"projectDocumentId": "..."} to limit it to one project.
 curl -X POST http://localhost:1337/api/payment/trigger-all-payments \
   -H 'Content-Type: application/json' \
   -H 'Authorization: Bearer YOUR_ADMIN_TOKEN' \
@@ -63,13 +54,9 @@ curl -X POST http://localhost:1337/api/payment/do-recurring-payment \
 
 **Note:** These endpoints require a real Strapi admin session token, not a static
 API key — log into `/admin`, grab your session's bearer token from a Network tab
-request, and use that as `YOUR_ADMIN_TOKEN`. The recurring-payments worker mints its
+request, and use that as `YOUR_ADMIN_TOKEN`. The recurring-payments cron mints its
 own token the same way for a dedicated admin account (`RECURRING_PAYMENTS_ADMIN_USER_ID`
 in `server/.env`). See the `trigger-recurring-payment` Claude skill for the full steps.
-
-**View workflow runs:**
-- Hatchet UI: http://localhost:8888
-- Login: admin@example.com / Admin123!!
 
 See [PAYMENT.md](server/src/api/payment/PAYMENT.md) for full payment system documentation.
 
@@ -96,14 +83,14 @@ First deployment takes ~10 minutes.
 
 ## VPN Access (Superadmin)
 
-Connect via WireGuard to access internal services (Hatchet UI, databases, APIs).
+Connect via WireGuard to access internal services (databases, APIs).
 
 ```bash
 # Get VPN config after deployment
 ssh instepanavan "cd ./website && docker compose -f docker-compose.prod.yml logs wireguard"
 ```
 
-**Services accessible:** `hatchet:8080` • `postgres:5432` • `hatchet_postgres:5432` • `server:1337`
+**Services accessible:** `postgres:5432` • `server:1337`
 
 ---
 
