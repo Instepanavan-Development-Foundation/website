@@ -3,11 +3,12 @@ deploy: pull build up
 pull:
 	git pull origin main
 
+# --pull refreshes the node:22-alpine base images so each build picks up Node security releases
 build:
-	docker buildx build -t client ./client
-	docker buildx build -t server ./server
-	docker buildx build -t telegram-bot ./telegram-bot
-	docker buildx build -t rss-publisher ./rss-publisher
+	docker buildx build --pull -t client ./client
+	docker buildx build --pull -t server ./server
+	docker buildx build --pull -t telegram-bot ./telegram-bot
+	docker buildx build --pull -t rss-publisher ./rss-publisher
 
 test:
 	cd server && npm install && npm test
